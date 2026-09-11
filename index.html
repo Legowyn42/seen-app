@@ -105,8 +105,9 @@
 
     /* Detail sheet */
     #detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 40; display: flex;
-      align-items: flex-start; justify-content: center; padding: 24px 14px; overflow-y: auto; }
+      align-items: flex-start; justify-content: center; padding: calc(24px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
     #detail-overlay[hidden] { display: none; }
+    body.no-scroll { overflow: hidden; }
     .sheet { background: var(--card); border: 1px solid var(--line); border-radius: 16px; width: 100%;
       max-width: 460px; padding: 20px; position: relative; }
     .sheet .close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 8px;
@@ -219,7 +220,7 @@
         <div class="stat-note">Series time is an estimate based on episode runtimes.</div>
       </div>
     </div>
-    <div class="appfoot">Seen · v1.4</div>
+    <div class="appfoot">Seen · v1.5</div>
   </div>
 
   <!-- Detail sheet -->
@@ -563,14 +564,14 @@
       if(display.poster_url){ sheetPoster.src=display.poster_url; sheetPoster.style.display=""; } else { sheetPoster.style.display="none"; }
       episodeSection.hidden=display.type!=="tv"; epTotal.textContent=""; providersSection.hidden=true;
       sheetOverview.textContent="Loading...";
-      overlay.hidden=false; renderSheet();
+      overlay.hidden=false; document.body.classList.add("no-scroll"); renderSheet();
       try{ const d=await fetchDetails(display.type,display.tmdbId);
         sheetOverview.textContent=d.overview||"No description available.";
         if(display.type==="tv"&&d.number_of_seasons) epTotal.textContent="Total: "+d.number_of_seasons+" seasons, "+(d.number_of_episodes||"?")+" episodes";
       }catch(e){ sheetOverview.textContent=""; }
       try{ const fr=await fetchProviders(display.type,display.tmdbId); renderProviders(fr); }catch(e){ providersSection.hidden=true; }
     }
-    function closeDetail(){ overlay.hidden=true; if(detailOnClose) detailOnClose(); detailDisplay=null; detailOnClose=null; }
+    function closeDetail(){ overlay.hidden=true; document.body.classList.remove("no-scroll"); if(detailOnClose) detailOnClose(); detailDisplay=null; detailOnClose=null; }
     sheetClose.onclick=closeDetail;
     overlay.onclick=(e)=>{ if(e.target===overlay) closeDetail(); };
 
