@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f1115" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Seen" />
+  <title>Seen</title>
+  <style>
+    :root {
+      --bg: #0f1115; --card: #171a21; --field: #0c0e12; --line: #262b36;
+      --text: #f2f4f8; --muted: #9aa3b2; --accent: #ff5a5f; --ok: #38c172; --err: #ff6b6b; --watch: #4a90d9;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; min-height: 100vh; }
+
+    #auth-view { max-width: 380px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 40px) 20px 40px; }
+    .logo { font-size: 44px; font-weight: 800; letter-spacing: 2px; text-align: center; margin: 8px 0 24px; }
+    .logo span { color: var(--accent); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+    .tab { flex: 1; padding: 10px; text-align: center; border-radius: 10px; background: transparent;
+      color: var(--muted); border: 1px solid var(--line); cursor: pointer; font-size: 15px; }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+    input { width: 100%; padding: 12px 14px; background: var(--field); border: 1px solid var(--line);
+      border-radius: 10px; color: var(--text); font-size: 16px; }
+    input:focus { outline: none; border-color: var(--accent); }
+    button.primary { width: 100%; margin-top: 20px; padding: 13px; background: var(--accent); color: #fff;
+      border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+    button.primary:disabled { opacity: 0.5; cursor: default; }
+    .msg { margin-top: 14px; font-size: 14px; min-height: 20px; }
+    .msg.ok { color: var(--ok); } .msg.err { color: var(--err); }
+
+    #app-view { max-width: 760px; margin: 0 auto; padding: 0 16px calc(60px + env(safe-area-inset-bottom)); }
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: calc(env(safe-area-inset-top) + 16px) 2px 16px;
+      position: sticky; top: 0; background: var(--bg); z-index: 5; }
+    .topbar .brand { font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+    .topbar .brand span { color: var(--accent); }
+    .topbar .right { display: flex; align-items: center; gap: 12px; }
+    .topbar .who { color: var(--muted); font-size: 14px; }
+    button.ghost { padding: 8px 14px; background: transparent; color: var(--muted); border: 1px solid var(--line);
+      border-radius: 9px; font-size: 14px; cursor: pointer; }
+
+    .nav { display: flex; gap: 8px; margin-bottom: 16px; }
+    .nav .navtab { flex: 1; text-align: center; padding: 10px; border-radius: 10px; cursor: pointer;
+      background: var(--card); border: 1px solid var(--line); color: var(--muted); font-size: 15px; }
+    .nav .navtab.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+
+    .searchbar { display: flex; gap: 8px; margin-bottom: 18px; }
+    .searchbar input { flex: 1; }
+    .searchbar button { padding: 0 18px; background: var(--accent); color: #fff; border: none;
+      border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+    .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filters .pill { padding: 7px 14px; border-radius: 999px; cursor: pointer; font-size: 13px;
+      background: var(--card); border: 1px solid var(--line); color: var(--muted); }
+    .filters .pill.active { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
+
+    .hint { color: var(--muted); font-size: 14px; text-align: center; margin-top: 40px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
+    .poster { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
+    .poster .img { width: 100%; aspect-ratio: 2 / 3; background: #22262f; display: flex; align-items: center;
+      justify-content: center; color: var(--muted); font-size: 12px; text-align: center; padding: 8px; }
+    .poster img.cover { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; }
+    .poster .info { padding: 8px 10px; flex: 1; }
+    .poster .t { font-size: 13px; font-weight: 600; line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .poster .m { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 6px;
+      background: #22262f; color: var(--muted); margin-left: 6px; }
+    .status { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 600; }
+    .status.watchlist { background: rgba(74,144,217,.18); color: var(--watch); }
+    .status.watching { background: rgba(255,90,95,.18); color: var(--accent); }
+    .status.watched { background: rgba(56,193,114,.18); color: var(--ok); }
+
+    .bookmark { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 9px;
+      background: rgba(0,0,0,.55); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .bookmark svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; }
+    .bookmark.active svg { fill: var(--watch); stroke: var(--watch); }
+
+    .poster .act { margin: 0 10px 10px; padding: 7px; font-size: 13px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--accent); background: transparent; color: var(--accent); font-weight: 600; }
+    .poster .act.done { border-color: var(--ok); color: var(--ok); }
+    .poster .act.watching { border-color: var(--accent); color: var(--accent); }
+    .poster .act.remove { border-color: var(--line); color: var(--muted); }
+
+    /* Detail sheet */
+    #detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 40; display: flex;
+      align-items: flex-start; justify-content: center; padding: 24px 14px; overflow-y: auto; }
+    #detail-overlay[hidden] { display: none; }
+    .sheet { background: var(--card); border: 1px solid var(--line); border-radius: 16px; width: 100%;
+      max-width: 460px; padding: 20px; position: relative; }
+    .sheet .close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 8px;
+      border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
+    .sheet-head { display: flex; gap: 14px; }
+    .sheet-head img { width: 92px; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; flex: 0 0 auto; }
+    .sheet-title { font-size: 20px; font-weight: 700; line-height: 1.25; padding-right: 30px; }
+    .sheet-meta { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .sheet-overview { font-size: 14px; color: #cdd3dd; line-height: 1.5; margin: 16px 0; max-height: 120px; overflow-y: auto; }
+    .sheet-section { margin-top: 18px; }
+    .sheet-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+    .status-select { display: flex; gap: 8px; }
+    .status-select button { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+      background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; }
+    .status-select button.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    .ep-row { display: flex; gap: 10px; align-items: flex-end; }
+    .ep-row .fieldw { flex: 1; }
+    .ep-row .fieldw span { font-size: 12px; color: var(--muted); }
+    .ep-total { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .stars { display: flex; gap: 6px; }
+    .stars .star { font-size: 26px; color: #3a4150; cursor: pointer; line-height: 1; }
+    .stars .star.on { color: #ffca3a; }
+    .prov-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .prov-label { font-size: 12px; color: var(--muted); width: 52px; flex: 0 0 auto; }
+    .prov { display: inline-flex; align-items: center; gap: 6px; background: var(--field);
+      border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; font-size: 12px; }
+    .prov img { width: 20px; height: 20px; border-radius: 4px; }
+    .sheet-remove { width: 100%; margin-top: 22px; padding: 11px; background: transparent; color: var(--err);
+      border: 1px solid var(--line); border-radius: 10px; font-size: 14px; cursor: pointer; }
+
+    #install-banner { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); max-width: 520px; margin: 0 auto;
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px; z-index: 45; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+    #install-banner[hidden] { display: none; }
+    #install-text { flex: 1; font-size: 13px; color: var(--text); }
+    .ib-actions { display: flex; align-items: center; gap: 8px; }
+    #install-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 14px;
+      font-size: 13px; font-weight: 600; cursor: pointer; }
+    #install-btn[hidden] { display: none; }
+    .ib-close { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 8px;
+      width: 30px; height: 30px; font-size: 16px; cursor: pointer; }
+    #toast { position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); background: #22262f;
+      color: var(--text); padding: 10px 16px; border-radius: 10px; font-size: 14px; border: 1px solid var(--line);
+      opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
+    #toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="auth-view">
+    <div class="logo">Se<span>e</span>n</div>
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" id="tab-login">Log in</div>
+        <div class="tab" id="tab-signup">Create account</div>
+      </div>
+      <div id="username-row" hidden>
+        <label for="username">Username</label>
+        <input id="username" type="text" autocomplete="username" placeholder="How your friend will see you" />
+      </div>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="At least 6 characters" />
+      <button class="primary" id="submit">Log in</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <div id="app-view" hidden>
+    <div class="topbar">
+      <div class="brand">Se<span>e</span>n</div>
+      <div class="right">
+        <span class="who" id="who"></span>
+        <button class="ghost" id="logout">Log out</button>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="navtab active" id="nav-search">Search</div>
+      <div class="navtab" id="nav-collection">My collection</div>
+    </div>
+    <div id="section-search">
+      <div class="searchbar">
+        <input id="q" type="text" placeholder="Search a film or series..." />
+        <button id="searchBtn">Search</button>
+      </div>
+      <div class="grid" id="results"></div>
+      <div class="hint" id="hint">Type a title above and press Search to find films and series.</div>
+    </div>
+    <div id="section-collection" hidden>
+      <div class="filters" id="filters">
+        <div class="pill active" data-f="all">All</div>
+        <div class="pill" data-f="watchlist">Watchlist</div>
+        <div class="pill" data-f="watching">Watching</div>
+        <div class="pill" data-f="watched">Watched</div>
+      </div>
+      <div class="grid" id="collection"></div>
+      <div class="hint" id="collection-hint">Loading your collection...</div>
+    </div>
+  </div>
+
+  <!-- Detail sheet -->
+  <div id="detail-overlay" hidden>
+    <div class="sheet">
+      <button class="close" id="sheet-close">×</button>
+      <div class="sheet-head">
+        <img id="sheet-poster" alt="" />
+        <div>
+          <div class="sheet-title" id="sheet-title"></div>
+          <div class="sheet-meta" id="sheet-meta"></div>
+        </div>
+      </div>
+      <div class="sheet-overview" id="sheet-overview"></div>
+      <div class="sheet-section" id="providers-section" hidden>
+        <div class="sheet-label">Where to watch (France)</div>
+        <div id="providers"></div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-label">Status</div>
+        <div class="status-select" id="status-select">
+          <button data-s="watchlist">Watchlist</button>
+          <button data-s="watching">Watching</button>
+          <button data-s="watched">Watched</button>
+        </div>
+      </div>
+      <div class="sheet-section" id="episode-section" hidden>
+        <div class="sheet-label">Progress</div>
+        <div class="ep-row">
+          <div class="fieldw"><span>Season</span><input id="ep-season" type="number" min="1" inputmode="numeric" /></div>
+          <div class="fieldw"><span>Episode</span><input id="ep-episode" type="number" min="1" inputmode="numeric" /></div>
+        </div>
+        <div class="ep-total" id="ep-total"></div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-label">Your rating</div>
+        <div class="stars" id="stars">
+          <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span>
+          <span class="star" data-v="3">★</span><span class="star" data-v="4">★</span>
+          <span class="star" data-v="5">★</span>
+        </div>
+      </div>
+      <button class="sheet-remove" id="sheet-remove" hidden>Remove from collection</button>
+    </div>
+  </div>
+
+  <div id="install-banner" hidden>
+    <span id="install-text"></span>
+    <div class="ib-actions">
+      <button id="install-btn" hidden>Install</button>
+      <button id="install-close" class="ib-close">&times;</button>
+    </div>
+  </div>
+  <div id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.seenClient = client;
+    const IMG = "https://image.tmdb.org/t/p/w342";
+    const BOOKMARK = '<svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/></svg>';
+    let currentUserId = null;
+    let myEntries = {}; // key -> { entryId, status, rating, last_season, last_episode }
+
+    const $ = (id) => document.getElementById(id);
+    const authView=$("auth-view"), appView=$("app-view"), tabLogin=$("tab-login"), tabSignup=$("tab-signup"),
+      usernameRow=$("username-row"), submitBtn=$("submit"), msg=$("msg"), usernameInput=$("username"),
+      emailInput=$("email"), passwordInput=$("password"), who=$("who"), navSearch=$("nav-search"),
+      navCollection=$("nav-collection"), sectionSearch=$("section-search"), sectionCollection=$("section-collection"),
+      q=$("q"), searchBtn=$("searchBtn"), results=$("results"), hint=$("hint"), filters=$("filters"),
+      collection=$("collection"), collectionHint=$("collection-hint"), toast=$("toast");
+    const overlay=$("detail-overlay"), sheetPoster=$("sheet-poster"), sheetTitle=$("sheet-title"),
+      sheetMeta=$("sheet-meta"), sheetOverview=$("sheet-overview"), statusSelect=$("status-select"),
+      episodeSection=$("episode-section"), epSeason=$("ep-season"), epEpisode=$("ep-episode"),
+      epTotal=$("ep-total"), stars=$("stars"), sheetRemove=$("sheet-remove"), sheetClose=$("sheet-close");
+    const providersSection=$("providers-section"), providers=$("providers");
+
+    let toastTimer=null;
+    function showToast(t){ toast.textContent=t; toast.classList.add("show"); clearTimeout(toastTimer);
+      toastTimer=setTimeout(()=>toast.classList.remove("show"),2500); }
+    function esc(s){ return String(s).replace(/</g,"&lt;"); }
+
+    // ---- auth ----
+    let mode="login";
+    function setMode(next){ mode=next; const login=next==="login";
+      tabLogin.classList.toggle("active",login); tabSignup.classList.toggle("active",!login);
+      usernameRow.hidden=login; submitBtn.textContent=login?"Log in":"Create account";
+      passwordInput.autocomplete=login?"current-password":"new-password"; setMsg("",""); }
+    tabLogin.onclick=()=>setMode("login"); tabSignup.onclick=()=>setMode("signup");
+    function setMsg(t,k){ msg.textContent=t; msg.className="msg"+(k?" "+k:""); }
+
+    async function showApp(session){ currentUserId=session.user.id; authView.hidden=true; appView.hidden=false;
+      const {data}=await client.from("profiles").select("username").eq("id",currentUserId).maybeSingle();
+      who.textContent=(data&&data.username)?data.username:session.user.email; await loadMyEntries(); }
+    function render(session){ if(session&&session.user){ showApp(session); }
+      else { currentUserId=null; myEntries={}; appView.hidden=true; authView.hidden=false; } }
+
+    submitBtn.onclick=async()=>{ const email=emailInput.value.trim(),password=passwordInput.value,username=usernameInput.value.trim();
+      if(!email||!password){ setMsg("Please fill in email and password.","err"); return; }
+      if(mode==="signup"&&!username){ setMsg("Please choose a username.","err"); return; }
+      submitBtn.disabled=true; setMsg("Please wait...","");
+      try{ if(mode==="signup"){ const {data,error}=await client.auth.signUp({email,password,options:{data:{username}}});
+          if(error) throw error; setMsg(data.session?"Account created.":"Account created. Check your email to confirm, then log in.","ok");
+        } else { const {error}=await client.auth.signInWithPassword({email,password}); if(error) throw error; }
+      }catch(e){ setMsg(e&&e.message?e.message:String(e),"err"); } finally{ submitBtn.disabled=false; } };
+    $("logout").onclick=async()=>{ await client.auth.signOut(); };
+
+    // ---- nav ----
+    function showSection(name){ const search=name==="search";
+      navSearch.classList.toggle("active",search); navCollection.classList.toggle("active",!search);
+      sectionSearch.hidden=!search; sectionCollection.hidden=search; if(!search) loadCollection(); }
+    navSearch.onclick=()=>showSection("search"); navCollection.onclick=()=>showSection("collection");
+
+    // ---- helpers ----
+    function yearOf(item){ const d=item.release_date||item.first_air_date||""; return d?d.slice(0,4):""; }
+    function titleOf(item){ return item.title||item.name||"Untitled"; }
+    function keyOf(tmdbId,type){ return tmdbId+"_"+type; }
+
+    async function loadMyEntries(){
+      const {data,error}=await client.from("entries")
+        .select("id, status, rating, last_season, last_episode, media:media_id ( tmdb_id, type )");
+      myEntries={};
+      if(!error&&data) data.forEach(e=>{ if(e.media&&e.media.tmdb_id!=null)
+        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode}; });
+    }
+
+    async function upsertMedia(fields){
+      const {data,error}=await client.from("media").upsert(fields,{onConflict:"tmdb_id,type"}).select("id").single();
+      if(error) throw error; return data.id;
+    }
+
+    // display: {tmdbId,type,title,year,poster_url}
+    function mediaFields(display){ return { source:"tmdb", tmdb_id:display.tmdbId, type:display.type,
+      title:display.title, poster_url:display.poster_url||null, year:display.year?parseInt(display.year,10):null }; }
+
+    async function setStatusByDisplay(display,status){
+      const mediaId=await upsertMedia(mediaFields(display));
+      const {data,error}=await client.from("entries")
+        .upsert({user_id:currentUserId,media_id:mediaId,status},{onConflict:"user_id,media_id"})
+        .select("id,status,rating,last_season,last_episode").single();
+      if(error) throw error;
+      const k=keyOf(display.tmdbId,display.type);
+      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode};
+      return myEntries[k];
+    }
+    async function ensureEntry(display,statusIfNew){
+      const k=keyOf(display.tmdbId,display.type);
+      return myEntries[k] || await setStatusByDisplay(display,statusIfNew);
+    }
+    async function removeByDisplay(display){
+      const k=keyOf(display.tmdbId,display.type); const e=myEntries[k]; if(!e) return;
+      const {error}=await client.from("entries").delete().eq("id",e.entryId);
+      if(error){ showToast("Could not remove"); return; }
+      delete myEntries[k];
+    }
+
+    // ---- search ----
+    function displayFromItem(item){ return { tmdbId:item.id, type:item.media_type, title:titleOf(item),
+      year:yearOf(item), poster_url:item.poster_path?IMG+item.poster_path:null }; }
+
+    function searchCard(item){
+      const display=displayFromItem(item);
+      const type=item.media_type==="tv"?"Series":"Movie";
+      const el=document.createElement("div"); el.className="poster";
+      el.innerHTML=(item.poster_path?`<img class="cover" src="${IMG}${item.poster_path}" alt="" loading="lazy" />`:`<div class="img">No image</div>`)+
+        `<div class="info"><div class="t">${esc(titleOf(item))}</div><div class="m">${yearOf(item)||"—"}<span class="badge">${type}</span></div></div>`;
+      const bm=document.createElement("button"); bm.className="bookmark"; bm.title="Watchlist"; bm.innerHTML=BOOKMARK;
+      const act=document.createElement("button"); act.className="act";
+      el.appendChild(bm); el.appendChild(act);
+      const tile={ refresh(){ const e=myEntries[keyOf(display.tmdbId,display.type)]; const st=e?e.status:null;
+        bm.classList.toggle("active",st==="watchlist");
+        act.classList.remove("done","watching");
+        if(st==="watched"){ act.textContent="Watched ✓"; act.classList.add("done"); }
+        else if(st==="watching"){ act.textContent="Watching"; act.classList.add("watching"); }
+        else { act.textContent="Mark watched"; } } };
+      el.onclick=()=>openDetail(display,tile.refresh);
+      bm.onclick=async(e)=>{ e.stopPropagation(); const cur=myEntries[keyOf(display.tmdbId,display.type)];
+        if(cur&&cur.status==="watchlist"){ await removeByDisplay(display); showToast("Removed from watchlist"); }
+        else { await setStatusByDisplay(display,"watchlist"); showToast("Added to watchlist"); } tile.refresh(); };
+      act.onclick=async(e)=>{ e.stopPropagation(); const cur=myEntries[keyOf(display.tmdbId,display.type)];
+        if(cur&&cur.status==="watched") return; await setStatusByDisplay(display,"watched"); showToast("Marked as watched"); tile.refresh(); };
+      tile.refresh(); return el;
+    }
+
+    async function runSearch(){
+      const query=q.value.trim(); if(!query) return;
+      results.innerHTML=""; hint.hidden=false; hint.textContent="Searching...";
+      try{ const url=`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US&include_adult=false`;
+        const res=await fetch(url); if(!res.ok) throw new Error("TMDB HTTP "+res.status);
+        const json=await res.json();
+        const items=(json.results||[]).filter(r=>r.media_type==="movie"||r.media_type==="tv");
+        if(!items.length){ hint.textContent='No results for "'+query+'".'; return; }
+        hint.hidden=true; for(const item of items) results.appendChild(searchCard(item));
+      }catch(e){ hint.hidden=false; hint.textContent="Search failed: "+(e&&e.message?e.message:e); }
+    }
+    searchBtn.onclick=runSearch; q.addEventListener("keydown",e=>{ if(e.key==="Enter") runSearch(); });
+
+    // ---- collection ----
+    let collectionFilter="all";
+    filters.querySelectorAll(".pill").forEach(p=>{ p.onclick=()=>{ collectionFilter=p.dataset.f;
+      filters.querySelectorAll(".pill").forEach(x=>x.classList.toggle("active",x===p)); loadCollection(); }; });
+
+    function displayFromMedia(m){ return { tmdbId:m.tmdb_id, type:m.type, title:m.title, year:m.year, poster_url:m.poster_url }; }
+
+    function collectionCard(entry){
+      const m=entry.media||{}; const display=displayFromMedia(m);
+      const type=m.type==="tv"?"Series":"Movie";
+      const statusLabel={watchlist:"Watchlist",watching:"Watching",watched:"Watched"}[entry.status]||entry.status;
+      let progress="";
+      if(entry.status==="watching"&&m.type==="tv"&&entry.last_season) progress=` · S${entry.last_season}E${entry.last_episode||1}`;
+      const el=document.createElement("div"); el.className="poster";
+      el.innerHTML=(m.poster_url?`<img class="cover" src="${m.poster_url}" alt="" loading="lazy" />`:`<div class="img">No image</div>`)+
+        `<div class="info"><div class="t">${esc(m.title||"Untitled")}</div>
+           <div class="m">${m.year||"—"}<span class="badge">${type}</span></div>
+           <div style="margin-top:6px"><span class="status ${entry.status}">${statusLabel}${progress}</span></div></div>`;
+      el.onclick=()=>openDetail(display,loadCollection);
+      return el;
+    }
+
+    async function loadCollection(){
+      collection.innerHTML=""; collectionHint.hidden=false; collectionHint.textContent="Loading your collection...";
+      let query=client.from("entries")
+        .select("id, status, rating, last_season, last_episode, added_at, media:media_id ( tmdb_id, type, title, poster_url, year )")
+        .order("added_at",{ascending:false});
+      if(collectionFilter!=="all") query=query.eq("status",collectionFilter);
+      const {data,error}=await query;
+      if(error){ collectionHint.textContent="Could not load: "+error.message; return; }
+      if(!data||!data.length){ collectionHint.textContent=collectionFilter==="all"?"Your collection is empty. Add titles from Search.":"Nothing here yet."; return; }
+      collectionHint.hidden=true; for(const entry of data) collection.appendChild(collectionCard(entry));
+    }
+
+    // ---- detail sheet ----
+    let detailDisplay=null, detailOnClose=null;
+    async function fetchDetails(type,id){
+      const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US`);
+      if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
+    }
+    async function fetchProviders(type,id){
+      try{ const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${TMDB_KEY}`);
+        if(!r.ok) return null; const j=await r.json(); return (j.results&&j.results.FR)?j.results.FR:null; }
+      catch(e){ return null; }
+    }
+    function renderProviders(fr){
+      providers.innerHTML="";
+      if(!fr){ providersSection.hidden=true; return; }
+      const groups=[["Stream",fr.flatrate],["Rent",fr.rent],["Buy",fr.buy]]; let any=false;
+      groups.forEach(([label,list])=>{
+        if(list&&list.length){ any=true;
+          const row=document.createElement("div"); row.className="prov-row";
+          const lab=document.createElement("span"); lab.className="prov-label"; lab.textContent=label; row.appendChild(lab);
+          list.forEach(pr=>{ const chip=document.createElement("span"); chip.className="prov";
+            chip.innerHTML=(pr.logo_path?`<img src="https://image.tmdb.org/t/p/w45${pr.logo_path}" alt="" />`:"")+esc(pr.provider_name);
+            row.appendChild(chip); });
+          providers.appendChild(row);
+        }
+      });
+      providersSection.hidden=!any;
+    }
+    function curEntry(){ return detailDisplay?myEntries[keyOf(detailDisplay.tmdbId,detailDisplay.type)]:null; }
+    function renderSheet(){
+      const e=curEntry();
+      statusSelect.querySelectorAll("button").forEach(b=>b.classList.toggle("active", !!e&&e.status===b.dataset.s));
+      const rating=e&&e.rating?e.rating:0;
+      stars.querySelectorAll(".star").forEach(s=>s.classList.toggle("on", parseInt(s.dataset.v,10)<=rating));
+      epSeason.value=(e&&e.last_season!=null)?e.last_season:"";
+      epEpisode.value=(e&&e.last_episode!=null)?e.last_episode:"";
+      sheetRemove.hidden=!e;
+    }
+    async function openDetail(display,onClose){
+      detailDisplay=display; detailOnClose=onClose||null;
+      sheetTitle.textContent=display.title;
+      sheetMeta.textContent=(display.year||"—")+" · "+(display.type==="tv"?"Series":"Movie");
+      if(display.poster_url){ sheetPoster.src=display.poster_url; sheetPoster.style.display=""; } else { sheetPoster.style.display="none"; }
+      episodeSection.hidden=display.type!=="tv"; epTotal.textContent=""; providersSection.hidden=true;
+      sheetOverview.textContent="Loading...";
+      overlay.hidden=false; renderSheet();
+      try{ const d=await fetchDetails(display.type,display.tmdbId);
+        sheetOverview.textContent=d.overview||"No description available.";
+        if(display.type==="tv"&&d.number_of_seasons) epTotal.textContent="Total: "+d.number_of_seasons+" seasons, "+(d.number_of_episodes||"?")+" episodes";
+      }catch(e){ sheetOverview.textContent=""; }
+      try{ const fr=await fetchProviders(display.type,display.tmdbId); renderProviders(fr); }catch(e){ providersSection.hidden=true; }
+    }
+    function closeDetail(){ overlay.hidden=true; if(detailOnClose) detailOnClose(); detailDisplay=null; detailOnClose=null; }
+    sheetClose.onclick=closeDetail;
+    overlay.onclick=(e)=>{ if(e.target===overlay) closeDetail(); };
+
+    statusSelect.querySelectorAll("button").forEach(b=>{ b.onclick=async()=>{
+      try{ await setStatusByDisplay(detailDisplay,b.dataset.s); renderSheet(); showToast("Saved"); }
+      catch(err){ showToast("Error: "+(err.message||err)); } }; });
+
+    stars.querySelectorAll(".star").forEach(s=>{ s.onclick=async()=>{
+      const v=parseInt(s.dataset.v,10); const e=curEntry(); const newVal=(e&&e.rating===v)?null:v;
+      try{ const ent=await ensureEntry(detailDisplay,"watched");
+        await client.from("entries").update({rating:newVal}).eq("id",ent.entryId);
+        ent.rating=newVal; renderSheet();
+      }catch(err){ showToast("Error: "+(err.message||err)); } }; });
+
+    async function saveEpisode(){
+      const s=epSeason.value?parseInt(epSeason.value,10):null;
+      const ep=epEpisode.value?parseInt(epEpisode.value,10):null;
+      if(s==null&&ep==null) return;
+      try{ const ent=await ensureEntry(detailDisplay,"watching");
+        await client.from("entries").update({last_season:s,last_episode:ep,status:ent.status==="watchlist"?"watching":ent.status}).eq("id",ent.entryId);
+        ent.last_season=s; ent.last_episode=ep; if(ent.status==="watchlist") ent.status="watching"; renderSheet(); showToast("Progress saved");
+      }catch(err){ showToast("Error: "+(err.message||err)); } }
+    epSeason.addEventListener("change",saveEpisode);
+    epEpisode.addEventListener("change",saveEpisode);
+
+    sheetRemove.onclick=async()=>{ await removeByDisplay(detailDisplay); showToast("Removed"); renderSheet(); };
+
+    client.auth.getSession().then(({data})=>render(data.session));
+    client.auth.onAuthStateChange((_e,session)=>render(session));
+  </script>
+  <script>
+    (function () {
+      const banner = document.getElementById("install-banner");
+      const text = document.getElementById("install-text");
+      const btn = document.getElementById("install-btn");
+      const closeBtn = document.getElementById("install-close");
+      let dismissed = false;
+      try { dismissed = localStorage.getItem("seen_install_dismissed") === "1"; } catch (e) {}
+      function standalone() { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; }
+      function isIos() { return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+      function show() { if (!dismissed && !standalone()) banner.hidden = false; }
+      function hide() { banner.hidden = true; }
+      closeBtn.onclick = () => { hide(); try { localStorage.setItem("seen_install_dismissed", "1"); } catch (e) {} };
+
+      let deferred = null;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault(); deferred = e;
+        text.textContent = "Add Seen to your home screen";
+        btn.hidden = false; show();
+      });
+      btn.onclick = async () => {
+        if (!deferred) return;
+        deferred.prompt();
+        try { await deferred.userChoice; } catch (e) {}
+        deferred = null; hide();
+      };
+
+      if (isIos() && !standalone()) {
+        text.textContent = 'Install Seen: tap Share, then "Add to Home Screen".';
+        btn.hidden = true; show();
+      }
+    })();
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>
