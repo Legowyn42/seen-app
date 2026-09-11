@@ -54,6 +54,12 @@
       background: var(--card); border: 1px solid var(--line); color: var(--muted); font-size: 15px; }
     .nav .navtab.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
     .appfoot { text-align: center; color: var(--muted); font-size: 12px; margin-top: 32px; opacity: .6; }
+    .stat-hero { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; text-align: center; margin-bottom: 16px; }
+    .stat-hero-num { font-size: 40px; font-weight: 800; color: var(--accent); }
+    .stat-hero-label { color: var(--muted); font-size: 13px; margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-row { display: flex; justify-content: space-between; padding: 14px 16px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; font-size: 15px; }
+    .stat-row span:first-child { color: var(--muted); }
+    .stat-note { color: var(--muted); font-size: 12px; text-align: center; margin-top: 8px; }
 
     .searchbar { display: flex; gap: 8px; margin-bottom: 18px; }
     .searchbar input { flex: 1; }
@@ -178,6 +184,7 @@
     <div class="nav">
       <div class="navtab active" id="nav-search">Search</div>
       <div class="navtab" id="nav-collection">My collection</div>
+      <div class="navtab" id="nav-stats">Stats</div>
     </div>
     <div id="section-search">
       <div class="searchbar">
@@ -197,7 +204,19 @@
       <div class="grid" id="collection"></div>
       <div class="hint" id="collection-hint">Loading your collection...</div>
     </div>
-    <div class="appfoot">Seen · v1.1</div>
+    <div id="section-stats" hidden>
+      <div class="hint" id="stats-hint">Computing your stats...</div>
+      <div id="stats-body" hidden>
+        <div class="stat-hero">
+          <div class="stat-hero-num" id="stat-total">0</div>
+          <div class="stat-hero-label">total watch time</div>
+        </div>
+        <div class="stat-row"><span>Movies</span><span id="stat-movies">—</span></div>
+        <div class="stat-row"><span>Series</span><span id="stat-series">—</span></div>
+        <div class="stat-note">Series time is an estimate based on episode runtimes.</div>
+      </div>
+    </div>
+    <div class="appfoot">Seen · v1.2</div>
   </div>
 
   <!-- Detail sheet -->
@@ -270,6 +289,7 @@
       navCollection=$("nav-collection"), sectionSearch=$("section-search"), sectionCollection=$("section-collection"),
       q=$("q"), searchBtn=$("searchBtn"), results=$("results"), hint=$("hint"), filters=$("filters"),
       collection=$("collection"), collectionHint=$("collection-hint"), toast=$("toast");
+    const navStats=$("nav-stats"), sectionStats=$("section-stats"), statsHint=$("stats-hint"), statsBody=$("stats-body"), statTotal=$("stat-total"), statMovies=$("stat-movies"), statSeries=$("stat-series");
     const overlay=$("detail-overlay"), sheetPoster=$("sheet-poster"), sheetTitle=$("sheet-title"),
       sheetMeta=$("sheet-meta"), sheetOverview=$("sheet-overview"), statusSelect=$("status-select"),
       episodeSection=$("episode-section"), epSeason=$("ep-season"), epEpisode=$("ep-episode"),
@@ -307,10 +327,17 @@
     $("logout").onclick=async()=>{ await client.auth.signOut(); };
 
     // ---- nav ----
-    function showSection(name){ const search=name==="search";
-      navSearch.classList.toggle("active",search); navCollection.classList.toggle("active",!search);
-      sectionSearch.hidden=!search; sectionCollection.hidden=search; if(!search) loadCollection(); }
-    navSearch.onclick=()=>showSection("search"); navCollection.onclick=()=>showSection("collection");
+    function showSection(name){
+      navSearch.classList.toggle("active", name==="search");
+      navCollection.classList.toggle("active", name==="collection");
+      navStats.classList.toggle("active", name==="stats");
+      sectionSearch.hidden = name!=="search";
+      sectionCollection.hidden = name!=="collection";
+      sectionStats.hidden = name!=="stats";
+      if(name==="collection") loadCollection();
+      if(name==="stats") loadStats();
+    }
+    navSearch.onclick=()=>showSection("search"); navCollection.onclick=()=>showSection("collection"); navStats.onclick=()=>showSection("stats");
 
     // ---- helpers ----
     function yearOf(item){ const d=item.release_date||item.first_air_date||""; return d?d.slice(0,4):""; }
@@ -509,6 +536,43 @@
 
     sheetRemove.onclick=async()=>{ await removeByDisplay(detailDisplay); showToast("Removed"); renderSheet(); };
 
+    function fmtHours(min){ min=Math.round(min); const h=Math.floor(min/60), m=min%60; return h>0 ? (h+" h "+(m<10?"0"+m:m)) : (m+" min"); }
+    async function cacheMedia(id, fields){ try{ await client.from("media").update(fields).eq("id", id); }catch(e){} }
+    async function loadStats(){
+      statsBody.hidden=true; statsHint.hidden=false; statsHint.textContent="Computing your stats...";
+      const { data, error } = await client.from("entries")
+        .select("status,last_season,last_episode,media:media_id(id,tmdb_id,type,runtime,avg_episode_runtime,total_episodes)");
+      if(error){ statsHint.textContent="Could not load: "+error.message; return; }
+      let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0;
+      for(const e of (data||[])){
+        const m=e.media; if(!m) continue;
+        if(m.type==="movie"){
+          if(e.status!=="watched") continue;
+          movieCount++;
+          let rt=m.runtime;
+          if(rt==null){ try{ const d=await fetchDetails("movie", m.tmdb_id); rt=d.runtime||0; cacheMedia(m.id,{runtime:rt}); }catch(_){ rt=0; } }
+          movieMin += rt||0;
+        } else if(m.type==="tv"){
+          if(e.status!=="watched" && e.status!=="watching") continue;
+          seriesCount++;
+          try{
+            const d=await fetchDetails("tv", m.tmdb_id);
+            const avg=(d.episode_run_time && d.episode_run_time[0]) || m.avg_episode_runtime || 42;
+            cacheMedia(m.id,{avg_episode_runtime:avg, total_episodes:d.number_of_episodes||null});
+            let eps=0;
+            if(e.status==="watched"){ eps=d.number_of_episodes||0; }
+            else { const ls=e.last_season||1, le=e.last_episode||0; let before=0;
+              for(const sea of (d.seasons||[])){ if(sea.season_number>=1 && sea.season_number<ls) before += (sea.episode_count||0); }
+              eps = before + le; }
+            seriesMin += eps*avg;
+          }catch(_){}
+        }
+      }
+      statTotal.textContent = fmtHours(movieMin+seriesMin);
+      statMovies.textContent = movieCount + (movieCount===1?" movie":" movies") + " · " + fmtHours(movieMin);
+      statSeries.textContent = seriesCount + " series · " + fmtHours(seriesMin);
+      statsHint.hidden=true; statsBody.hidden=false;
+    }
     client.auth.getSession().then(({data})=>render(data.session));
     client.auth.onAuthStateChange((_e,session)=>render(session));
   </script>
