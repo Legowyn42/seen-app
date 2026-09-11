@@ -73,6 +73,8 @@
 
     .hint { color: var(--muted); font-size: 14px; text-align: center; margin-top: 40px; }
 
+    .section-label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+    .section-label[hidden] { display: none; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
     .poster { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 12px;
       overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
@@ -191,8 +193,9 @@
         <input id="q" type="text" placeholder="Search a film or series..." />
         <button id="searchBtn">Search</button>
       </div>
+      <div class="section-label" id="results-label" hidden></div>
       <div class="grid" id="results"></div>
-      <div class="hint" id="hint">Type a title above and press Search to find films and series.</div>
+      <div class="hint" id="hint"></div>
     </div>
     <div id="section-collection" hidden>
       <div class="filters" id="filters">
@@ -216,7 +219,7 @@
         <div class="stat-note">Series time is an estimate based on episode runtimes.</div>
       </div>
     </div>
-    <div class="appfoot">Seen · v1.2</div>
+    <div class="appfoot">Seen · v1.3</div>
   </div>
 
   <!-- Detail sheet -->
@@ -290,6 +293,7 @@
       q=$("q"), searchBtn=$("searchBtn"), results=$("results"), hint=$("hint"), filters=$("filters"),
       collection=$("collection"), collectionHint=$("collection-hint"), toast=$("toast");
     const navStats=$("nav-stats"), sectionStats=$("section-stats"), statsHint=$("stats-hint"), statsBody=$("stats-body"), statTotal=$("stat-total"), statMovies=$("stat-movies"), statSeries=$("stat-series");
+    const resultsLabel=$("results-label");
     const overlay=$("detail-overlay"), sheetPoster=$("sheet-poster"), sheetTitle=$("sheet-title"),
       sheetMeta=$("sheet-meta"), sheetOverview=$("sheet-overview"), statusSelect=$("status-select"),
       episodeSection=$("episode-section"), epSeason=$("ep-season"), epEpisode=$("ep-episode"),
@@ -312,7 +316,7 @@
 
     async function showApp(session){ currentUserId=session.user.id; authView.hidden=true; appView.hidden=false;
       const {data}=await client.from("profiles").select("username").eq("id",currentUserId).maybeSingle();
-      who.textContent=(data&&data.username)?data.username:session.user.email; await loadMyEntries(); }
+      who.textContent=(data&&data.username)?data.username:session.user.email; await loadMyEntries(); showTrending(); }
     function render(session){ if(session&&session.user){ showApp(session); }
       else { currentUserId=null; myEntries={}; appView.hidden=true; authView.hidden=false; } }
 
@@ -410,18 +414,47 @@
       tile.refresh(); return el;
     }
 
-    async function runSearch(){
-      const query=q.value.trim(); if(!query) return;
-      results.innerHTML=""; hint.hidden=false; hint.textContent="Searching...";
-      try{ const url=`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US&include_adult=false`;
-        const res=await fetch(url); if(!res.ok) throw new Error("TMDB HTTP "+res.status);
-        const json=await res.json();
+    let searchSeq=0, showingTrending=false, typeTimer=null;
+
+    function renderItems(items){ results.innerHTML=""; for(const item of items) results.appendChild(searchCard(item)); }
+
+    async function showTrending(){
+      const seq=++searchSeq; showingTrending=false;
+      results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Loading trending...";
+      try{
+        const res=await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=en-US`);
+        const json=await res.json(); if(seq!==searchSeq) return;
         const items=(json.results||[]).filter(r=>r.media_type==="movie"||r.media_type==="tv");
-        if(!items.length){ hint.textContent='No results for "'+query+'".'; return; }
-        hint.hidden=true; for(const item of items) results.appendChild(searchCard(item));
-      }catch(e){ hint.hidden=false; hint.textContent="Search failed: "+(e&&e.message?e.message:e); }
+        if(!items.length){ hint.textContent=""; return; }
+        hint.hidden=true; resultsLabel.hidden=false; resultsLabel.textContent="Trending this week";
+        renderItems(items); showingTrending=true;
+      }catch(e){ if(seq===searchSeq) hint.textContent=""; }
     }
-    searchBtn.onclick=runSearch; q.addEventListener("keydown",e=>{ if(e.key==="Enter") runSearch(); });
+
+    async function runSearch(){
+      const query=q.value.trim();
+      if(query.length<2){ showTrending(); return; }
+      const seq=++searchSeq; showingTrending=false;
+      resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Searching...";
+      try{
+        const url=`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US&include_adult=false`;
+        const res=await fetch(url); if(!res.ok) throw new Error("TMDB HTTP "+res.status);
+        const json=await res.json(); if(seq!==searchSeq) return;
+        const items=(json.results||[]).filter(r=>r.media_type==="movie"||r.media_type==="tv");
+        if(!items.length){ results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent='No results for "'+query+'".'; return; }
+        hint.hidden=true; resultsLabel.hidden=false; resultsLabel.textContent="Results"; renderItems(items);
+      }catch(e){ if(seq===searchSeq){ hint.hidden=false; hint.textContent="Search failed: "+(e&&e.message?e.message:e); } }
+    }
+
+    function triggerNow(){ clearTimeout(typeTimer); runSearch(); }
+    searchBtn.onclick=triggerNow;
+    q.addEventListener("keydown", e=>{ if(e.key==="Enter") triggerNow(); });
+    q.addEventListener("input", ()=>{
+      clearTimeout(typeTimer);
+      const v=q.value.trim();
+      if(v.length<2){ if(!showingTrending) showTrending(); return; }
+      typeTimer=setTimeout(runSearch, 350);
+    });
 
     // ---- collection ----
     let collectionFilter="all";
