@@ -220,7 +220,7 @@
         <div class="stat-note">Series time is an estimate based on episode runtimes.</div>
       </div>
     </div>
-    <div class="appfoot">Seen · v1.5</div>
+    <div class="appfoot">Seen · v1.6</div>
   </div>
 
   <!-- Detail sheet -->
@@ -417,7 +417,7 @@
 
     let searchSeq=0, showingTrending=false, typeTimer=null;
 
-    function renderItems(items){ results.innerHTML=""; for(const item of items) results.appendChild(searchCard(item)); }
+    function renderItems(items){ currentDisplays=items.map(displayFromItem); results.innerHTML=""; for(const item of items) results.appendChild(searchCard(item)); }
 
     async function showTrending(){
       const seq=++searchSeq; showingTrending=false;
@@ -517,11 +517,11 @@
       const {data,error}=await query;
       if(error){ collectionHint.textContent="Could not load: "+error.message; return; }
       if(!data||!data.length){ collectionHint.textContent=collectionFilter==="all"?"Your collection is empty. Add titles from Search.":"Nothing here yet."; return; }
-      collectionHint.hidden=true; for(const entry of data) collection.appendChild(collectionCard(entry));
+      currentDisplays=data.map(e=>displayFromMedia(e.media)); collectionHint.hidden=true; for(const entry of data) collection.appendChild(collectionCard(entry));
     }
 
     // ---- detail sheet ----
-    let detailDisplay=null, detailOnClose=null;
+    let detailDisplay=null, detailOnClose=null, detailList=[], detailIndex=0, detailSeq=0, currentDisplays=[];
     async function fetchDetails(type,id){
       const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US`);
       if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
@@ -557,23 +557,37 @@
       epEpisode.value=(e&&e.last_episode!=null)?e.last_episode:"";
       sheetRemove.hidden=!e;
     }
-    async function openDetail(display,onClose){
-      detailDisplay=display; detailOnClose=onClose||null;
+    function openDetail(display,onClose){
+      detailOnClose=onClose||null;
+      const list=(currentDisplays&&currentDisplays.length)?currentDisplays:[display];
+      let idx=list.findIndex(d=>d&&d.tmdbId===display.tmdbId&&d.type===display.type);
+      if(idx<0){ detailList=[display]; detailIndex=0; } else { detailList=list; detailIndex=idx; }
+      overlay.hidden=false; document.body.classList.add("no-scroll");
+      fillDetail();
+    }
+    async function fillDetail(){
+      const seq=++detailSeq; const display=detailList[detailIndex]; detailDisplay=display;
+      overlay.scrollTop=0;
       sheetTitle.textContent=display.title;
       sheetMeta.textContent=(display.year||"—")+" · "+(display.type==="tv"?"Series":"Movie");
       if(display.poster_url){ sheetPoster.src=display.poster_url; sheetPoster.style.display=""; } else { sheetPoster.style.display="none"; }
       episodeSection.hidden=display.type!=="tv"; epTotal.textContent=""; providersSection.hidden=true;
-      sheetOverview.textContent="Loading...";
-      overlay.hidden=false; document.body.classList.add("no-scroll"); renderSheet();
-      try{ const d=await fetchDetails(display.type,display.tmdbId);
+      sheetOverview.textContent="Loading..."; renderSheet();
+      try{ const d=await fetchDetails(display.type,display.tmdbId); if(seq!==detailSeq) return;
         sheetOverview.textContent=d.overview||"No description available.";
         if(display.type==="tv"&&d.number_of_seasons) epTotal.textContent="Total: "+d.number_of_seasons+" seasons, "+(d.number_of_episodes||"?")+" episodes";
-      }catch(e){ sheetOverview.textContent=""; }
-      try{ const fr=await fetchProviders(display.type,display.tmdbId); renderProviders(fr); }catch(e){ providersSection.hidden=true; }
+      }catch(e){ if(seq===detailSeq) sheetOverview.textContent=""; }
+      try{ const fr=await fetchProviders(display.type,display.tmdbId); if(seq!==detailSeq) return; renderProviders(fr); }catch(e){ if(seq===detailSeq) providersSection.hidden=true; }
     }
+    function navDetail(dir){ const ni=detailIndex+dir; if(ni<0||ni>=detailList.length) return; detailIndex=ni; fillDetail(); }
     function closeDetail(){ overlay.hidden=true; document.body.classList.remove("no-scroll"); if(detailOnClose) detailOnClose(); detailDisplay=null; detailOnClose=null; }
     sheetClose.onclick=closeDetail;
     overlay.onclick=(e)=>{ if(e.target===overlay) closeDetail(); };
+    const sheetEl=document.querySelector(".sheet");
+    let swX=0, swY=0;
+    sheetEl.addEventListener("touchstart",(e)=>{ const t=e.changedTouches[0]; swX=t.clientX; swY=t.clientY; }, {passive:true});
+    sheetEl.addEventListener("touchend",(e)=>{ const t=e.changedTouches[0]; const dx=t.clientX-swX, dy=t.clientY-swY;
+      if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5){ navDetail(dx<0?1:-1); } }, {passive:true});
 
     statusSelect.querySelectorAll("button").forEach(b=>{ b.onclick=async()=>{
       try{ await setStatusByDisplay(detailDisplay,b.dataset.s); renderSheet(); showToast("Saved"); }
@@ -597,7 +611,7 @@
     epSeason.addEventListener("change",saveEpisode);
     epEpisode.addEventListener("change",saveEpisode);
 
-    sheetRemove.onclick=async()=>{ await removeByDisplay(detailDisplay); showToast("Removed"); renderSheet(); };
+    sheetRemove.onclick=async()=>{ await removeByDisplay(detailDisplay); showToast("Removed"); closeDetail(); };
 
     function fmtHours(min){ min=Math.round(min); const h=Math.floor(min/60), m=min%60; return h>0 ? (h+" h "+(m<10?"0"+m:m)) : (m+" min"); }
     async function cacheMedia(id, fields){ try{ await client.from("media").update(fields).eq("id", id); }catch(e){} }
