@@ -219,7 +219,7 @@
         <div class="stat-note">Series time is an estimate based on episode runtimes.</div>
       </div>
     </div>
-    <div class="appfoot">Seen · v1.3</div>
+    <div class="appfoot">Seen · v1.4</div>
   </div>
 
   <!-- Detail sheet -->
@@ -316,7 +316,7 @@
 
     async function showApp(session){ currentUserId=session.user.id; authView.hidden=true; appView.hidden=false;
       const {data}=await client.from("profiles").select("username").eq("id",currentUserId).maybeSingle();
-      who.textContent=(data&&data.username)?data.username:session.user.email; await loadMyEntries(); showTrending(); }
+      who.textContent=(data&&data.username)?data.username:session.user.email; await loadMyEntries(); showDiscover(); }
     function render(session){ if(session&&session.user){ showApp(session); }
       else { currentUserId=null; myEntries={}; appView.hidden=true; authView.hidden=false; } }
 
@@ -431,9 +431,38 @@
       }catch(e){ if(seq===searchSeq) hint.textContent=""; }
     }
 
+    async function showDiscover(){
+      const seq=++searchSeq; showingTrending=false;
+      results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Finding recommendations...";
+      let seeds=[];
+      try{
+        const { data } = await client.from("entries").select("rating, media:media_id(tmdb_id,type)").eq("status","watched");
+        seeds=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
+      }catch(_){}
+      if(seq!==searchSeq) return;
+      seeds.sort((a,b)=>(b.rating||0)-(a.rating||0));
+      seeds=seeds.slice(0,6);
+      if(seeds.length<2){ showTrending(); return; }
+      const responses=await Promise.all(seeds.map(sd=>
+        fetch(`https://api.themoviedb.org/3/${sd.media.type}/${sd.media.tmdb_id}/recommendations?api_key=${TMDB_KEY}&language=en-US`)
+          .then(r=>r.ok?r.json():null).catch(()=>null)));
+      if(seq!==searchSeq) return;
+      const counts={}, byKey={};
+      responses.forEach((j,idx)=>{ if(!j) return; const stype=seeds[idx].media.type;
+        for(const it of (j.results||[])){ it.media_type=it.media_type||stype;
+          if(it.media_type!=="movie"&&it.media_type!=="tv") continue;
+          const key=it.id+"_"+it.media_type; if(myEntries[key]) continue;
+          counts[key]=(counts[key]||0)+1; byKey[key]=it; } });
+      const list=Object.keys(byKey).map(k=>({item:byKey[k],score:counts[k]}));
+      list.sort((a,b)=> b.score-a.score || (b.item.popularity||0)-(a.item.popularity||0));
+      const items=list.slice(0,24).map(x=>x.item);
+      if(!items.length){ showTrending(); return; }
+      hint.hidden=true; resultsLabel.hidden=false; resultsLabel.textContent="Recommended for you"; renderItems(items); showingTrending=true;
+    }
+
     async function runSearch(){
       const query=q.value.trim();
-      if(query.length<2){ showTrending(); return; }
+      if(query.length<2){ showDiscover(); return; }
       const seq=++searchSeq; showingTrending=false;
       resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Searching...";
       try{
@@ -452,7 +481,7 @@
     q.addEventListener("input", ()=>{
       clearTimeout(typeTimer);
       const v=q.value.trim();
-      if(v.length<2){ if(!showingTrending) showTrending(); return; }
+      if(v.length<2){ if(!showingTrending) showDiscover(); return; }
       typeTimer=setTimeout(runSearch, 350);
     });
 
