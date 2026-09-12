@@ -159,6 +159,112 @@
       color: var(--text); padding: 10px 16px; border-radius: 10px; font-size: 14px; border: 1px solid var(--line);
       opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
     #toast.show { opacity: 1; }
+
+    /* ---- Friends ---- */
+    .nav .navtab { font-size: 14px; padding: 10px 6px; position: relative; }
+    .navtab .dot { position: absolute; top: 5px; right: 8px; min-width: 16px; height: 16px; padding: 0 4px;
+      border-radius: 999px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; line-height: 1; }
+    .navtab .dot[hidden] { display: none; }
+    .fr-block { margin-bottom: 24px; }
+    .fr-block h3 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px;
+      margin: 0 0 10px; font-weight: 600; }
+    .fr-add { display: flex; gap: 8px; margin-bottom: 6px; }
+    .fr-add input { flex: 1; }
+    .fr-add button { padding: 0 16px; background: var(--accent); color: #fff; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer; }
+    .fr-add button:disabled { opacity: .5; }
+    .fr-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .fr-row.tap { cursor: pointer; }
+    .avatar { width: 38px; height: 38px; border-radius: 50%; background: #2a303c; color: var(--text); flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; text-transform: uppercase; }
+    .fr-name { flex: 1; min-width: 0; }
+    .fr-name .n { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fr-name .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .fr-cta { color: var(--muted); font-size: 20px; flex: 0 0 auto; }
+    .fr-btns { display: flex; gap: 6px; flex: 0 0 auto; }
+    .btn-sm { padding: 7px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--text); }
+    .btn-sm.ok { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-sm.ghost { background: transparent; color: var(--muted); }
+    .rec-card { display: flex; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      padding: 10px; margin-bottom: 8px; }
+    .rec-card img { width: 52px; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; flex: 0 0 auto; background: #22262f; }
+    .rec-card .rc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .rec-card .rc-t { font-size: 14px; font-weight: 600; line-height: 1.3; }
+    .rec-card .rc-from { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .rec-card .rc-note { font-size: 13px; color: #cdd3dd; margin-top: 6px; font-style: italic; }
+    .rec-card .rc-btns { display: flex; gap: 6px; margin-top: 10px; }
+
+    /* ---- Compare ---- */
+    #section-compare { padding-top: 4px; }
+    .cmp-back { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none;
+      color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px 0; margin-bottom: 10px; }
+    .cmp-head { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--line);
+      border-radius: 16px; padding: 16px; margin-bottom: 8px; }
+    .cmp-head .avatar { width: 48px; height: 48px; font-size: 20px; }
+    .cmp-head .ch-name { font-size: 18px; font-weight: 700; }
+    .cmp-head .ch-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+    .cmp-score { display: flex; gap: 8px; margin-bottom: 18px; }
+    .cmp-score .sc { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      padding: 12px; text-align: center; }
+    .cmp-score .sc .num { font-size: 22px; font-weight: 800; }
+    .cmp-score .sc .lab { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+    .cmp-score .sc.nice .num { color: var(--ok); }
+    .cmp-score .sc.shame .num { color: var(--accent); }
+    .cmp-sub { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 20px 0 10px; }
+    .cmp-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+    .cmp-row img { width: 44px; aspect-ratio: 2/3; object-fit: cover; border-radius: 7px; flex: 0 0 auto; background: #22262f; }
+    .cmp-row .cr-body { flex: 1; min-width: 0; }
+    .cmp-row .cr-t { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cmp-row .cr-p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .cmp-row .cr-p b { color: var(--text); font-weight: 600; }
+    .verdict { flex: 0 0 auto; font-size: 12px; font-weight: 800; padding: 5px 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: .3px; }
+    .verdict.nice { background: rgba(56,193,114,.18); color: var(--ok); }
+    .verdict.shame { background: rgba(255,90,95,.18); color: var(--accent); }
+    .verdict.even { background: #22262f; color: var(--muted); }
+    .verdict.done { background: rgba(74,144,217,.18); color: var(--watch); }
+
+    /* ---- Recommend in sheet ---- */
+    .rec-friends { display: flex; flex-wrap: wrap; gap: 8px; }
+    .rec-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px;
+      background: var(--field); border: 1px solid var(--line); color: var(--text); font-size: 13px; cursor: pointer; }
+    .rec-chip:disabled { opacity: .5; cursor: default; }
+    .rec-chip .av { width: 20px; height: 20px; border-radius: 50%; background: #2a303c; display: flex;
+      align-items: center; justify-content: center; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+
+    /* ---- Pépite (gem) ---- */
+    .gem-toggle { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 14px; border-radius: 10px;
+      border: 1px solid var(--line); background: transparent; color: var(--text); font-size: 14px; cursor: pointer; }
+    .gem-toggle .g { font-size: 18px; filter: grayscale(1); opacity: .6; }
+    .gem-toggle.on { border-color: #b98cff; color: #d9c2ff; }
+    .gem-toggle.on .g { filter: none; opacity: 1; }
+    .gem-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .poster .gemtag { position: absolute; top: 8px; left: 8px; font-size: 15px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+    /* horizontal shelf */
+    .shelf-wrap { margin-bottom: 22px; }
+    .shelf-title { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 0 0 10px; }
+    .shelf { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+    .shelf::-webkit-scrollbar { height: 6px; } .shelf::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+    .shelf .gemcard { flex: 0 0 96px; width: 96px; cursor: pointer; }
+    .shelf .gemcard img { width: 96px; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; background: #22262f; display: block; }
+    .shelf .gemcard .gt { font-size: 12px; margin-top: 6px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+    /* ---- Badges / hauts faits ---- */
+    .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .badge-item { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; }
+    .badge-item.locked { opacity: .45; }
+    .badge-item .bi-emoji { font-size: 22px; flex: 0 0 auto; }
+    .badge-item .bi-name { font-size: 13px; font-weight: 600; }
+    .badge-item .bi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .badge-item.earned .bi-name { color: var(--text); }
+    /* state label tones for shared series (neutral, no judgement) */
+    .verdict.st-done { background: rgba(56,193,114,.18); color: var(--ok); }
+    .verdict.st-progress { background: rgba(74,144,217,.18); color: var(--watch); }
+    .verdict.st-todo { background: #22262f; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -192,7 +298,8 @@
     </div>
     <div class="nav">
       <div class="navtab active" id="nav-search">Search</div>
-      <div class="navtab" id="nav-collection">My collection</div>
+      <div class="navtab" id="nav-collection">Collection</div>
+      <div class="navtab" id="nav-friends">Friends<span class="dot" id="friends-dot" hidden></span></div>
       <div class="navtab" id="nav-stats">Stats</div>
     </div>
     <div id="section-search">
@@ -205,6 +312,10 @@
       <div class="hint" id="hint"></div>
     </div>
     <div id="section-collection" hidden>
+      <div class="shelf-wrap" id="my-gems-wrap" hidden>
+        <div class="shelf-title">My gems 💎</div>
+        <div class="shelf" id="my-gems"></div>
+      </div>
       <div class="filters" id="filters">
         <div class="pill active" data-f="all">All</div>
         <div class="pill" data-f="watchlist">Watchlist</div>
@@ -224,9 +335,43 @@
         <div class="stat-row"><span>Movies</span><span id="stat-movies">—</span></div>
         <div class="stat-row"><span>Series</span><span id="stat-series">—</span></div>
         <div class="stat-note">Series time is an estimate based on episode runtimes.</div>
+        <div class="section-label" style="margin-top:26px">Achievements · <span id="badge-count">0</span> earned</div>
+        <div class="badge-grid" id="badge-grid"></div>
       </div>
     </div>
-    <div class="appfoot">Seen · v1.7</div>
+    <div id="section-friends" hidden>
+      <div class="fr-block">
+        <h3>Add a friend</h3>
+        <div class="fr-add">
+          <input id="fr-search" type="text" placeholder="Friend's username" autocapitalize="none" autocomplete="off" />
+          <button id="fr-search-btn">Find</button>
+        </div>
+        <div id="fr-search-results"></div>
+      </div>
+      <div class="fr-block" id="fr-inbox-block" hidden>
+        <h3>Recommended to you</h3>
+        <div id="fr-inbox"></div>
+      </div>
+      <div class="fr-block" id="fr-incoming-block" hidden>
+        <h3>Friend requests</h3>
+        <div id="fr-incoming"></div>
+      </div>
+      <div class="fr-block">
+        <h3>Your friends</h3>
+        <div id="fr-list"></div>
+        <div class="hint" id="fr-hint">Loading...</div>
+      </div>
+      <div class="fr-block" id="fr-outgoing-block" hidden>
+        <h3>Pending (sent)</h3>
+        <div id="fr-outgoing"></div>
+      </div>
+    </div>
+    <div id="section-compare" hidden>
+      <button class="cmp-back" id="cmp-back">‹ Friends</button>
+      <div id="cmp-body"></div>
+      <div class="hint" id="cmp-hint" hidden>Loading...</div>
+    </div>
+    <div class="appfoot">Seen · v2.1</div>
   </div>
 
   <!-- Detail sheet -->
@@ -271,6 +416,15 @@
           <span class="star" data-v="5">★</span>
         </div>
       </div>
+      <div class="sheet-section" id="gem-section" hidden>
+        <div class="sheet-label">Gem</div>
+        <button class="gem-toggle" id="gem-toggle"><span class="g">💎</span><span id="gem-label">Mark as a gem</span></button>
+        <div class="gem-hint" id="gem-hint"></div>
+      </div>
+      <div class="sheet-section" id="recommend-section" hidden>
+        <div class="sheet-label">Recommend to a friend</div>
+        <div class="rec-friends" id="rec-friends"></div>
+      </div>
       <button class="sheet-remove" id="sheet-remove" hidden>Remove from collection</button>
     </div>
   </div>
@@ -303,6 +457,8 @@
       collection=$("collection"), collectionHint=$("collection-hint"), toast=$("toast");
     const navStats=$("nav-stats"), sectionStats=$("section-stats"), statsHint=$("stats-hint"), statsBody=$("stats-body"), statTotal=$("stat-total"), statMovies=$("stat-movies"), statSeries=$("stat-series");
     const resultsLabel=$("results-label");
+    const navFriends=$("nav-friends"), sectionFriends=$("section-friends"), sectionCompare=$("section-compare"),
+      friendsDot=$("friends-dot"), frSearch=$("fr-search"), frSearchBtn=$("fr-search-btn"), frSearchResults=$("fr-search-results");
     const overlay=$("detail-overlay"), sheetPoster=$("sheet-poster"), sheetTitle=$("sheet-title"),
       sheetMeta=$("sheet-meta"), sheetOverview=$("sheet-overview"), statusSelect=$("status-select"),
       episodeSection=$("episode-section"), epSeason=$("ep-season"), epEpisode=$("ep-episode"),
@@ -326,9 +482,10 @@
 
     async function showApp(session){ currentUserId=session.user.id; authView.hidden=true; appView.hidden=false;
       const {data}=await client.from("profiles").select("username").eq("id",currentUserId).maybeSingle();
-      who.textContent=(data&&data.username)?data.username:session.user.email; await loadMyEntries(); showDiscover(); }
+      who.textContent=(data&&data.username)?data.username:session.user.email; await loadMyEntries();
+      loadFriendsCache(); refreshFriendsBadge(); showDiscover(); }
     function render(session){ if(session&&session.user){ showApp(session); }
-      else { currentUserId=null; myEntries={}; appView.hidden=true; authView.hidden=false; } }
+      else { currentUserId=null; myEntries={}; friendsCache=[]; compareFriend=null; appView.hidden=true; authView.hidden=false; } }
 
     submitBtn.onclick=async()=>{ const email=emailInput.value.trim(),password=passwordInput.value,username=usernameInput.value.trim();
       if(!email||!password){ setMsg("Please fill in email and password.","err"); return; }
@@ -344,14 +501,19 @@
     function showSection(name){
       navSearch.classList.toggle("active", name==="search");
       navCollection.classList.toggle("active", name==="collection");
+      navFriends.classList.toggle("active", name==="friends");
       navStats.classList.toggle("active", name==="stats");
       sectionSearch.hidden = name!=="search";
       sectionCollection.hidden = name!=="collection";
+      sectionFriends.hidden = name!=="friends";
       sectionStats.hidden = name!=="stats";
+      sectionCompare.hidden = true;
       if(name==="collection") loadCollection();
+      if(name==="friends") loadFriends();
       if(name==="stats") loadStats();
     }
-    navSearch.onclick=()=>showSection("search"); navCollection.onclick=()=>showSection("collection"); navStats.onclick=()=>showSection("stats");
+    navSearch.onclick=()=>showSection("search"); navCollection.onclick=()=>showSection("collection");
+    navFriends.onclick=()=>showSection("friends"); navStats.onclick=()=>showSection("stats");
 
     // ---- helpers ----
     function yearOf(item){ const d=item.release_date||item.first_air_date||""; return d?d.slice(0,4):""; }
@@ -360,11 +522,13 @@
 
     async function loadMyEntries(){
       const {data,error}=await client.from("entries")
-        .select("id, status, rating, last_season, last_episode, media:media_id ( tmdb_id, type )");
+        .select("id, status, rating, last_season, last_episode, is_gem, media:media_id ( tmdb_id, type )");
       myEntries={};
       if(!error&&data) data.forEach(e=>{ if(e.media&&e.media.tmdb_id!=null)
-        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode}; });
+        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,is_gem:e.is_gem}; });
     }
+    function gemCount(){ return Object.values(myEntries).filter(e=>e&&e.is_gem).length; }
+    const GEM_MAX=6;
 
     async function upsertMedia(fields){
       const {data,error}=await client.from("media").upsert(fields,{onConflict:"tmdb_id,type"}).select("id").single();
@@ -379,10 +543,10 @@
       const mediaId=await upsertMedia(mediaFields(display));
       const {data,error}=await client.from("entries")
         .upsert({user_id:currentUserId,media_id:mediaId,status},{onConflict:"user_id,media_id"})
-        .select("id,status,rating,last_season,last_episode").single();
+        .select("id,status,rating,last_season,last_episode,is_gem").single();
       if(error) throw error;
       const k=keyOf(display.tmdbId,display.type);
-      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode};
+      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,is_gem:data.is_gem};
       return myEntries[k];
     }
     async function ensureEntry(display,statusIfNew){
@@ -510,23 +674,39 @@
       if(entry.status==="watching"&&m.type==="tv"&&entry.last_season) progress=` · S${entry.last_season}E${entry.last_episode||1}`;
       const el=document.createElement("div"); el.className="poster";
       el.innerHTML=(m.poster_url?`<img class="cover" src="${m.poster_url}" alt="" loading="lazy" />`:`<div class="img">No image</div>`)+
+        (entry.is_gem?`<span class="gemtag">💎</span>`:``)+
         `<div class="info"><div class="t">${esc(m.title||"Untitled")}</div>
            <div class="m">${m.year||"—"}<span class="badge">${type}</span></div>
            <div style="margin-top:6px"><span class="status ${entry.status}">${statusLabel}${progress}</span></div></div>`;
       el.onclick=()=>openDetail(display,loadCollection);
       return el;
     }
+    function gemShelfCard(m, onClose){
+      const el=document.createElement("div"); el.className="gemcard";
+      el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" loading="lazy" />`:`<img alt="" />`)+
+        `<div class="gt">${esc(m.title||"Untitled")}</div>`;
+      el.onclick=()=>openDetail(displayFromMedia(m), onClose||null);
+      return el;
+    }
 
     async function loadCollection(){
       collection.innerHTML=""; collectionHint.hidden=false; collectionHint.textContent="Loading your collection...";
       let query=client.from("entries")
-        .select("id, status, rating, last_season, last_episode, added_at, media:media_id ( tmdb_id, type, title, poster_url, year )")
+        .select("id, status, rating, last_season, last_episode, is_gem, added_at, media:media_id ( tmdb_id, type, title, poster_url, year )")
         .order("added_at",{ascending:false});
       if(collectionFilter!=="all") query=query.eq("status",collectionFilter);
       const {data,error}=await query;
+      renderMyGems();
       if(error){ collectionHint.textContent="Could not load: "+error.message; return; }
       if(!data||!data.length){ collectionHint.textContent=collectionFilter==="all"?"Your collection is empty. Add titles from Search.":"Nothing here yet."; return; }
       currentDisplays=data.map(e=>displayFromMedia(e.media)); collectionHint.hidden=true; for(const entry of data) collection.appendChild(collectionCard(entry));
+    }
+    async function renderMyGems(){
+      const wrap=$("my-gems-wrap"), box=$("my-gems"); box.innerHTML="";
+      const {data}=await client.from("entries").select("media:media_id ( tmdb_id, type, title, poster_url, year )").eq("is_gem",true);
+      const rows=(data||[]).filter(e=>e.media);
+      if(!rows.length){ wrap.hidden=true; return; }
+      wrap.hidden=false; rows.forEach(e=>box.appendChild(gemShelfCard(e.media, loadCollection)));
     }
 
     // ---- detail sheet ----
@@ -565,7 +745,26 @@
       epSeason.value=(e&&e.last_season!=null)?e.last_season:"";
       epEpisode.value=(e&&e.last_episode!=null)?e.last_episode:"";
       sheetRemove.hidden=!e;
+      renderGem();
     }
+    function renderGem(){
+      const e=curEntry();
+      const sec=$("gem-section"), tog=$("gem-toggle"), lab=$("gem-label"), hint=$("gem-hint");
+      if(!e){ sec.hidden=true; return; }
+      sec.hidden=false;
+      const on=!!e.is_gem; tog.classList.toggle("on",on);
+      lab.textContent = on ? "One of your gems" : "Mark as a gem";
+      const c=gemCount();
+      hint.textContent = on ? "" : (c>=GEM_MAX ? ("Gem shelf full ("+GEM_MAX+"). Remove one first.") : (c+" / "+GEM_MAX+" gems used"));
+    }
+    $("gem-toggle").onclick=async()=>{
+      const e=curEntry(); if(!e) return;
+      const turnOn=!e.is_gem;
+      if(turnOn && gemCount()>=GEM_MAX){ showToast("Gem shelf full ("+GEM_MAX+" max)"); return; }
+      try{ await client.from("entries").update({is_gem:turnOn}).eq("id",e.entryId);
+        e.is_gem=turnOn; renderGem(); showToast(turnOn?"Added to gems 💎":"Removed from gems");
+      }catch(err){ showToast("Error: "+(err.message||err)); }
+    };
     function openDetail(display,onClose){
       detailOnClose=onClose||null;
       const list=(currentDisplays&&currentDisplays.length)?currentDisplays:[display];
@@ -582,7 +781,7 @@
       sheetMeta.textContent=(display.year||"—")+" · "+(display.type==="tv"?"Series":"Movie");
       if(display.poster_url){ sheetPoster.src=display.poster_url; sheetPoster.style.display=""; } else { sheetPoster.style.display="none"; }
       episodeSection.hidden=display.type!=="tv"; epTotal.textContent=""; providersSection.hidden=true;
-      sheetOverview.textContent="Loading..."; renderSheet();
+      sheetOverview.textContent="Loading..."; renderSheet(); renderRecommend();
       try{ const d=await fetchDetails(display.type,display.tmdbId); if(seq!==detailSeq) return;
         sheetOverview.textContent=d.overview||"No description available.";
         if(display.type==="tv"&&d.number_of_seasons) epTotal.textContent="Total: "+d.number_of_seasons+" seasons, "+(d.number_of_episodes||"?")+" episodes";
@@ -626,11 +825,43 @@
 
     function fmtHours(min){ min=Math.round(min); const h=Math.floor(min/60), m=min%60; return h>0 ? (h+" h "+(m<10?"0"+m:m)) : (m+" min"); }
     async function cacheMedia(id, fields){ try{ await client.from("media").update(fields).eq("id", id); }catch(e){} }
+
+    // ---- badges / achievements (computed from counts, nothing stored) ----
+    const BADGES=[
+      {id:"first",     emoji:"🎬", name:"First steps",  desc:"Add your first title", test:c=>c.total>=1,  prog:c=>Math.min(c.total,1)+"/1"},
+      {id:"cinephile", emoji:"🍿", name:"Cinephile",    desc:"10 films watched",     test:c=>c.movies>=10,prog:c=>c.movies+"/10"},
+      {id:"bigscreen", emoji:"🎞️", name:"Big screen",   desc:"25 films watched",     test:c=>c.movies>=25,prog:c=>c.movies+"/25"},
+      {id:"binger",    emoji:"📺", name:"Bingewatcher", desc:"5 series finished",    test:c=>c.series>=5, prog:c=>c.series+"/5"},
+      {id:"marathon",  emoji:"🏃", name:"Marathoner",   desc:"10 series finished",   test:c=>c.series>=10,prog:c=>c.series+"/10"},
+      {id:"critic",    emoji:"⭐", name:"Critic",        desc:"Rate 10 titles",       test:c=>c.rated>=10, prog:c=>c.rated+"/10"},
+      {id:"curator",   emoji:"💎", name:"Curator",       desc:"Pick 6 gems",          test:c=>c.gems>=6,   prog:c=>c.gems+"/6"},
+      {id:"library",   emoji:"📚", name:"Librarian",     desc:"50 titles total",      test:c=>c.total>=50, prog:c=>c.total+"/50"},
+    ];
+    function computeCounts(entries){
+      let movies=0, series=0, total=0, rated=0, gems=0;
+      for(const e of (entries||[])){ const m=e.media; if(!m) continue; total++;
+        if(m.type==="movie" && e.status==="watched") movies++;
+        if(m.type==="tv" && e.status==="watched") series++;
+        if(e.rating) rated++; if(e.is_gem) gems++; }
+      return {movies, series, total, rated, gems};
+    }
+    function badgeState(counts){ const all=BADGES.map(b=>({emoji:b.emoji,name:b.name,desc:b.desc,earned:b.test(counts),prog:b.prog(counts)}));
+      return {all, earnedCount:all.filter(b=>b.earned).length}; }
+    function renderBadges(counts){
+      const grid=$("badge-grid"), cnt=$("badge-count"); const {all, earnedCount}=badgeState(counts);
+      cnt.textContent=earnedCount; grid.innerHTML="";
+      all.forEach(b=>{ const el=document.createElement("div"); el.className="badge-item "+(b.earned?"earned":"locked");
+        el.innerHTML=`<span class="bi-emoji">${b.emoji}</span><div><div class="bi-name">${esc(b.name)}</div>
+          <div class="bi-sub">${b.earned?"Unlocked":esc(b.desc)+" ("+b.prog+")"}</div></div>`;
+        grid.appendChild(el); });
+    }
+
     async function loadStats(){
       statsBody.hidden=true; statsHint.hidden=false; statsHint.textContent="Computing your stats...";
       const { data, error } = await client.from("entries")
-        .select("status,last_season,last_episode,media:media_id(id,tmdb_id,type,runtime,avg_episode_runtime,total_episodes)");
+        .select("status,rating,is_gem,last_season,last_episode,media:media_id(id,tmdb_id,type,runtime,avg_episode_runtime,total_episodes)");
       if(error){ statsHint.textContent="Could not load: "+error.message; return; }
+      renderBadges(computeCounts(data));
       let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0;
       for(const e of (data||[])){
         const m=e.media; if(!m) continue;
@@ -661,6 +892,331 @@
       statSeries.textContent = seriesCount + " series · " + fmtHours(seriesMin);
       statsHint.hidden=true; statsBody.hidden=false;
     }
+    // ---- friends ----
+    let friendsCache=[];       // [{friendId, friendshipId, username, display_name}]
+    let compareFriend=null;
+
+    function initial(name){ return (String(name||"?").trim().charAt(0)) || "?"; }
+
+    async function fetchProfilesMap(ids){
+      const uniq=[...new Set((ids||[]).filter(Boolean))]; const map={};
+      if(!uniq.length) return map;
+      const {data}=await client.from("profiles").select("id,username,display_name").in("id",uniq);
+      (data||[]).forEach(p=>map[p.id]=p); return map;
+    }
+
+    // All friendships involving me, split by state.
+    async function loadFriendships(){
+      const {data,error}=await client.from("friendships").select("id,requester_id,addressee_id,status");
+      if(error||!data) return {accepted:[],incoming:[],outgoing:[]};
+      const accepted=[], incoming=[], outgoing=[];
+      for(const r of data){
+        const otherId = r.requester_id===currentUserId ? r.addressee_id : r.requester_id;
+        const rec={id:r.id, otherId, requester_id:r.requester_id, addressee_id:r.addressee_id, status:r.status};
+        if(r.status==="accepted") accepted.push(rec);
+        else if(r.addressee_id===currentUserId) incoming.push(rec);
+        else outgoing.push(rec);
+      }
+      return {accepted, incoming, outgoing};
+    }
+
+    async function loadFriendsCache(){
+      try{
+        const {accepted}=await loadFriendships();
+        const profs=await fetchProfilesMap(accepted.map(r=>r.otherId));
+        friendsCache=accepted.map(r=>({friendId:r.otherId, friendshipId:r.id,
+          username:(profs[r.otherId]&&profs[r.otherId].username)||"unknown",
+          display_name:(profs[r.otherId]&&profs[r.otherId].display_name)||null}));
+      }catch(_){}
+    }
+
+    async function refreshFriendsBadge(){
+      try{
+        const {incoming}=await loadFriendships();
+        const {data:recs}=await client.from("recommendations").select("id")
+          .eq("recipient_id",currentUserId).eq("status","pending");
+        const n=(incoming?incoming.length:0)+((recs&&recs.length)||0);
+        if(n>0){ friendsDot.textContent=n; friendsDot.hidden=false; } else { friendsDot.hidden=true; }
+      }catch(_){}
+    }
+
+    async function loadFriends(){
+      const listEl=$("fr-list"), hintEl=$("fr-hint");
+      hintEl.hidden=false; hintEl.textContent="Loading...";
+      const {accepted,incoming,outgoing}=await loadFriendships();
+      const profs=await fetchProfilesMap([...accepted,...incoming,...outgoing].map(r=>r.otherId));
+      friendsCache=accepted.map(r=>({friendId:r.otherId, friendshipId:r.id,
+        username:(profs[r.otherId]&&profs[r.otherId].username)||"unknown",
+        display_name:(profs[r.otherId]&&profs[r.otherId].display_name)||null}));
+      listEl.innerHTML="";
+      if(!friendsCache.length){ hintEl.hidden=false; hintEl.textContent="No friends yet. Add one by username above."; }
+      else { hintEl.hidden=true; friendsCache.forEach(f=>listEl.appendChild(friendRow(f))); }
+      renderRequests("fr-incoming-block","fr-incoming",incoming,profs,"incoming");
+      renderRequests("fr-outgoing-block","fr-outgoing",outgoing,profs,"outgoing");
+      loadInbox();
+      refreshFriendsBadge();
+    }
+
+    function friendRow(f){
+      const el=document.createElement("div"); el.className="fr-row tap";
+      el.innerHTML=`<div class="avatar">${esc(initial(f.username))}</div>
+        <div class="fr-name"><div class="n">${esc(f.username)}</div><div class="s">Tap to compare</div></div>
+        <span class="fr-cta">›</span>`;
+      el.onclick=()=>openCompare(f);
+      return el;
+    }
+
+    function renderRequests(blockId, boxId, rows, profs, kind){
+      const block=$(blockId), box=$(boxId); box.innerHTML="";
+      if(!rows.length){ block.hidden=true; return; }
+      block.hidden=false;
+      rows.forEach(r=>{
+        const uname=(profs[r.otherId]&&profs[r.otherId].username)||"unknown";
+        const el=document.createElement("div"); el.className="fr-row";
+        el.innerHTML=`<div class="avatar">${esc(initial(uname))}</div>
+          <div class="fr-name"><div class="n">${esc(uname)}</div><div class="s">${kind==="incoming"?"wants to be friends":"request sent"}</div></div>`;
+        const btns=document.createElement("div"); btns.className="fr-btns";
+        if(kind==="incoming"){
+          const ok=document.createElement("button"); ok.className="btn-sm ok"; ok.textContent="Accept";
+          ok.onclick=async()=>{ ok.disabled=true; await acceptRequest(r.id); loadFriends(); loadFriendsCache(); };
+          btns.appendChild(ok);
+        }
+        const no=document.createElement("button"); no.className="btn-sm ghost"; no.textContent=kind==="incoming"?"Decline":"Cancel";
+        no.onclick=async()=>{ no.disabled=true; await deleteFriendship(r.id); loadFriends(); };
+        btns.appendChild(no); el.appendChild(btns); box.appendChild(el);
+      });
+    }
+
+    async function acceptRequest(id){
+      const {error}=await client.from("friendships").update({status:"accepted",responded_at:new Date().toISOString()}).eq("id",id);
+      showToast(error?"Could not accept":"Friend added");
+    }
+    async function deleteFriendship(id){
+      const {error}=await client.from("friendships").delete().eq("id",id);
+      if(error) showToast("Error");
+    }
+    async function sendRequest(addresseeId){
+      const {error}=await client.from("friendships").insert({requester_id:currentUserId, addressee_id:addresseeId, status:"pending"});
+      if(error){ showToast(/duplicate|unique/i.test(error.message)?"Already linked":"Could not send request"); return false; }
+      showToast("Request sent"); return true;
+    }
+
+    // ---- add a friend by username ----
+    function relLabel(text,color){ const s=document.createElement("span"); s.style.color=color||"var(--muted)"; s.style.fontSize="13px"; s.textContent=text; return s; }
+    function userResultRow(p, relation){
+      const el=document.createElement("div"); el.className="fr-row";
+      el.innerHTML=`<div class="avatar">${esc(initial(p.username))}</div>
+        <div class="fr-name"><div class="n">${esc(p.username)}</div></div>`;
+      const slot=document.createElement("div"); slot.className="fr-btns";
+      if(relation==="friend") slot.appendChild(relLabel("Friends","var(--ok)"));
+      else if(relation==="sent") slot.appendChild(relLabel("Sent"));
+      else if(relation==="incoming") slot.appendChild(relLabel("Wants to add you","var(--watch)"));
+      else {
+        const add=document.createElement("button"); add.className="btn-sm ok"; add.textContent="Add";
+        add.onclick=async()=>{ add.disabled=true; const ok=await sendRequest(p.id);
+          if(ok){ add.textContent="Sent"; add.className="btn-sm ghost"; refreshFriendsBadge(); } else add.disabled=false; };
+        slot.appendChild(add);
+      }
+      el.appendChild(slot); return el;
+    }
+    async function searchUsers(){
+      const term=frSearch.value.trim(); frSearchResults.innerHTML="";
+      if(term.length<2){ return; }
+      frSearchBtn.disabled=true;
+      try{
+        const {data}=await client.from("profiles").select("id,username,display_name").ilike("username",term+"%").limit(10);
+        const rows=(data||[]).filter(p=>p.id!==currentUserId);
+        if(!rows.length){ frSearchResults.innerHTML=`<div class="hint" style="margin-top:10px">No user found for "${esc(term)}".</div>`; return; }
+        const {accepted,incoming,outgoing}=await loadFriendships();
+        const rel={}; accepted.forEach(r=>rel[r.otherId]="friend");
+        outgoing.forEach(r=>rel[r.otherId]="sent"); incoming.forEach(r=>rel[r.otherId]="incoming");
+        rows.forEach(p=>frSearchResults.appendChild(userResultRow(p, rel[p.id])));
+      }catch(e){ frSearchResults.innerHTML=`<div class="hint" style="margin-top:10px">Search failed.</div>`; }
+      finally{ frSearchBtn.disabled=false; }
+    }
+    frSearchBtn.onclick=searchUsers;
+    frSearch.addEventListener("keydown", e=>{ if(e.key==="Enter") searchUsers(); });
+
+    // ---- recommendations inbox (received) ----
+    async function loadInbox(){
+      const block=$("fr-inbox-block"), box=$("fr-inbox"); box.innerHTML="";
+      const {data}=await client.from("recommendations")
+        .select("id,note,sender_id,status,media:media_id(tmdb_id,type,title,poster_url,year)")
+        .eq("recipient_id",currentUserId).eq("status","pending").order("created_at",{ascending:false});
+      const rows=data||[];
+      if(!rows.length){ block.hidden=true; return; }
+      const profs=await fetchProfilesMap(rows.map(r=>r.sender_id));
+      block.hidden=false; rows.forEach(r=>box.appendChild(inboxCard(r,profs)));
+    }
+    function inboxCard(r, profs){
+      const m=r.media||{}; const sender=(profs[r.sender_id]&&profs[r.sender_id].username)||"A friend";
+      const el=document.createElement("div"); el.className="rec-card";
+      el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
+        `<div class="rc-body">
+           <div class="rc-t">${esc(m.title||"Untitled")}</div>
+           <div class="rc-from">from ${esc(sender)}${m.year?" · "+m.year:""}</div>
+           ${r.note?`<div class="rc-note">"${esc(r.note)}"</div>`:""}
+           <div class="rc-btns"></div>
+         </div>`;
+      const btns=el.querySelector(".rc-btns");
+      const add=document.createElement("button"); add.className="btn-sm ok"; add.textContent="Add to watchlist";
+      const no=document.createElement("button"); no.className="btn-sm ghost"; no.textContent="Dismiss";
+      add.onclick=async()=>{ add.disabled=true;
+        const display={tmdbId:m.tmdb_id, type:m.type, title:m.title, year:m.year, poster_url:m.poster_url};
+        try{ await setStatusByDisplay(display,"watchlist");
+          await client.from("recommendations").update({status:"added"}).eq("id",r.id);
+          showToast("Added to watchlist"); loadFriends();
+        }catch(e){ add.disabled=false; showToast("Error"); } };
+      no.onclick=async()=>{ no.disabled=true;
+        await client.from("recommendations").update({status:"dismissed"}).eq("id",r.id); loadFriends(); };
+      btns.appendChild(add); btns.appendChild(no); return el;
+    }
+
+    // ---- recommend a title to a friend (from the detail sheet) ----
+    function renderRecommend(){
+      const sec=$("recommend-section"), box=$("rec-friends"); box.innerHTML="";
+      if(!friendsCache.length || !detailDisplay){ sec.hidden=true; return; }
+      sec.hidden=false;
+      friendsCache.forEach(f=>{
+        const chip=document.createElement("button"); chip.className="rec-chip";
+        chip.innerHTML=`<span class="av">${esc(initial(f.username))}</span>${esc(f.username)}`;
+        chip.onclick=async()=>{ chip.disabled=true;
+          const ok=await recommendTo(f.friendId, detailDisplay);
+          if(ok){ chip.innerHTML=`<span class="av">${esc(initial(f.username))}</span>Sent ✓`; }
+          else chip.disabled=false;
+        };
+        box.appendChild(chip);
+      });
+    }
+    async function recommendTo(recipientId, display){
+      try{
+        const mediaId=await upsertMedia(mediaFields(display));
+        const {error}=await client.from("recommendations")
+          .insert({sender_id:currentUserId, recipient_id:recipientId, media_id:mediaId, status:"pending"});
+        if(error){ if(/duplicate|unique/i.test(error.message)){ showToast("Already recommended"); return true; }
+          showToast("Could not send"); return false; }
+        showToast("Recommended"); return true;
+      }catch(e){ showToast("Error: "+(e.message||e)); return false; }
+    }
+
+    // ---- compare ----
+    $("cmp-back").onclick=()=>showSection("friends");
+
+    function progRank(e){
+      if(e.status==="watched") return Number.MAX_SAFE_INTEGER;
+      if(e.status==="watching"){ return (e.last_season||1)*1000 + (e.last_episode||0); }
+      return -1;
+    }
+    function progLabel(e){
+      if(!e) return "—";
+      if(e.status==="watched") return "Finished";
+      if(e.status==="watching") return "S"+(e.last_season||1)+"E"+(e.last_episode||0);
+      if(e.status==="watchlist") return "Watchlist";
+      return "—";
+    }
+    function pstate(e){ if(!e) return "todo"; if(e.status==="watched") return "done"; if(e.status==="watching") return "progress"; return "todo"; }
+    function seriesState(me, th, name){
+      const a=pstate(me), b=pstate(th);
+      if(a==="done" && b==="done") return {label:"Seen by both ✓", tone:"st-done"};
+      if(a==="progress" && b==="progress") return {label:"Both watching", tone:"st-progress"};
+      if(a==="done" && b==="progress") return {label:name+" still on it", tone:"st-progress"};
+      if(a==="progress" && b==="done") return {label:name+" finished it", tone:"st-progress"};
+      if(a==="done" && b==="todo") return {label:name+" hasn't started", tone:"st-todo"};
+      if(a==="todo" && b==="done") return {label:name+" finished it", tone:"st-todo"};
+      if(a==="progress" && b==="todo") return {label:name+" hasn't started", tone:"st-todo"};
+      if(a==="todo" && b==="progress") return {label:name+" is watching", tone:"st-todo"};
+      return {label:"Both to watch", tone:"st-todo"};
+    }
+    async function fetchEntriesFull(userId){
+      const {data,error}=await client.from("entries")
+        .select("status,rating,is_gem,last_season,last_episode,media:media_id(tmdb_id,type,title,poster_url,year)")
+        .eq("user_id",userId);
+      if(error) return [];
+      return (data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
+    }
+    async function openCompare(friend){
+      compareFriend=friend;
+      sectionSearch.hidden=true; sectionCollection.hidden=true; sectionFriends.hidden=true;
+      sectionStats.hidden=true; sectionCompare.hidden=false;
+      const body=$("cmp-body"), hint=$("cmp-hint");
+      body.innerHTML=""; hint.hidden=false; hint.textContent="Loading "+friend.username+"'s collection...";
+      const [mine, theirs]=await Promise.all([ fetchEntriesFull(currentUserId), fetchEntriesFull(friend.friendId) ]);
+      hint.hidden=true; renderCompare(friend, mine, theirs);
+    }
+    function renderCompare(friend, mine, theirs){
+      const body=$("cmp-body");
+      const keyE=e=>e.media.tmdb_id+"_"+e.media.type;
+      const mineMap={}, theirMap={};
+      mine.forEach(e=>mineMap[keyE(e)]=e); theirs.forEach(e=>theirMap[keyE(e)]=e);
+      const rows=[];
+      Object.keys(mineMap).forEach(k=>{
+        const me=mineMap[k], th=theirMap[k];
+        if(!th || me.media.type!=="tv") return;
+        rows.push({media:me.media, me, th, st:seriesState(me,th,friend.username)});
+      });
+      const tOrder={"st-progress":0,"st-done":1,"st-todo":2};
+      rows.sort((a,b)=> (tOrder[a.st.tone]-tOrder[b.st.tone]) || (a.media.title||"").localeCompare(b.media.title||""));
+
+      const theirGems=theirs.filter(e=>e.is_gem);
+      const theyOnly=theirs.filter(e=>e.status==="watched" && !mineMap[keyE(e)]);
+      const {earnedCount}=badgeState(computeCounts(theirs));
+      const watched=theirs.filter(e=>e.status==="watched").length;
+
+      currentDisplays=rows.map(r=>displayFromMedia(r.media));
+
+      const av=esc(initial(friend.username));
+      body.innerHTML=`<div class="cmp-head">
+          <div class="avatar">${av}</div>
+          <div style="flex:1"><div class="ch-name">${esc(friend.username)}</div>
+            <div class="ch-sub">🏅 ${earnedCount} badge${earnedCount===1?"":"s"} · ${watched} watched · 💎 ${theirGems.length}</div></div>
+          <button class="btn-sm ghost" id="cmp-remove">Remove</button>
+        </div>`;
+
+      const rmBtn=$("cmp-remove"); let removeArmed=false;
+      rmBtn.onclick=async()=>{ if(!removeArmed){ removeArmed=true; rmBtn.textContent="Sure?"; setTimeout(()=>{ removeArmed=false; rmBtn.textContent="Remove"; },2500); return; }
+        await client.from("friendships").delete().eq("id",friend.friendshipId);
+        showToast("Removed"); compareFriend=null; await loadFriendsCache(); showSection("friends"); };
+
+      if(theirGems.length){
+        const wrap=document.createElement("div"); wrap.className="shelf-wrap";
+        wrap.innerHTML=`<div class="shelf-title">${esc(friend.username)}'s gems 💎</div>`;
+        const shelf=document.createElement("div"); shelf.className="shelf";
+        theirGems.forEach(e=>shelf.appendChild(gemShelfCard(e.media, ()=>{ if(compareFriend) openCompare(compareFriend); })));
+        wrap.appendChild(shelf); body.appendChild(wrap);
+      }
+      if(rows.length){
+        const lab=document.createElement("div"); lab.className="cmp-sub"; lab.textContent="Series in common"; body.appendChild(lab);
+        rows.forEach(r=>body.appendChild(compareRow(r)));
+      }
+      if(theyOnly.length){
+        const lab=document.createElement("div"); lab.className="cmp-sub"; lab.textContent=friend.username+" watched, you haven't"; body.appendChild(lab);
+        theyOnly.slice(0,24).forEach(e=>body.appendChild(discoverRow(e)));
+      }
+      if(!rows.length && !theyOnly.length && !theirGems.length){
+        const h=document.createElement("div"); h.className="hint"; h.textContent="Nothing in common yet. Add more titles or recommend one to "+friend.username+"."; body.appendChild(h);
+      }
+    }
+    function compareRow(r){
+      const m=r.media;
+      const el=document.createElement("div"); el.className="cmp-row";
+      el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
+        `<div class="cr-body"><div class="cr-t">${esc(m.title)}</div>
+           <div class="cr-p">You <b>${progLabel(r.me)}</b> · ${esc(compareFriend.username)} <b>${progLabel(r.th)}</b></div></div>
+         <span class="verdict ${r.st.tone}">${esc(r.st.label)}</span>`;
+      el.onclick=()=>openDetail(displayFromMedia(m), ()=>{ if(compareFriend) openCompare(compareFriend); });
+      return el;
+    }
+    function discoverRow(e){
+      const m=e.media;
+      const el=document.createElement("div"); el.className="cmp-row";
+      el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
+        `<div class="cr-body"><div class="cr-t">${esc(m.title)}</div>
+           <div class="cr-p">${m.type==="tv"?"Series":"Movie"}${m.year?" · "+m.year:""} · not in your collection</div></div>
+         <span class="fr-cta">+</span>`;
+      el.onclick=()=>openDetail(displayFromMedia(m), ()=>{ if(compareFriend) openCompare(compareFriend); });
+      return el;
+    }
+
     client.auth.getSession().then(({data})=>render(data.session));
     client.auth.onAuthStateChange((_e,session)=>render(session));
   </script>
