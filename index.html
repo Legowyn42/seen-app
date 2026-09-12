@@ -406,7 +406,7 @@
       <div id="cmp-body"></div>
       <div class="hint" id="cmp-hint" hidden>Loading...</div>
     </div>
-    <div class="appfoot">Seen · v2.2.1</div>
+    <div class="appfoot">Seen · v2.2.2</div>
   </div>
 
   <!-- Detail sheet -->
@@ -571,7 +571,8 @@
 
     async function loadMyEntries(){
       const {data,error}=await client.from("entries")
-        .select("id, status, rating, last_season, last_episode, is_gem, rewatch_count, media:media_id ( tmdb_id, type )");
+        .select("id, status, rating, last_season, last_episode, is_gem, rewatch_count, media:media_id ( tmdb_id, type )")
+        .eq("user_id", currentUserId);
       myEntries={};
       if(!error&&data) data.forEach(e=>{ if(e.media&&e.media.tmdb_id!=null)
         myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,is_gem:e.is_gem,rewatch_count:e.rewatch_count||0}; });
@@ -659,7 +660,7 @@
       results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Finding recommendations...";
       let seeds=[];
       try{
-        const { data } = await client.from("entries").select("rating, media:media_id(tmdb_id,type)").eq("status","watched");
+        const { data } = await client.from("entries").select("rating, media:media_id(tmdb_id,type)").eq("user_id", currentUserId).eq("status","watched");
         seeds=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
       }catch(_){}
       if(seq!==searchSeq) return;
@@ -743,6 +744,7 @@
       collection.innerHTML=""; collectionHint.hidden=false; collectionHint.textContent="Loading your collection...";
       let query=client.from("entries")
         .select("id, status, rating, last_season, last_episode, is_gem, rewatch_count, added_at, media:media_id ( tmdb_id, type, title, poster_url, year )")
+        .eq("user_id", currentUserId)
         .order("added_at",{ascending:false});
       if(collectionFilter!=="all") query=query.eq("status",collectionFilter);
       const {data,error}=await query;
@@ -753,7 +755,7 @@
     }
     async function renderMyGems(){
       const wrap=$("my-gems-wrap"), box=$("my-gems"); box.innerHTML="";
-      const {data}=await client.from("entries").select("media:media_id ( tmdb_id, type, title, poster_url, year )").eq("is_gem",true);
+      const {data}=await client.from("entries").select("media:media_id ( tmdb_id, type, title, poster_url, year )").eq("user_id", currentUserId).eq("is_gem",true);
       const rows=(data||[]).filter(e=>e.media);
       if(!rows.length){ wrap.hidden=true; return; }
       wrap.hidden=false; rows.forEach(e=>box.appendChild(gemShelfCard(e.media, loadCollection)));
@@ -765,6 +767,7 @@
       list.innerHTML=""; hint.hidden=false; hint.textContent="Checking release dates...";
       const {data,error}=await client.from("entries")
         .select("status,last_season,last_episode,media:media_id(tmdb_id,type,title,poster_url,year)")
+        .eq("user_id", currentUserId)
         .in("status",["watchlist","watching"]);
       if(error){ hint.textContent="Could not load: "+error.message; return; }
       const entries=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
@@ -1004,7 +1007,8 @@
     async function loadStats(){
       statsBody.hidden=true; statsHint.hidden=false; statsHint.textContent="Computing your stats...";
       const { data, error } = await client.from("entries")
-        .select("status,rating,is_gem,rewatch_count,last_season,last_episode,media:media_id(id,tmdb_id,type,year,runtime,avg_episode_runtime,total_episodes)");
+        .select("status,rating,is_gem,rewatch_count,last_season,last_episode,media:media_id(id,tmdb_id,type,year,runtime,avg_episode_runtime,total_episodes)")
+        .eq("user_id", currentUserId);
       if(error){ statsHint.textContent="Could not load: "+error.message; return; }
       renderBadges(computeCounts(data));
       let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0, ratingSum=0, ratingN=0, rewatchTotal=0;
