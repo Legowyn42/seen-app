@@ -161,7 +161,9 @@
     #toast.show { opacity: 1; }
 
     /* ---- Friends ---- */
-    .nav .navtab { font-size: 14px; padding: 10px 6px; position: relative; }
+    .nav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav .navtab { flex: 0 0 auto; font-size: 14px; padding: 10px 16px; position: relative; }
     .navtab .dot { position: absolute; top: 5px; right: 8px; min-width: 16px; height: 16px; padding: 0 4px;
       border-radius: 999px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700;
       display: flex; align-items: center; justify-content: center; line-height: 1; }
@@ -252,6 +254,16 @@
     .shelf .gemcard .gt { font-size: 12px; margin-top: 6px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
+    /* ---- Rewatch ---- */
+    .rw-row { display: flex; align-items: center; gap: 12px; }
+    .rw-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: transparent;
+      color: var(--text); font-size: 20px; line-height: 1; cursor: pointer; }
+    .rw-btn:disabled { opacity: .4; cursor: default; }
+    .rw-count { font-size: 20px; font-weight: 700; min-width: 24px; text-align: center; }
+    .rw-hint { font-size: 12px; color: var(--muted); }
+    .poster .rwtag { position: absolute; bottom: 8px; right: 8px; font-size: 10px; font-weight: 700; padding: 2px 6px;
+      border-radius: 6px; background: rgba(0,0,0,.6); color: #fff; }
+
     /* ---- Badges / hauts faits ---- */
     .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
     .badge-item { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line);
@@ -261,6 +273,16 @@
     .badge-item .bi-name { font-size: 13px; font-weight: 600; }
     .badge-item .bi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
     .badge-item.earned .bi-name { color: var(--text); }
+    /* stat bars + people */
+    .bar-row { margin-bottom: 9px; }
+    .bar-row .bl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+    .bar-row .bl .bn { color: var(--text); } .bar-row .bl .bv { color: var(--muted); }
+    .bar-track { height: 8px; background: var(--field); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent); }
+    .person-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 7px; font-size: 14px; }
+    .person-row .pv { color: var(--muted); font-size: 12px; }
+    .stat-empty { color: var(--muted); font-size: 13px; margin-bottom: 4px; }
     /* state label tones for shared series (neutral, no judgement) */
     .verdict.st-done { background: rgba(56,193,114,.18); color: var(--ok); }
     .verdict.st-progress { background: rgba(74,144,217,.18); color: var(--watch); }
@@ -299,6 +321,7 @@
     <div class="nav">
       <div class="navtab active" id="nav-search">Search</div>
       <div class="navtab" id="nav-collection">Collection</div>
+      <div class="navtab" id="nav-upcoming">Soon</div>
       <div class="navtab" id="nav-friends">Friends<span class="dot" id="friends-dot" hidden></span></div>
       <div class="navtab" id="nav-stats">Stats</div>
     </div>
@@ -334,10 +357,22 @@
         </div>
         <div class="stat-row"><span>Movies</span><span id="stat-movies">—</span></div>
         <div class="stat-row"><span>Series</span><span id="stat-series">—</span></div>
+        <div class="stat-row"><span>Average rating</span><span id="stat-avg">—</span></div>
+        <div class="stat-row"><span>Rewatches</span><span id="stat-rewatch">—</span></div>
         <div class="stat-note">Series time is an estimate based on episode runtimes.</div>
+        <div class="section-label" style="margin-top:26px">Top genres</div>
+        <div id="stat-genres"></div>
+        <div class="section-label" style="margin-top:20px">By decade</div>
+        <div id="stat-decades"></div>
+        <div class="section-label" style="margin-top:20px">Most-watched people</div>
+        <div id="stat-people"></div>
         <div class="section-label" style="margin-top:26px">Achievements · <span id="badge-count">0</span> earned</div>
         <div class="badge-grid" id="badge-grid"></div>
       </div>
+    </div>
+    <div id="section-upcoming" hidden>
+      <div class="hint" id="upcoming-hint">Loading what's coming...</div>
+      <div id="upcoming-list"></div>
     </div>
     <div id="section-friends" hidden>
       <div class="fr-block">
@@ -371,7 +406,7 @@
       <div id="cmp-body"></div>
       <div class="hint" id="cmp-hint" hidden>Loading...</div>
     </div>
-    <div class="appfoot">Seen · v2.1</div>
+    <div class="appfoot">Seen · v2.2</div>
   </div>
 
   <!-- Detail sheet -->
@@ -416,6 +451,15 @@
           <span class="star" data-v="5">★</span>
         </div>
       </div>
+      <div class="sheet-section" id="rewatch-section" hidden>
+        <div class="sheet-label">Rewatches</div>
+        <div class="rw-row">
+          <button class="rw-btn" id="rw-minus">−</button>
+          <span class="rw-count" id="rw-count">0</span>
+          <button class="rw-btn" id="rw-plus">+</button>
+          <span class="rw-hint" id="rw-hint"></span>
+        </div>
+      </div>
       <div class="sheet-section" id="gem-section" hidden>
         <div class="sheet-label">Gem</div>
         <button class="gem-toggle" id="gem-toggle"><span class="g">💎</span><span id="gem-label">Mark as a gem</span></button>
@@ -455,10 +499,11 @@
       navCollection=$("nav-collection"), sectionSearch=$("section-search"), sectionCollection=$("section-collection"),
       q=$("q"), searchBtn=$("searchBtn"), results=$("results"), hint=$("hint"), filters=$("filters"),
       collection=$("collection"), collectionHint=$("collection-hint"), toast=$("toast");
-    const navStats=$("nav-stats"), sectionStats=$("section-stats"), statsHint=$("stats-hint"), statsBody=$("stats-body"), statTotal=$("stat-total"), statMovies=$("stat-movies"), statSeries=$("stat-series");
+    const navStats=$("nav-stats"), sectionStats=$("section-stats"), statsHint=$("stats-hint"), statsBody=$("stats-body"), statTotal=$("stat-total"), statMovies=$("stat-movies"), statSeries=$("stat-series"), statAvg=$("stat-avg"), statRewatch=$("stat-rewatch");
     const resultsLabel=$("results-label");
     const navFriends=$("nav-friends"), sectionFriends=$("section-friends"), sectionCompare=$("section-compare"),
       friendsDot=$("friends-dot"), frSearch=$("fr-search"), frSearchBtn=$("fr-search-btn"), frSearchResults=$("fr-search-results");
+    const navUpcoming=$("nav-upcoming"), sectionUpcoming=$("section-upcoming");
     const overlay=$("detail-overlay"), sheetPoster=$("sheet-poster"), sheetTitle=$("sheet-title"),
       sheetMeta=$("sheet-meta"), sheetOverview=$("sheet-overview"), statusSelect=$("status-select"),
       episodeSection=$("episode-section"), epSeason=$("ep-season"), epEpisode=$("ep-episode"),
@@ -501,18 +546,22 @@
     function showSection(name){
       navSearch.classList.toggle("active", name==="search");
       navCollection.classList.toggle("active", name==="collection");
+      navUpcoming.classList.toggle("active", name==="upcoming");
       navFriends.classList.toggle("active", name==="friends");
       navStats.classList.toggle("active", name==="stats");
       sectionSearch.hidden = name!=="search";
       sectionCollection.hidden = name!=="collection";
+      sectionUpcoming.hidden = name!=="upcoming";
       sectionFriends.hidden = name!=="friends";
       sectionStats.hidden = name!=="stats";
       sectionCompare.hidden = true;
       if(name==="collection") loadCollection();
+      if(name==="upcoming") loadUpcoming();
       if(name==="friends") loadFriends();
       if(name==="stats") loadStats();
     }
     navSearch.onclick=()=>showSection("search"); navCollection.onclick=()=>showSection("collection");
+    navUpcoming.onclick=()=>showSection("upcoming");
     navFriends.onclick=()=>showSection("friends"); navStats.onclick=()=>showSection("stats");
 
     // ---- helpers ----
@@ -522,10 +571,10 @@
 
     async function loadMyEntries(){
       const {data,error}=await client.from("entries")
-        .select("id, status, rating, last_season, last_episode, is_gem, media:media_id ( tmdb_id, type )");
+        .select("id, status, rating, last_season, last_episode, is_gem, rewatch_count, media:media_id ( tmdb_id, type )");
       myEntries={};
       if(!error&&data) data.forEach(e=>{ if(e.media&&e.media.tmdb_id!=null)
-        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,is_gem:e.is_gem}; });
+        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,is_gem:e.is_gem,rewatch_count:e.rewatch_count||0}; });
     }
     function gemCount(){ return Object.values(myEntries).filter(e=>e&&e.is_gem).length; }
     const GEM_MAX=6;
@@ -543,10 +592,10 @@
       const mediaId=await upsertMedia(mediaFields(display));
       const {data,error}=await client.from("entries")
         .upsert({user_id:currentUserId,media_id:mediaId,status},{onConflict:"user_id,media_id"})
-        .select("id,status,rating,last_season,last_episode,is_gem").single();
+        .select("id,status,rating,last_season,last_episode,is_gem,rewatch_count").single();
       if(error) throw error;
       const k=keyOf(display.tmdbId,display.type);
-      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,is_gem:data.is_gem};
+      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,is_gem:data.is_gem,rewatch_count:data.rewatch_count||0};
       return myEntries[k];
     }
     async function ensureEntry(display,statusIfNew){
@@ -675,6 +724,7 @@
       const el=document.createElement("div"); el.className="poster";
       el.innerHTML=(m.poster_url?`<img class="cover" src="${m.poster_url}" alt="" loading="lazy" />`:`<div class="img">No image</div>`)+
         (entry.is_gem?`<span class="gemtag">💎</span>`:``)+
+        (entry.rewatch_count>0?`<span class="rwtag">↻ ${entry.rewatch_count}</span>`:``)+
         `<div class="info"><div class="t">${esc(m.title||"Untitled")}</div>
            <div class="m">${m.year||"—"}<span class="badge">${type}</span></div>
            <div style="margin-top:6px"><span class="status ${entry.status}">${statusLabel}${progress}</span></div></div>`;
@@ -692,7 +742,7 @@
     async function loadCollection(){
       collection.innerHTML=""; collectionHint.hidden=false; collectionHint.textContent="Loading your collection...";
       let query=client.from("entries")
-        .select("id, status, rating, last_season, last_episode, is_gem, added_at, media:media_id ( tmdb_id, type, title, poster_url, year )")
+        .select("id, status, rating, last_season, last_episode, is_gem, rewatch_count, added_at, media:media_id ( tmdb_id, type, title, poster_url, year )")
         .order("added_at",{ascending:false});
       if(collectionFilter!=="all") query=query.eq("status",collectionFilter);
       const {data,error}=await query;
@@ -707,6 +757,56 @@
       const rows=(data||[]).filter(e=>e.media);
       if(!rows.length){ wrap.hidden=true; return; }
       wrap.hidden=false; rows.forEach(e=>box.appendChild(gemShelfCard(e.media, loadCollection)));
+    }
+
+    // ---- upcoming ("Soon") ----
+    async function loadUpcoming(){
+      const hint=$("upcoming-hint"), list=$("upcoming-list");
+      list.innerHTML=""; hint.hidden=false; hint.textContent="Checking release dates...";
+      const {data,error}=await client.from("entries")
+        .select("status,last_season,last_episode,media:media_id(tmdb_id,type,title,poster_url,year)")
+        .in("status",["watchlist","watching"]);
+      if(error){ hint.textContent="Could not load: "+error.message; return; }
+      const entries=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
+      if(!entries.length){ hint.textContent="Add films or series to your watchlist to see what's coming."; return; }
+      const today=new Date(); today.setHours(0,0,0,0); const DAY=86400000;
+      const items=await Promise.all(entries.map(async e=>{
+        const m=e.media;
+        try{
+          const d=await fetchDetails(m.type, m.tmdb_id);
+          let date=null, kind="", next=null;
+          if(m.type==="movie"){ date=d.release_date||null; kind="release"; }
+          else if(d.next_episode_to_air && d.next_episode_to_air.air_date){ date=d.next_episode_to_air.air_date; kind="episode"; next=d.next_episode_to_air; }
+          else if(e.status==="watchlist" && d.first_air_date){ date=d.first_air_date; kind="premiere"; }
+          else if(d.last_episode_to_air && d.last_episode_to_air.air_date){ date=d.last_episode_to_air.air_date; kind="last"; }
+          if(!date) return null;
+          return {media:m, date:new Date(date+"T00:00:00"), rawdate:date, kind, next};
+        }catch(_){ return null; }
+      }));
+      let rows=items.filter(Boolean).filter(r=>((r.date-today)/DAY)>=-30);
+      rows.sort((a,b)=> a.date-b.date);
+      if(!rows.length){ hint.textContent="Nothing on the horizon from your lists right now."; return; }
+      hint.hidden=true;
+      currentDisplays=rows.map(r=>displayFromMedia(r.media));
+      rows.forEach(r=>list.appendChild(upcomingRow(r, today, DAY)));
+    }
+    function upcomingRow(r, today, DAY){
+      const m=r.media; const diff=Math.round((r.date-today)/DAY);
+      let badge, tone;
+      if(diff>0){ badge = diff===1?"Tomorrow":("In "+diff+" days"); tone="st-progress"; }
+      else if(diff===0){ badge="Today"; tone="st-done"; }
+      else { badge="Out now"; tone="st-done"; }
+      let sub;
+      if(m.type==="movie") sub="Movie · "+r.rawdate;
+      else if(r.kind==="episode" && r.next) sub="Next: S"+r.next.season_number+"E"+r.next.episode_number+" · "+r.rawdate;
+      else if(r.kind==="premiere") sub="Series premiere · "+r.rawdate;
+      else sub="Series · latest "+r.rawdate;
+      const el=document.createElement("div"); el.className="cmp-row";
+      el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
+        `<div class="cr-body"><div class="cr-t">${esc(m.title)}</div><div class="cr-p">${esc(sub)}</div></div>
+         <span class="verdict ${tone}">${esc(badge)}</span>`;
+      el.onclick=()=>openDetail(displayFromMedia(m), loadUpcoming);
+      return el;
     }
 
     // ---- detail sheet ----
@@ -745,8 +845,24 @@
       epSeason.value=(e&&e.last_season!=null)?e.last_season:"";
       epEpisode.value=(e&&e.last_episode!=null)?e.last_episode:"";
       sheetRemove.hidden=!e;
-      renderGem();
+      renderGem(); renderRewatch();
     }
+    function renderRewatch(){
+      const e=curEntry(); const sec=$("rewatch-section"), cnt=$("rw-count"), hint=$("rw-hint"), minus=$("rw-minus");
+      if(!e || e.status!=="watched"){ sec.hidden=true; return; }
+      sec.hidden=false;
+      const n=e.rewatch_count||0; cnt.textContent=n; minus.disabled=n<=0;
+      hint.textContent = n>0 ? ("seen "+(n+1)+" times total") : "seen once so far";
+    }
+    async function changeRewatch(delta){
+      const e=curEntry(); if(!e || e.status!=="watched") return;
+      const n=Math.max(0,(e.rewatch_count||0)+delta);
+      if(n===(e.rewatch_count||0)) return;
+      try{ await client.from("entries").update({rewatch_count:n}).eq("id",e.entryId); e.rewatch_count=n; renderRewatch(); }
+      catch(err){ showToast("Error: "+(err.message||err)); }
+    }
+    $("rw-plus").onclick=()=>changeRewatch(1);
+    $("rw-minus").onclick=()=>changeRewatch(-1);
     function renderGem(){
       const e=curEntry();
       const sec=$("gem-section"), tog=$("gem-toggle"), lab=$("gem-label"), hint=$("gem-hint");
@@ -856,26 +972,60 @@
         grid.appendChild(el); });
     }
 
+    async function fetchDetailsCredits(type,id){
+      const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US&append_to_response=credits`);
+      if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
+    }
+    function tally(map, key){ if(!key) return; map[key]=(map[key]||0)+1; }
+    function renderBars(el, counts, limit, chrono){
+      let arr=Object.keys(counts).map(k=>[k,counts[k]]);
+      if(chrono) arr.sort((a,b)=>parseInt(a[0],10)-parseInt(b[0],10));
+      else arr.sort((a,b)=>b[1]-a[1]);
+      arr=arr.slice(0,limit||6);
+      el.innerHTML="";
+      if(!arr.length){ el.innerHTML=`<div class="stat-empty">Not enough data yet.</div>`; return; }
+      const max=Math.max.apply(null, arr.map(x=>x[1]).concat(1));
+      arr.forEach(([name,val])=>{ const row=document.createElement("div"); row.className="bar-row";
+        row.innerHTML=`<div class="bl"><span class="bn">${esc(name)}</span><span class="bv">${val}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(val/max*100)}%"></div></div>`;
+        el.appendChild(row); });
+    }
+    function renderPeople(el, counts){
+      const arr=Object.keys(counts).map(k=>[k,counts[k]]).filter(x=>x[1]>=2).sort((a,b)=>b[1]-a[1]).slice(0,6);
+      el.innerHTML="";
+      if(!arr.length){ el.innerHTML=`<div class="stat-empty">Watch more titles to see recurring names.</div>`; return; }
+      arr.forEach(([name,val])=>{ const row=document.createElement("div"); row.className="person-row";
+        row.innerHTML=`<span>${esc(name)}</span><span class="pv">${val} titles</span>`; el.appendChild(row); });
+    }
     async function loadStats(){
       statsBody.hidden=true; statsHint.hidden=false; statsHint.textContent="Computing your stats...";
       const { data, error } = await client.from("entries")
-        .select("status,rating,is_gem,last_season,last_episode,media:media_id(id,tmdb_id,type,runtime,avg_episode_runtime,total_episodes)");
+        .select("status,rating,is_gem,rewatch_count,last_season,last_episode,media:media_id(id,tmdb_id,type,year,runtime,avg_episode_runtime,total_episodes)");
       if(error){ statsHint.textContent="Could not load: "+error.message; return; }
       renderBadges(computeCounts(data));
-      let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0;
+      let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0, ratingSum=0, ratingN=0, rewatchTotal=0;
+      const genres={}, decades={}, people={};
+      const addDecade=(y)=>{ if(y){ decades[(Math.floor(y/10)*10)+"s"]=(decades[(Math.floor(y/10)*10)+"s"]||0)+1; } };
+      const addPeople=(d)=>{ if(d.credits&&d.credits.cast) d.credits.cast.slice(0,3).forEach(p=>tally(people,p.name));
+        if(d.credits&&d.credits.crew) d.credits.crew.filter(c=>c.job==="Director").forEach(p=>tally(people,p.name));
+        if(d.created_by) d.created_by.forEach(p=>tally(people,p.name)); };
       for(const e of (data||[])){
         const m=e.media; if(!m) continue;
+        if(e.rating){ ratingSum+=e.rating; ratingN++; }
+        rewatchTotal += e.rewatch_count||0;
         if(m.type==="movie"){
           if(e.status!=="watched") continue;
           movieCount++;
-          let rt=m.runtime;
-          if(rt==null){ try{ const d=await fetchDetails("movie", m.tmdb_id); rt=d.runtime||0; cacheMedia(m.id,{runtime:rt}); }catch(_){ rt=0; } }
-          movieMin += rt||0;
+          try{ const d=await fetchDetailsCredits("movie", m.tmdb_id);
+            const rt=d.runtime||m.runtime||0; movieMin+=rt; if(d.runtime) cacheMedia(m.id,{runtime:d.runtime});
+            (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d);
+            addDecade(m.year || (d.release_date?parseInt(d.release_date.slice(0,4),10):null));
+          }catch(_){ movieMin += m.runtime||0; addDecade(m.year); }
         } else if(m.type==="tv"){
           if(e.status!=="watched" && e.status!=="watching") continue;
           seriesCount++;
           try{
-            const d=await fetchDetails("tv", m.tmdb_id);
+            const d=await fetchDetailsCredits("tv", m.tmdb_id);
             const avg=(d.episode_run_time && d.episode_run_time[0]) || m.avg_episode_runtime || 42;
             cacheMedia(m.id,{avg_episode_runtime:avg, total_episodes:d.number_of_episodes||null});
             let eps=0;
@@ -884,12 +1034,19 @@
               for(const sea of (d.seasons||[])){ if(sea.season_number>=1 && sea.season_number<ls) before += (sea.episode_count||0); }
               eps = before + le; }
             seriesMin += eps*avg;
-          }catch(_){}
+            (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d);
+            addDecade(m.year || (d.first_air_date?parseInt(d.first_air_date.slice(0,4),10):null));
+          }catch(_){ addDecade(m.year); }
         }
       }
       statTotal.textContent = fmtHours(movieMin+seriesMin);
       statMovies.textContent = movieCount + (movieCount===1?" movie":" movies") + " · " + fmtHours(movieMin);
       statSeries.textContent = seriesCount + " series · " + fmtHours(seriesMin);
+      statAvg.textContent = ratingN ? ((ratingSum/ratingN).toFixed(1)+" ★ · "+ratingN+" rated") : "—";
+      statRewatch.textContent = rewatchTotal>0 ? (rewatchTotal+(rewatchTotal===1?" rewatch":" rewatches")) : "0";
+      renderBars($("stat-genres"), genres, 6);
+      renderBars($("stat-decades"), decades, 8, true);
+      renderPeople($("stat-people"), people);
       statsHint.hidden=true; statsBody.hidden=false;
     }
     // ---- friends ----
