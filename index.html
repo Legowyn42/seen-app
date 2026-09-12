@@ -4,25 +4,37 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f1115" />
+  <meta name="theme-color" content="#0d0f14" />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Seen" />
   <title>Seen</title>
   <style>
     :root {
-      --bg: #0f1115; --card: #171a21; --field: #0c0e12; --line: #262b36;
-      --text: #f2f4f8; --muted: #9aa3b2; --accent: #ff5a5f; --ok: #38c172; --err: #ff6b6b; --watch: #4a90d9;
+      --bg: #0d0f14; --card: #151a23; --card-2: #1b2230; --field: #0c0e12; --line: #28303f;
+      --text: #f3f6fb; --muted: #95a2b6; --faint: #5d6b80;
+      --accent: #ff5a5f; --gold: #ffb23e; --ok: #38c172; --err: #ff6b6b; --watch: #4a90d9;
+      --epic: #a56bff;
+      --disp: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --body: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
     body { background: var(--bg); color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; min-height: 100vh; }
+      font-family: var(--body); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    .logo, .topbar .brand, .stat-hero-num, .sheet-title, .ch-name, .greet, .home-big,
+      .badge-count-hero, .section-title { font-family: var(--disp); letter-spacing: -.01em; }
 
     #auth-view { max-width: 380px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 40px) 20px 40px; }
-    .logo { font-size: 44px; font-weight: 800; letter-spacing: 2px; text-align: center; margin: 8px 0 24px; }
+    .brandmark { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 8px 0 24px; }
+    .brand-eye { display: block; }
+    #auth-view .brand-eye { width: 62px; height: 62px; }
+    .logo { font-size: 44px; font-weight: 800; letter-spacing: 1px; text-align: center; margin: 0; }
     .logo span { color: var(--accent); }
     .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
@@ -42,7 +54,8 @@
     #app-view { max-width: 760px; margin: 0 auto; padding: 0 16px calc(60px + env(safe-area-inset-bottom)); }
     .topbar { display: flex; align-items: center; justify-content: space-between; padding: calc(env(safe-area-inset-top) + 16px) 2px 16px;
       position: sticky; top: 0; background: var(--bg); z-index: 5; }
-    .topbar .brand { font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+    .topbar .brand { font-size: 24px; font-weight: 800; letter-spacing: .5px; display: flex; align-items: center; gap: 9px; }
+    .topbar .brand .brand-eye { width: 28px; height: 28px; }
     .topbar .brand span { color: var(--accent); }
     .topbar .right { display: flex; align-items: center; gap: 12px; }
     .topbar .who { color: var(--muted); font-size: 14px; }
@@ -273,6 +286,17 @@
     .badge-item .bi-name { font-size: 13px; font-weight: 600; }
     .badge-item .bi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
     .badge-item.earned .bi-name { color: var(--text); }
+    .badge-item.common { border-color: rgba(56,193,114,.5); }
+    .badge-item.uncommon { border-color: rgba(74,144,217,.55); }
+    .badge-item.epic { border-color: rgba(165,107,255,.6); }
+    .badge-item.legendary { border-color: rgba(255,178,62,.7); box-shadow: 0 0 16px -5px rgba(255,178,62,.55); }
+    .badge-item.locked { opacity: .42; box-shadow: none; }
+    .rar { font-size: 9px; text-transform: uppercase; letter-spacing: .07em; font-weight: 700; padding: 3px 7px;
+      border-radius: 999px; flex: 0 0 auto; align-self: center; }
+    .rar-common { color: var(--ok); background: rgba(56,193,114,.14); }
+    .rar-uncommon { color: var(--watch); background: rgba(74,144,217,.14); }
+    .rar-epic { color: var(--epic); background: rgba(165,107,255,.16); }
+    .rar-legendary { color: var(--gold); background: rgba(255,178,62,.16); }
     /* stat bars + people */
     .bar-row { margin-bottom: 9px; }
     .bar-row .bl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
@@ -291,7 +315,10 @@
 </head>
 <body>
   <div id="auth-view">
-    <div class="logo">Se<span>e</span>n</div>
+    <div class="brandmark">
+      <svg class="brand-eye" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M4 24 C 12 13, 36 13, 44 24 C 36 35, 12 35, 4 24 Z" stroke="var(--text)" stroke-width="3" stroke-linejoin="round"/><path d="M21 18.5 L 31.5 24 L 21 29.5 Z" fill="var(--accent)"/></svg>
+      <div class="logo">S<span>ee</span>n</div>
+    </div>
     <div class="card">
       <div class="tabs">
         <div class="tab active" id="tab-login">Log in</div>
@@ -312,7 +339,7 @@
 
   <div id="app-view" hidden>
     <div class="topbar">
-      <div class="brand">Se<span>e</span>n</div>
+      <div class="brand"><svg class="brand-eye" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M4 24 C 12 13, 36 13, 44 24 C 36 35, 12 35, 4 24 Z" stroke="var(--text)" stroke-width="3" stroke-linejoin="round"/><path d="M21 18.5 L 31.5 24 L 21 29.5 Z" fill="var(--accent)"/></svg>S<span>ee</span>n</div>
       <div class="right">
         <span class="who" id="who"></span>
         <button class="ghost" id="logout">Log out</button>
@@ -406,7 +433,7 @@
       <div id="cmp-body"></div>
       <div class="hint" id="cmp-hint" hidden>Loading...</div>
     </div>
-    <div class="appfoot">Seen · v2.2.2</div>
+    <div class="appfoot">Seen · v3.0</div>
   </div>
 
   <!-- Detail sheet -->
@@ -555,6 +582,7 @@
       sectionFriends.hidden = name!=="friends";
       sectionStats.hidden = name!=="stats";
       sectionCompare.hidden = true;
+      if(name==="search") syncSearch();
       if(name==="collection") loadCollection();
       if(name==="upcoming") loadUpcoming();
       if(name==="friends") loadFriends();
@@ -638,12 +666,12 @@
       tile.refresh(); return el;
     }
 
-    let searchSeq=0, showingTrending=false, typeTimer=null;
+    let searchSeq=0, showingTrending=false, typeTimer=null, shownQuery="";
 
     function renderItems(items){ currentDisplays=items.map(displayFromItem); results.innerHTML=""; for(const item of items) results.appendChild(searchCard(item)); }
 
     async function showTrending(){
-      const seq=++searchSeq; showingTrending=false;
+      const seq=++searchSeq; showingTrending=false; shownQuery="";
       results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Loading trending...";
       try{
         const res=await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=en-US`);
@@ -656,7 +684,7 @@
     }
 
     async function showDiscover(){
-      const seq=++searchSeq; showingTrending=false;
+      const seq=++searchSeq; showingTrending=false; shownQuery="";
       results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Finding recommendations...";
       let seeds=[];
       try{
@@ -687,7 +715,7 @@
     async function runSearch(){
       const query=q.value.trim();
       if(query.length<2){ showDiscover(); return; }
-      const seq=++searchSeq; showingTrending=false;
+      const seq=++searchSeq; showingTrending=false; shownQuery=query;
       resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Searching...";
       try{
         const url=`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US&include_adult=false`;
@@ -697,6 +725,12 @@
         if(!items.length){ results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent='No results for "'+query+'".'; return; }
         hint.hidden=true; resultsLabel.hidden=false; resultsLabel.textContent="Results"; renderItems(items);
       }catch(e){ if(seq===searchSeq){ hint.hidden=false; hint.textContent="Search failed: "+(e&&e.message?e.message:e); } }
+    }
+    // Keep the search box and the shown results consistent when returning to the tab.
+    function syncSearch(){
+      const v=q.value.trim();
+      if(v===shownQuery) return;
+      if(v.length>=2) runSearch(); else showDiscover();
     }
 
     function triggerNow(){ clearTimeout(typeTimer); runSearch(); }
@@ -951,14 +985,14 @@
 
     // ---- badges / achievements (computed from counts, nothing stored) ----
     const BADGES=[
-      {id:"first",     emoji:"🎬", name:"First steps",  desc:"Add your first title", test:c=>c.total>=1,  prog:c=>Math.min(c.total,1)+"/1"},
-      {id:"cinephile", emoji:"🍿", name:"Cinephile",    desc:"10 films watched",     test:c=>c.movies>=10,prog:c=>c.movies+"/10"},
-      {id:"bigscreen", emoji:"🎞️", name:"Big screen",   desc:"25 films watched",     test:c=>c.movies>=25,prog:c=>c.movies+"/25"},
-      {id:"binger",    emoji:"📺", name:"Bingewatcher", desc:"5 series finished",    test:c=>c.series>=5, prog:c=>c.series+"/5"},
-      {id:"marathon",  emoji:"🏃", name:"Marathoner",   desc:"10 series finished",   test:c=>c.series>=10,prog:c=>c.series+"/10"},
-      {id:"critic",    emoji:"⭐", name:"Critic",        desc:"Rate 10 titles",       test:c=>c.rated>=10, prog:c=>c.rated+"/10"},
-      {id:"curator",   emoji:"💎", name:"Curator",       desc:"Pick 6 gems",          test:c=>c.gems>=6,   prog:c=>c.gems+"/6"},
-      {id:"library",   emoji:"📚", name:"Librarian",     desc:"50 titles total",      test:c=>c.total>=50, prog:c=>c.total+"/50"},
+      {id:"first",     emoji:"🎬", name:"First steps",  rarity:"common",    desc:"Add your first title", test:c=>c.total>=1,  prog:c=>Math.min(c.total,1)+"/1"},
+      {id:"cinephile", emoji:"🍿", name:"Cinephile",    rarity:"uncommon",  desc:"10 films watched",     test:c=>c.movies>=10,prog:c=>c.movies+"/10"},
+      {id:"binger",    emoji:"📺", name:"Bingewatcher", rarity:"uncommon",  desc:"5 series finished",    test:c=>c.series>=5, prog:c=>c.series+"/5"},
+      {id:"critic",    emoji:"⭐", name:"Critic",        rarity:"uncommon",  desc:"Rate 10 titles",       test:c=>c.rated>=10, prog:c=>c.rated+"/10"},
+      {id:"bigscreen", emoji:"🎞️", name:"Big screen",   rarity:"epic",      desc:"25 films watched",     test:c=>c.movies>=25,prog:c=>c.movies+"/25"},
+      {id:"marathon",  emoji:"🏃", name:"Marathoner",   rarity:"epic",      desc:"10 series finished",   test:c=>c.series>=10,prog:c=>c.series+"/10"},
+      {id:"curator",   emoji:"💎", name:"Curator",       rarity:"epic",      desc:"Pick 6 gems",          test:c=>c.gems>=6,   prog:c=>c.gems+"/6"},
+      {id:"library",   emoji:"📚", name:"Librarian",     rarity:"legendary", desc:"50 titles total",      test:c=>c.total>=50, prog:c=>c.total+"/50"},
     ];
     function computeCounts(entries){
       let movies=0, series=0, total=0, rated=0, gems=0;
@@ -968,14 +1002,15 @@
         if(e.rating) rated++; if(e.is_gem) gems++; }
       return {movies, series, total, rated, gems};
     }
-    function badgeState(counts){ const all=BADGES.map(b=>({emoji:b.emoji,name:b.name,desc:b.desc,earned:b.test(counts),prog:b.prog(counts)}));
+    function badgeState(counts){ const all=BADGES.map(b=>({emoji:b.emoji,name:b.name,desc:b.desc,rarity:b.rarity,earned:b.test(counts),prog:b.prog(counts)}));
       return {all, earnedCount:all.filter(b=>b.earned).length}; }
     function renderBadges(counts){
       const grid=$("badge-grid"), cnt=$("badge-count"); const {all, earnedCount}=badgeState(counts);
       cnt.textContent=earnedCount; grid.innerHTML="";
-      all.forEach(b=>{ const el=document.createElement("div"); el.className="badge-item "+(b.earned?"earned":"locked");
-        el.innerHTML=`<span class="bi-emoji">${b.emoji}</span><div><div class="bi-name">${esc(b.name)}</div>
-          <div class="bi-sub">${b.earned?"Unlocked":esc(b.desc)+" ("+b.prog+")"}</div></div>`;
+      all.forEach(b=>{ const el=document.createElement("div"); el.className="badge-item "+b.rarity+" "+(b.earned?"earned":"locked");
+        el.innerHTML=`<span class="bi-emoji">${b.emoji}</span><div style="flex:1;min-width:0"><div class="bi-name">${esc(b.name)}</div>
+          <div class="bi-sub">${b.earned?"Unlocked":esc(b.desc)+" ("+b.prog+")"}</div></div>
+          <span class="rar rar-${b.rarity}">${b.rarity}</span>`;
         grid.appendChild(el); });
     }
 
