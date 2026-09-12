@@ -56,7 +56,7 @@
       position: sticky; top: 0; background: var(--bg); z-index: 5; }
     .topbar .brand { font-size: 24px; font-weight: 800; letter-spacing: .5px; display: flex; align-items: center; gap: 9px; }
     .topbar .brand .brand-eye { width: 28px; height: 28px; }
-    .topbar .brand span { color: var(--accent); }
+    .topbar .brand .ee { color: var(--accent); }
     .topbar .right { display: flex; align-items: center; gap: 12px; }
     .topbar .who { color: var(--muted); font-size: 14px; }
     button.ghost { padding: 8px 14px; background: transparent; color: var(--muted); border: 1px solid var(--line);
@@ -307,6 +307,26 @@
       background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 7px; font-size: 14px; }
     .person-row .pv { color: var(--muted); font-size: 12px; }
     .stat-empty { color: var(--muted); font-size: 13px; margin-bottom: 4px; }
+
+    /* ---- Home ---- */
+    .greet { font-size: 26px; font-weight: 800; margin: 4px 0 2px; }
+    .greet-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 18px; }
+    .home-hero { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 6px; }
+    .hh-tile { background: linear-gradient(150deg, rgba(255,90,95,.13), transparent), var(--card);
+      border: 1px solid var(--line); border-radius: 14px; padding: 16px 10px; text-align: center; }
+    .hh-num { font-size: 30px; font-weight: 800; line-height: 1; }
+    .hh-lab { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 6px; }
+    .row-lab { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted);
+      margin: 18px 2px 10px; font-weight: 600; }
+    .row-lab[hidden] { display: none; }
+    .home-badges { display: flex; flex-wrap: wrap; gap: 9px; }
+    .hbadge { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; background: var(--card-2); border: 2px solid var(--line); }
+    .hbadge.locked { opacity: .35; }
+    .hbadge.common { border-color: rgba(56,193,114,.6); }
+    .hbadge.uncommon { border-color: rgba(74,144,217,.65); }
+    .hbadge.epic { border-color: rgba(165,107,255,.7); }
+    .hbadge.legendary { border-color: rgba(255,178,62,.8); box-shadow: 0 0 14px -5px rgba(255,178,62,.6); }
     /* state label tones for shared series (neutral, no judgement) */
     .verdict.st-done { background: rgba(56,193,114,.18); color: var(--ok); }
     .verdict.st-progress { background: rgba(74,144,217,.18); color: var(--watch); }
@@ -339,20 +359,41 @@
 
   <div id="app-view" hidden>
     <div class="topbar">
-      <div class="brand"><svg class="brand-eye" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M4 24 C 12 13, 36 13, 44 24 C 36 35, 12 35, 4 24 Z" stroke="var(--text)" stroke-width="3" stroke-linejoin="round"/><path d="M21 18.5 L 31.5 24 L 21 29.5 Z" fill="var(--accent)"/></svg>S<span>ee</span>n</div>
+      <div class="brand"><svg class="brand-eye" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M4 24 C 12 13, 36 13, 44 24 C 36 35, 12 35, 4 24 Z" stroke="var(--text)" stroke-width="3" stroke-linejoin="round"/><path d="M21 18.5 L 31.5 24 L 21 29.5 Z" fill="var(--accent)"/></svg><span class="wm">S<span class="ee">ee</span>n</span></div>
       <div class="right">
         <span class="who" id="who"></span>
         <button class="ghost" id="logout">Log out</button>
       </div>
     </div>
     <div class="nav">
-      <div class="navtab active" id="nav-search">Search</div>
+      <div class="navtab active" id="nav-home">Home</div>
+      <div class="navtab" id="nav-search">Search</div>
       <div class="navtab" id="nav-collection">Collection</div>
       <div class="navtab" id="nav-upcoming">Soon</div>
       <div class="navtab" id="nav-friends">Friends<span class="dot" id="friends-dot" hidden></span></div>
       <div class="navtab" id="nav-stats">Stats</div>
     </div>
-    <div id="section-search">
+    <div id="section-home" hidden>
+      <div class="greet" id="home-greet">Welcome back</div>
+      <div class="greet-sub" id="home-greetsub"></div>
+      <div class="home-hero">
+        <div class="hh-tile"><div class="hh-num home-big" id="home-watched">0</div><div class="hh-lab">Watched</div></div>
+        <div class="hh-tile"><div class="hh-num home-big" id="home-titles">0</div><div class="hh-lab">Titles</div></div>
+        <div class="hh-tile"><div class="hh-num home-big" id="home-badges">0</div><div class="hh-lab">Badges</div></div>
+      </div>
+      <div class="row-lab" id="home-badges-lab" hidden>Achievements</div>
+      <div class="home-badges" id="home-badges-row"></div>
+      <div class="shelf-wrap" id="home-continue-wrap" hidden>
+        <div class="shelf-title">Continue watching</div>
+        <div class="shelf" id="home-continue"></div>
+      </div>
+      <div class="shelf-wrap" id="home-gems-wrap" hidden>
+        <div class="shelf-title">Your gems 💎</div>
+        <div class="shelf" id="home-gems"></div>
+      </div>
+      <div class="hint" id="home-hint" hidden></div>
+    </div>
+    <div id="section-search" hidden>
       <div class="searchbar">
         <input id="q" type="text" placeholder="Search a film or series..." />
         <button id="searchBtn">Search</button>
@@ -433,7 +474,7 @@
       <div id="cmp-body"></div>
       <div class="hint" id="cmp-hint" hidden>Loading...</div>
     </div>
-    <div class="appfoot">Seen · v3.0</div>
+    <div class="appfoot">Seen · v3.1</div>
   </div>
 
   <!-- Detail sheet -->
@@ -517,12 +558,13 @@
     const IMG = "https://image.tmdb.org/t/p/w342";
     const BOOKMARK = '<svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/></svg>';
     let currentUserId = null;
+    let myUsername = null;
     let myEntries = {}; // key -> { entryId, status, rating, last_season, last_episode }
 
     const $ = (id) => document.getElementById(id);
     const authView=$("auth-view"), appView=$("app-view"), tabLogin=$("tab-login"), tabSignup=$("tab-signup"),
       usernameRow=$("username-row"), submitBtn=$("submit"), msg=$("msg"), usernameInput=$("username"),
-      emailInput=$("email"), passwordInput=$("password"), who=$("who"), navSearch=$("nav-search"),
+      emailInput=$("email"), passwordInput=$("password"), who=$("who"), navHome=$("nav-home"), sectionHome=$("section-home"), navSearch=$("nav-search"),
       navCollection=$("nav-collection"), sectionSearch=$("section-search"), sectionCollection=$("section-collection"),
       q=$("q"), searchBtn=$("searchBtn"), results=$("results"), hint=$("hint"), filters=$("filters"),
       collection=$("collection"), collectionHint=$("collection-hint"), toast=$("toast");
@@ -554,8 +596,9 @@
 
     async function showApp(session){ currentUserId=session.user.id; authView.hidden=true; appView.hidden=false;
       const {data}=await client.from("profiles").select("username").eq("id",currentUserId).maybeSingle();
-      who.textContent=(data&&data.username)?data.username:session.user.email; await loadMyEntries();
-      loadFriendsCache(); refreshFriendsBadge(); showDiscover(); }
+      myUsername=(data&&data.username)?data.username:null;
+      who.textContent=myUsername||session.user.email; await loadMyEntries();
+      loadFriendsCache(); refreshFriendsBadge(); showSection("home"); }
     function render(session){ if(session&&session.user){ showApp(session); }
       else { currentUserId=null; myEntries={}; friendsCache=[]; compareFriend=null; appView.hidden=true; authView.hidden=false; } }
 
@@ -571,23 +614,27 @@
 
     // ---- nav ----
     function showSection(name){
+      navHome.classList.toggle("active", name==="home");
       navSearch.classList.toggle("active", name==="search");
       navCollection.classList.toggle("active", name==="collection");
       navUpcoming.classList.toggle("active", name==="upcoming");
       navFriends.classList.toggle("active", name==="friends");
       navStats.classList.toggle("active", name==="stats");
+      sectionHome.hidden = name!=="home";
       sectionSearch.hidden = name!=="search";
       sectionCollection.hidden = name!=="collection";
       sectionUpcoming.hidden = name!=="upcoming";
       sectionFriends.hidden = name!=="friends";
       sectionStats.hidden = name!=="stats";
       sectionCompare.hidden = true;
+      if(name==="home") loadHome();
       if(name==="search") syncSearch();
       if(name==="collection") loadCollection();
       if(name==="upcoming") loadUpcoming();
       if(name==="friends") loadFriends();
       if(name==="stats") loadStats();
     }
+    navHome.onclick=()=>showSection("home");
     navSearch.onclick=()=>showSection("search"); navCollection.onclick=()=>showSection("collection");
     navUpcoming.onclick=()=>showSection("upcoming");
     navFriends.onclick=()=>showSection("friends"); navStats.onclick=()=>showSection("stats");
@@ -1038,6 +1085,32 @@
       if(!arr.length){ el.innerHTML=`<div class="stat-empty">Watch more titles to see recurring names.</div>`; return; }
       arr.forEach(([name,val])=>{ const row=document.createElement("div"); row.className="person-row";
         row.innerHTML=`<span>${esc(name)}</span><span class="pv">${val} titles</span>`; el.appendChild(row); });
+    }
+    async function loadHome(){
+      const h=new Date().getHours();
+      const part = h<5?"Good night":h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+      $("home-greet").textContent = part + (myUsername ? ", "+myUsername : "");
+      const {data}=await client.from("entries")
+        .select("status,rating,is_gem,last_season,last_episode,media:media_id(tmdb_id,type,title,poster_url,year)")
+        .eq("user_id",currentUserId);
+      const rows=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
+      const counts=computeCounts(rows);
+      const watched=rows.filter(e=>e.status==="watched").length;
+      const inprog=rows.filter(e=>e.status==="watching").length;
+      $("home-watched").textContent=watched;
+      $("home-titles").textContent=rows.length;
+      $("home-badges").textContent=badgeState(counts).earnedCount;
+      $("home-greetsub").textContent = rows.length ? (inprog+(inprog===1?" series in progress":" series in progress")+" · "+counts.gems+(counts.gems===1?" gem":" gems")) : "Your collection is empty — add something from Search.";
+      const brow=$("home-badges-row"); brow.innerHTML=""; $("home-badges-lab").hidden=!rows.length;
+      if(rows.length){ badgeState(counts).all.forEach(b=>{ const el=document.createElement("div");
+        el.className="hbadge "+b.rarity+(b.earned?" earned":" locked"); el.textContent=b.emoji; el.title=b.name+(b.earned?"":" — "+b.desc); brow.appendChild(el); }); }
+      homeShelf("home-continue","home-continue-wrap", rows.filter(e=>e.status==="watching"));
+      homeShelf("home-gems","home-gems-wrap", rows.filter(e=>e.is_gem));
+    }
+    function homeShelf(boxId, wrapId, entries){
+      const wrap=$(wrapId), box=$(boxId); box.innerHTML="";
+      if(!entries.length){ wrap.hidden=true; return; }
+      wrap.hidden=false; entries.forEach(e=>box.appendChild(gemShelfCard(e.media, loadHome)));
     }
     async function loadStats(){
       statsBody.hidden=true; statsHint.hidden=false; statsHint.textContent="Computing your stats...";
