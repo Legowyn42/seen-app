@@ -51,7 +51,13 @@
     .msg { margin-top: 14px; font-size: 14px; min-height: 20px; }
     .msg.ok { color: var(--ok); } .msg.err { color: var(--err); }
 
-    #app-view { max-width: 760px; margin: 0 auto; padding: 0 16px calc(60px + env(safe-area-inset-bottom)); }
+    #app-view { max-width: 760px; margin: 0 auto; padding: 0 16px calc(80px + env(safe-area-inset-bottom)); }
+    @media (min-width: 860px){
+      #app-view { margin: 0 auto 0 212px; max-width: 1280px; padding: 0 40px 48px; }
+    }
+    @media (min-width: 1720px){
+      #app-view { margin: 0 auto; padding-left: 40px; }
+    }
     .topbar { display: flex; align-items: center; justify-content: space-between; padding: calc(env(safe-area-inset-top) + 16px) 2px 16px;
       position: sticky; top: 0; background: var(--bg); z-index: 5; }
     .topbar .brand { font-size: 24px; font-weight: 800; letter-spacing: .5px; display: flex; align-items: center; gap: 9px; }
@@ -62,10 +68,28 @@
     button.ghost { padding: 8px 14px; background: transparent; color: var(--muted); border: 1px solid var(--line);
       border-radius: 9px; font-size: 14px; cursor: pointer; }
 
-    .nav { display: flex; gap: 8px; margin-bottom: 16px; }
-    .nav .navtab { flex: 1; text-align: center; padding: 10px; border-radius: 10px; cursor: pointer;
-      background: var(--card); border: 1px solid var(--line); color: var(--muted); font-size: 15px; }
-    .nav .navtab.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    /* Navigation — bottom tab bar on mobile, left sidebar on desktop */
+    .nav { display: flex; gap: 2px; margin: 0; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      background: rgba(13,15,20,.94); border-top: 1px solid var(--line); backdrop-filter: blur(10px);
+      padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+    .nav .navtab { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 6px 2px; border-radius: 10px; cursor: pointer; background: transparent; border: none;
+      color: var(--faint); font-size: 10px; position: relative; }
+    .nav .navtab.active { color: var(--accent); background: transparent; }
+    .navtab .ni { width: 22px; height: 22px; flex: 0 0 auto; transition: transform .12s ease; }
+    .navtab .nl { line-height: 1; }
+    .navtab { transition: color .15s ease; }
+    .navtab:active .ni { transform: scale(.85); }
+    @media (prefers-reduced-motion: reduce){ .navtab .ni, .navtab:active .ni { transition: none; transform: none; } }
+    @media (min-width: 860px){
+      .nav { position: fixed; top: 0; left: 0; bottom: 0; right: auto; width: 212px; flex-direction: column;
+        justify-content: flex-start; gap: 4px; padding: 22px 12px; border-top: none; border-right: 1px solid var(--line);
+        background: var(--bg); backdrop-filter: none; }
+      .nav .navtab { flex: 0 0 auto; flex-direction: row; justify-content: flex-start; gap: 12px; font-size: 15px;
+        padding: 11px 14px; color: var(--muted); }
+      .nav .navtab.active { background: rgba(255,90,95,.13); color: var(--text); font-weight: 600; }
+      .navtab .ni { width: 19px; height: 19px; }
+    }
     .appfoot { text-align: center; color: var(--muted); font-size: 12px; margin-top: 32px; opacity: .6; }
     .stat-hero { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; text-align: center; margin-bottom: 16px; }
     .stat-hero-num { font-size: 40px; font-weight: 800; color: var(--accent); }
@@ -86,7 +110,7 @@
 
     .hint { color: var(--muted); font-size: 14px; text-align: center; margin-top: 40px; }
 
-    .section-label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+    .section-label { font-size: 15px; color: var(--text); font-weight: 700; margin-bottom: 12px; }
     .section-label[hidden] { display: none; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
     .poster { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 12px;
@@ -125,11 +149,12 @@
       max-width: 460px; padding: 20px; position: relative; }
     .sheet .close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 8px;
       border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
-    .nav-arrow { position: fixed; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%;
-      background: rgba(0,0,0,.55); border: 1px solid var(--line); color: #fff; font-size: 26px; line-height: 1; cursor: pointer;
+    .nav-arrow { position: fixed; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(0,0,0,.4); border: none; color: rgba(255,255,255,.75); font-size: 20px; line-height: 1; cursor: pointer;
       display: flex; align-items: center; justify-content: center; z-index: 42; }
-    .nav-arrow.left { left: 10px; }
-    .nav-arrow.right { right: 10px; }
+    .nav-arrow:hover { color: #fff; background: rgba(0,0,0,.6); }
+    .nav-arrow.left { left: 3px; }
+    .nav-arrow.right { right: 3px; }
     .nav-arrow[hidden] { display: none; }
     .sheet-head { display: flex; gap: 14px; }
     .sheet-head img { width: 92px; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; flex: 0 0 auto; }
@@ -137,7 +162,7 @@
     .sheet-meta { color: var(--muted); font-size: 13px; margin-top: 4px; }
     .sheet-overview { font-size: 14px; color: #cdd3dd; line-height: 1.5; margin: 16px 0; max-height: 120px; overflow-y: auto; }
     .sheet-section { margin-top: 18px; }
-    .sheet-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+    .sheet-label { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
     .status-select { display: flex; gap: 8px; }
     .status-select button { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
       background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; }
@@ -151,13 +176,25 @@
     .stars .star.on { color: #ffca3a; }
     .prov-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
     .prov-label { font-size: 12px; color: var(--muted); width: 52px; flex: 0 0 auto; }
-    .prov { display: inline-flex; align-items: center; gap: 6px; background: var(--field);
-      border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; font-size: 12px; }
-    .prov img { width: 20px; height: 20px; border-radius: 4px; }
+    .prov { display: inline-flex; align-items: center; justify-content: center; background: var(--field);
+      border: 1px solid var(--line); border-radius: 10px; padding: 5px; font-size: 12px; color: var(--text); }
+    a.prov { text-decoration: none; cursor: pointer; }
+    a.prov:hover { border-color: var(--accent); }
+    .prov img { width: 32px; height: 32px; border-radius: 7px; display: block; }
+    .prov .prov-name { padding: 4px 6px; }
+    .prov-more { margin-top: 10px; }
+    .prov-more summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--muted);
+      font-size: 13px; font-weight: 600; list-style: none; padding: 7px 13px; border: 1px solid var(--line);
+      border-radius: 9px; background: var(--field); }
+    .prov-more summary::-webkit-details-marker { display: none; }
+    .prov-more summary::after { content: "▾"; font-size: 10px; }
+    .prov-more[open] summary { color: var(--text); }
+    .prov-more[open] summary::after { content: "▴"; }
+    .prov-more .prov-row { margin-top: 10px; }
     .sheet-remove { width: 100%; margin-top: 22px; padding: 11px; background: transparent; color: var(--err);
       border: 1px solid var(--line); border-radius: 10px; font-size: 14px; cursor: pointer; }
 
-    #install-banner { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); max-width: 520px; margin: 0 auto;
+    #install-banner { position: fixed; left: 12px; right: 12px; bottom: calc(80px + env(safe-area-inset-bottom)); max-width: 520px; margin: 0 auto;
       background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
       display: flex; align-items: center; gap: 12px; z-index: 45; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
     #install-banner[hidden] { display: none; }
@@ -174,13 +211,11 @@
     #toast.show { opacity: 1; }
 
     /* ---- Friends ---- */
-    .nav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-    .nav::-webkit-scrollbar { display: none; }
-    .nav .navtab { flex: 0 0 auto; font-size: 14px; padding: 10px 16px; position: relative; }
-    .navtab .dot { position: absolute; top: 5px; right: 8px; min-width: 16px; height: 16px; padding: 0 4px;
-      border-radius: 999px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700;
+    .navtab .dot { position: absolute; top: 2px; right: calc(50% - 20px); min-width: 15px; height: 15px; padding: 0 4px;
+      border-radius: 999px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 700;
       display: flex; align-items: center; justify-content: center; line-height: 1; }
     .navtab .dot[hidden] { display: none; }
+    @media (min-width: 860px){ .navtab .dot { position: static; margin-left: auto; } }
     .fr-block { margin-bottom: 24px; }
     .fr-block h3 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px;
       margin: 0 0 10px; font-weight: 600; }
@@ -227,7 +262,7 @@
     .cmp-score .sc .lab { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
     .cmp-score .sc.nice .num { color: var(--ok); }
     .cmp-score .sc.shame .num { color: var(--accent); }
-    .cmp-sub { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 20px 0 10px; }
+    .cmp-sub { font-size: 15px; color: var(--text); font-weight: 700; margin: 22px 0 10px; }
     .cmp-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
       border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
     .cmp-row img { width: 44px; aspect-ratio: 2/3; object-fit: cover; border-radius: 7px; flex: 0 0 auto; background: #22262f; }
@@ -258,13 +293,14 @@
     .gem-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
     .poster .gemtag { position: absolute; top: 8px; left: 8px; font-size: 15px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
     /* horizontal shelf */
-    .shelf-wrap { margin-bottom: 22px; }
-    .shelf-title { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 0 0 10px; }
+    .shelf-wrap { margin: 26px 0 8px; }
+    .shelf-title { font-size: 15px; color: var(--text); font-weight: 700; margin: 0 0 10px; }
     .shelf { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
     .shelf::-webkit-scrollbar { height: 6px; } .shelf::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
-    .shelf .gemcard { flex: 0 0 96px; width: 96px; cursor: pointer; }
-    .shelf .gemcard img { width: 96px; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; background: #22262f; display: block; }
-    .shelf .gemcard .gt { font-size: 12px; margin-top: 6px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis;
+    .gemcard { cursor: pointer; }
+    .shelf .gemcard { flex: 0 0 96px; width: 96px; }
+    .gemcard img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; background: #22262f; display: block; }
+    .gemcard .gt { font-size: 12px; margin-top: 6px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
     /* ---- Rewatch ---- */
@@ -278,7 +314,13 @@
       border-radius: 6px; background: rgba(0,0,0,.6); color: #fff; }
 
     /* ---- Badges / hauts faits ---- */
-    .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+    .ach-head { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 20px; }
+    .ach-count { font-family: var(--disp); font-weight: 800; font-size: 34px; line-height: 1; }
+    .ach-count .ach-slash { color: var(--muted); font-size: 20px; }
+    .ach-lab { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .5px; }
+    .home-tap { cursor: pointer; }
+    .seeall { color: var(--accent); font-weight: 600; float: right; text-transform: none; letter-spacing: 0; }
     .badge-item { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line);
       border-radius: 12px; padding: 10px 12px; }
     .badge-item.locked { opacity: .45; }
@@ -297,6 +339,53 @@
     .rar-uncommon { color: var(--watch); background: rgba(74,144,217,.14); }
     .rar-epic { color: var(--epic); background: rgba(165,107,255,.16); }
     .rar-legendary { color: var(--gold); background: rgba(255,178,62,.16); }
+    /* badge + person modals */
+    #badge-overlay, #person-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.62); z-index: 46; display: flex;
+      align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+    #badge-overlay[hidden], #person-overlay[hidden] { display: none; }
+    .badge-modal { background: var(--card); border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 340px;
+      padding: 28px 24px; text-align: center; position: relative; }
+    .badge-modal .close, .person-modal .close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 8px;
+      border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
+    .bm-emoji { font-size: 50px; width: 92px; height: 92px; margin: 6px auto 14px; border-radius: 22px; border: 2px solid var(--line);
+      display: flex; align-items: center; justify-content: center; background: var(--card-2); }
+    .bm-emoji.common { border-color: rgba(56,193,114,.6); } .bm-emoji.uncommon { border-color: rgba(74,144,217,.65); }
+    .bm-emoji.epic { border-color: rgba(165,107,255,.7); } .bm-emoji.legendary { border-color: rgba(255,178,62,.8); box-shadow: 0 0 22px -6px rgba(255,178,62,.6); }
+    .bm-name { font-family: var(--disp); font-weight: 800; font-size: 22px; margin-bottom: 8px; }
+    .badge-modal .rar { display: inline-block; margin-bottom: 14px; }
+    .bm-desc { color: #cdd3dd; font-size: 14.5px; line-height: 1.5; margin-bottom: 16px; }
+    .bm-status { font-size: 14px; font-weight: 700; color: var(--muted); }
+    .bm-status.done { color: var(--ok); }
+    .person-modal { background: var(--card); border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 420px;
+      padding: 22px; position: relative; max-height: 86vh; overflow-y: auto; }
+    .pm-head { display: flex; gap: 14px; align-items: center; margin-bottom: 4px; padding-right: 30px; }
+    .pm-head img { width: 66px; height: 66px; border-radius: 50%; object-fit: cover; background: #22262f; flex: 0 0 auto; }
+    .pm-name { font-family: var(--disp); font-weight: 800; font-size: 20px; }
+    .pm-role { color: var(--muted); font-size: 13px; margin-top: 3px; }
+    .pm-section { margin-top: 18px; }
+    .pm-lab { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+    .pm-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+    .pm-list .gemcard { flex: 0 0 82px; width: 82px; }
+    /* familiar faces grid + section descriptions */
+    #stat-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
+    .face-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; }
+    .face-card .face { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px; display: block; background: #22262f; }
+    .face-card .face-none { display: flex; align-items: center; justify-content: center; font-family: var(--disp); font-weight: 700;
+      font-size: 24px; color: var(--muted); text-transform: uppercase; }
+    .fc-name { font-weight: 600; font-size: 14px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.4em; }
+    .fc-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .fc-role { display: inline-block; margin-top: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+      font-weight: 700; color: var(--accent); background: rgba(255,90,95,.14); padding: 3px 8px; border-radius: 999px; }
+    .stat-desc { color: var(--muted); font-size: 13px; margin: -6px 0 12px; }
+    .upcoming-intro { color: var(--muted); font-size: 13px; margin: 2px 0 16px; }
+    /* cast row in the detail sheet */
+    .cast-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+    .cast-card { flex: 0 0 62px; width: 62px; text-align: center; cursor: pointer; }
+    .cast-card img, .cast-card .cast-none { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; margin: 0 auto 6px; display: block; background: #22262f; }
+    .cast-card .cast-none { display: flex; align-items: center; justify-content: center; font-family: var(--disp); font-weight: 700; font-size: 20px; color: var(--muted); text-transform: uppercase; }
+    .cast-card .cn { font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .cast-card .cc { font-size: 10px; color: var(--muted); line-height: 1.2; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     /* stat bars + people */
     .bar-row { margin-bottom: 9px; }
     .bar-row .bl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
@@ -311,15 +400,20 @@
     /* ---- Home ---- */
     .greet { font-size: 26px; font-weight: 800; margin: 4px 0 2px; }
     .greet-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 18px; }
-    .home-hero { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 6px; }
+    .home-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 6px; }
     .hh-tile { background: linear-gradient(150deg, rgba(255,90,95,.13), transparent), var(--card);
-      border: 1px solid var(--line); border-radius: 14px; padding: 16px 10px; text-align: center; }
+      border: 1px solid var(--line); border-radius: 14px; padding: 16px 14px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .hh-tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between;
+      gap: 10px; text-align: left; background: linear-gradient(140deg, rgba(255,90,95,.16), transparent 70%), var(--card); }
+    .hh-tile.wide .hh-num { font-size: 36px; }
+    .hh-tile.wide .hh-lab { margin-top: 0; }
     .hh-num { font-size: 30px; font-weight: 800; line-height: 1; }
     .hh-lab { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 6px; }
-    .row-lab { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted);
-      margin: 18px 2px 10px; font-weight: 600; }
+    .row-lab { font-size: 15px; color: var(--text); margin: 26px 2px 12px; font-weight: 700; }
     .row-lab[hidden] { display: none; }
-    .home-badges { display: flex; flex-wrap: wrap; gap: 9px; }
+    .home-badges { display: flex; flex-wrap: wrap; gap: 10px; }
+    .home-hero { margin-bottom: 2px; }
     .hbadge { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
       font-size: 22px; background: var(--card-2); border: 2px solid var(--line); }
     .hbadge.locked { opacity: .35; }
@@ -327,6 +421,14 @@
     .hbadge.uncommon { border-color: rgba(74,144,217,.65); }
     .hbadge.epic { border-color: rgba(165,107,255,.7); }
     .hbadge.legendary { border-color: rgba(255,178,62,.8); box-shadow: 0 0 14px -5px rgba(255,178,62,.6); }
+    .pick-btn { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; cursor: pointer;
+      background: linear-gradient(150deg, rgba(255,90,95,.18), rgba(255,90,95,.04)); border: 1px solid rgba(255,90,95,.4);
+      border-radius: 16px; padding: 16px; color: var(--text); margin-top: 26px; }
+    .pick-btn:active { transform: scale(.99); }
+    .pick-die { font-size: 34px; flex: 0 0 auto; line-height: 1; }
+    .pick-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .pick-title { font-family: var(--disp); font-weight: 800; font-size: 19px; }
+    .pick-desc { color: var(--muted); font-size: 13px; }
     /* state label tones for shared series (neutral, no judgement) */
     .verdict.st-done { background: rgba(56,193,114,.18); color: var(--ok); }
     .verdict.st-progress { background: rgba(74,144,217,.18); color: var(--watch); }
@@ -366,23 +468,27 @@
       </div>
     </div>
     <div class="nav">
-      <div class="navtab active" id="nav-home">Home</div>
-      <div class="navtab" id="nav-search">Search</div>
-      <div class="navtab" id="nav-collection">Collection</div>
-      <div class="navtab" id="nav-upcoming">Soon</div>
-      <div class="navtab" id="nav-friends">Friends<span class="dot" id="friends-dot" hidden></span></div>
-      <div class="navtab" id="nav-stats">Stats</div>
+      <div class="navtab active" id="nav-home"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="nl">Home</span></div>
+      <div class="navtab" id="nav-search"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="nl">Search</span></div>
+      <div class="navtab" id="nav-collection"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="7" height="18" rx="1.5"/><rect x="14" y="3" width="6" height="18" rx="1.5"/></svg><span class="nl">Collection</span></div>
+      <div class="navtab" id="nav-upcoming"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="nl">Soon</span></div>
+      <div class="navtab" id="nav-friends"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.4"/></svg><span class="nl">Friends</span><span class="dot" id="friends-dot" hidden></span></div>
+      <div class="navtab" id="nav-stats"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="nl">Stats</span></div>
     </div>
     <div id="section-home" hidden>
       <div class="greet" id="home-greet">Welcome back</div>
       <div class="greet-sub" id="home-greetsub"></div>
       <div class="home-hero">
-        <div class="hh-tile"><div class="hh-num home-big" id="home-watched">0</div><div class="hh-lab">Watched</div></div>
-        <div class="hh-tile"><div class="hh-num home-big" id="home-titles">0</div><div class="hh-lab">Titles</div></div>
-        <div class="hh-tile"><div class="hh-num home-big" id="home-badges">0</div><div class="hh-lab">Badges</div></div>
+        <div class="hh-tile wide"><div class="hh-num home-big" id="home-time">—</div><div class="hh-lab">Total watch time</div></div>
+        <div class="hh-tile"><div class="hh-num home-big" id="home-inprogress">0</div><div class="hh-lab">Watching</div></div>
+        <div class="hh-tile"><div class="hh-num home-big" id="home-watchlist">0</div><div class="hh-lab">Watchlist</div></div>
       </div>
-      <div class="row-lab" id="home-badges-lab" hidden>Achievements</div>
-      <div class="home-badges" id="home-badges-row"></div>
+      <button class="pick-btn" id="home-pick-btn" hidden>
+        <span class="pick-die">🎲</span>
+        <span class="pick-txt"><span class="pick-title">Pick for me!</span><span class="pick-desc">Let Seen choose your next watch from your watchlist</span></span>
+      </button>
+      <div class="row-lab home-tap" id="home-badges-lab" hidden>Latest achievements<span class="seeall">See all ›</span></div>
+      <div class="home-badges home-tap" id="home-badges-row"></div>
       <div class="shelf-wrap" id="home-continue-wrap" hidden>
         <div class="shelf-title">Continue watching</div>
         <div class="shelf" id="home-continue"></div>
@@ -390,6 +496,10 @@
       <div class="shelf-wrap" id="home-gems-wrap" hidden>
         <div class="shelf-title">Your gems 💎</div>
         <div class="shelf" id="home-gems"></div>
+      </div>
+      <div class="shelf-wrap" id="home-recos-wrap" hidden>
+        <div class="shelf-title">Recommended for you</div>
+        <div class="shelf" id="home-recos"></div>
       </div>
       <div class="hint" id="home-hint" hidden></div>
     </div>
@@ -432,13 +542,13 @@
         <div id="stat-genres"></div>
         <div class="section-label" style="margin-top:20px">By decade</div>
         <div id="stat-decades"></div>
-        <div class="section-label" style="margin-top:20px">Most-watched people</div>
+        <div class="section-label" style="margin-top:20px">Familiar faces</div>
+        <div class="stat-desc">The people who show up most across what you've watched.</div>
         <div id="stat-people"></div>
-        <div class="section-label" style="margin-top:26px">Achievements · <span id="badge-count">0</span> earned</div>
-        <div class="badge-grid" id="badge-grid"></div>
       </div>
     </div>
     <div id="section-upcoming" hidden>
+      <div class="upcoming-intro">When the next episode drops for the series you're watching, plus release dates from your watchlist.</div>
       <div class="hint" id="upcoming-hint">Loading what's coming...</div>
       <div id="upcoming-list"></div>
     </div>
@@ -474,7 +584,15 @@
       <div id="cmp-body"></div>
       <div class="hint" id="cmp-hint" hidden>Loading...</div>
     </div>
-    <div class="appfoot">Seen · v3.1</div>
+    <div id="section-achievements" hidden>
+      <button class="cmp-back" id="ach-back">‹ Home</button>
+      <div class="ach-head">
+        <div class="ach-count"><span id="badge-count">0</span><span class="ach-slash"> / 8</span></div>
+        <div class="ach-lab">achievements unlocked</div>
+      </div>
+      <div class="badge-grid" id="badge-grid"></div>
+    </div>
+    <div class="appfoot">Seen · v3.10</div>
   </div>
 
   <!-- Detail sheet -->
@@ -537,7 +655,41 @@
         <div class="sheet-label">Recommend to a friend</div>
         <div class="rec-friends" id="rec-friends"></div>
       </div>
+      <div class="sheet-section" id="cast-section" hidden>
+        <div class="sheet-label">Cast</div>
+        <div class="cast-row" id="cast-row"></div>
+      </div>
       <button class="sheet-remove" id="sheet-remove" hidden>Remove from collection</button>
+    </div>
+  </div>
+
+  <div id="badge-overlay" hidden>
+    <div class="badge-modal">
+      <button class="close" id="badge-close">×</button>
+      <div class="bm-emoji" id="bm-emoji"></div>
+      <div class="bm-name" id="bm-name"></div>
+      <span class="rar" id="bm-rar"></span>
+      <div class="bm-desc" id="bm-desc"></div>
+      <div class="bm-status" id="bm-status"></div>
+    </div>
+  </div>
+
+  <div id="person-overlay" hidden>
+    <div class="person-modal">
+      <button class="close" id="person-close">×</button>
+      <div class="pm-head">
+        <img id="pm-photo" alt="" />
+        <div><div class="pm-name" id="pm-name"></div><div class="pm-role" id="pm-role"></div></div>
+      </div>
+      <div class="hint" id="pm-hint" hidden>Loading…</div>
+      <div class="pm-section" id="pm-ours-wrap" hidden>
+        <div class="pm-lab">You've watched them in</div>
+        <div class="pm-list" id="pm-ours"></div>
+      </div>
+      <div class="pm-section" id="pm-also-wrap" hidden>
+        <div class="pm-lab">You can also find them in</div>
+        <div class="pm-list" id="pm-also"></div>
+      </div>
     </div>
   </div>
 
@@ -627,6 +779,7 @@
       sectionFriends.hidden = name!=="friends";
       sectionStats.hidden = name!=="stats";
       sectionCompare.hidden = true;
+      $("section-achievements").hidden = true;
       if(name==="home") loadHome();
       if(name==="search") syncSearch();
       if(name==="collection") loadCollection();
@@ -730,22 +883,17 @@
       }catch(e){ if(seq===searchSeq) hint.textContent=""; }
     }
 
-    async function showDiscover(){
-      const seq=++searchSeq; showingTrending=false; shownQuery="";
-      results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Finding recommendations...";
+    async function getRecommendations(){
       let seeds=[];
       try{
         const { data } = await client.from("entries").select("rating, media:media_id(tmdb_id,type)").eq("user_id", currentUserId).eq("status","watched");
         seeds=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
       }catch(_){}
-      if(seq!==searchSeq) return;
-      seeds.sort((a,b)=>(b.rating||0)-(a.rating||0));
-      seeds=seeds.slice(0,6);
-      if(seeds.length<2){ showTrending(); return; }
+      seeds.sort((a,b)=>(b.rating||0)-(a.rating||0)); seeds=seeds.slice(0,6);
+      if(seeds.length<2) return null;
       const responses=await Promise.all(seeds.map(sd=>
         fetch(`https://api.themoviedb.org/3/${sd.media.type}/${sd.media.tmdb_id}/recommendations?api_key=${TMDB_KEY}&language=en-US`)
           .then(r=>r.ok?r.json():null).catch(()=>null)));
-      if(seq!==searchSeq) return;
       const counts={}, byKey={};
       responses.forEach((j,idx)=>{ if(!j) return; const stype=seeds[idx].media.type;
         for(const it of (j.results||[])){ it.media_type=it.media_type||stype;
@@ -754,9 +902,27 @@
           counts[key]=(counts[key]||0)+1; byKey[key]=it; } });
       const list=Object.keys(byKey).map(k=>({item:byKey[k],score:counts[k]}));
       list.sort((a,b)=> b.score-a.score || (b.item.popularity||0)-(a.item.popularity||0));
-      const items=list.slice(0,24).map(x=>x.item);
-      if(!items.length){ showTrending(); return; }
+      return list.slice(0,24).map(x=>x.item);
+    }
+    async function showDiscover(){
+      const seq=++searchSeq; showingTrending=false; shownQuery="";
+      results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Finding recommendations...";
+      const items=await getRecommendations();
+      if(seq!==searchSeq) return;
+      if(!items || !items.length){ showTrending(); return; }
       hint.hidden=true; resultsLabel.hidden=false; resultsLabel.textContent="Recommended for you"; renderItems(items); showingTrending=true;
+    }
+    async function loadHomeRecos(){
+      const wrap=$("home-recos-wrap"), box=$("home-recos");
+      let items=null; try{ items=await getRecommendations(); }catch(_){}
+      box.innerHTML="";
+      if(!items || !items.length){ wrap.hidden=true; return; }
+      wrap.hidden=false;
+      items.slice(0,15).map(displayFromItem).forEach(d=>{
+        const el=document.createElement("div"); el.className="gemcard";
+        el.innerHTML=(d.poster_url?`<img src="${d.poster_url}" alt="" loading="lazy"/>`:`<img alt=""/>`)+`<div class="gt">${esc(d.title)}</div>`;
+        el.onclick=()=>openDetail(d, loadHome); box.appendChild(el);
+      });
     }
 
     async function runSearch(){
@@ -776,8 +942,8 @@
     // Keep the search box and the shown results consistent when returning to the tab.
     function syncSearch(){
       const v=q.value.trim();
-      if(v===shownQuery) return;
-      if(v.length>=2) runSearch(); else showDiscover();
+      if(v.length>=2){ if(v!==shownQuery) runSearch(); }
+      else { if(!showingTrending) showDiscover(); }
     }
 
     function triggerNow(){ clearTimeout(typeTimer); runSearch(); }
@@ -858,13 +1024,14 @@
         const m=e.media;
         try{
           const d=await fetchDetails(m.type, m.tmdb_id);
-          let date=null, kind="", next=null;
+          let date=null, kind="", next=null, network=null;
           if(m.type==="movie"){ date=d.release_date||null; kind="release"; }
-          else if(d.next_episode_to_air && d.next_episode_to_air.air_date){ date=d.next_episode_to_air.air_date; kind="episode"; next=d.next_episode_to_air; }
-          else if(e.status==="watchlist" && d.first_air_date){ date=d.first_air_date; kind="premiere"; }
-          else if(d.last_episode_to_air && d.last_episode_to_air.air_date){ date=d.last_episode_to_air.air_date; kind="last"; }
+          else { if(d.networks && d.networks[0]) network=d.networks[0].name;
+            if(d.next_episode_to_air && d.next_episode_to_air.air_date){ date=d.next_episode_to_air.air_date; kind="episode"; next=d.next_episode_to_air; }
+            else if(e.status==="watchlist" && d.first_air_date){ date=d.first_air_date; kind="premiere"; }
+            else if(d.last_episode_to_air && d.last_episode_to_air.air_date){ date=d.last_episode_to_air.air_date; kind="last"; } }
           if(!date) return null;
-          return {media:m, date:new Date(date+"T00:00:00"), rawdate:date, kind, next};
+          return {media:m, date:new Date(date+"T00:00:00"), rawdate:date, kind, next, network};
         }catch(_){ return null; }
       }));
       let rows=items.filter(Boolean).filter(r=>((r.date-today)/DAY)>=-30);
@@ -874,21 +1041,22 @@
       currentDisplays=rows.map(r=>displayFromMedia(r.media));
       rows.forEach(r=>list.appendChild(upcomingRow(r, today, DAY)));
     }
+    function prettyDate(s){ try{ return new Date(s+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}); }catch(_){ return s; } }
     function upcomingRow(r, today, DAY){
       const m=r.media; const diff=Math.round((r.date-today)/DAY);
-      let badge, tone;
-      if(diff>0){ badge = diff===1?"Tomorrow":("In "+diff+" days"); tone="st-progress"; }
-      else if(diff===0){ badge="Today"; tone="st-done"; }
-      else { badge="Out now"; tone="st-done"; }
+      const timing = diff>0 ? (diff===1?"Tomorrow":("in "+diff+" days")) : (diff===0?"Today":"Out now");
+      const tone = diff<0 ? "st-done" : (diff===0?"st-done":"st-progress");
       let sub;
-      if(m.type==="movie") sub="Movie · "+r.rawdate;
-      else if(r.kind==="episode" && r.next) sub="Next: S"+r.next.season_number+"E"+r.next.episode_number+" · "+r.rawdate;
-      else if(r.kind==="premiere") sub="Series premiere · "+r.rawdate;
-      else sub="Series · latest "+r.rawdate;
+      if(m.type==="movie") sub="Movie · "+prettyDate(r.rawdate)+" · "+timing;
+      else if(r.kind==="episode" && r.next) sub="S"+r.next.season_number+"E"+r.next.episode_number+" · "+prettyDate(r.rawdate)+" · "+timing;
+      else if(r.kind==="premiere") sub="Premiere · "+prettyDate(r.rawdate)+" · "+timing;
+      else sub="Latest · "+prettyDate(r.rawdate);
+      const badge = r.network || timing;
+      const badgeTone = r.network ? "st-todo" : tone;
       const el=document.createElement("div"); el.className="cmp-row";
       el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
         `<div class="cr-body"><div class="cr-t">${esc(m.title)}</div><div class="cr-p">${esc(sub)}</div></div>
-         <span class="verdict ${tone}">${esc(badge)}</span>`;
+         <span class="verdict ${badgeTone}">${esc(badge)}</span>`;
       el.onclick=()=>openDetail(displayFromMedia(m), loadUpcoming);
       return el;
     }
@@ -906,19 +1074,26 @@
     }
     function renderProviders(fr){
       providers.innerHTML="";
-      if(!fr){ providersSection.hidden=true; return; }
-      const groups=[["Stream",fr.flatrate],["Rent",fr.rent],["Buy",fr.buy]]; let any=false;
-      groups.forEach(([label,list])=>{
-        if(list&&list.length){ any=true;
-          const row=document.createElement("div"); row.className="prov-row";
-          const lab=document.createElement("span"); lab.className="prov-label"; lab.textContent=label; row.appendChild(lab);
-          list.forEach(pr=>{ const chip=document.createElement("span"); chip.className="prov";
-            chip.innerHTML=(pr.logo_path?`<img src="https://image.tmdb.org/t/p/w45${pr.logo_path}" alt="" />`:"")+esc(pr.provider_name);
-            row.appendChild(chip); });
-          providers.appendChild(row);
-        }
-      });
-      providersSection.hidden=!any;
+      const byPrio=(a,b)=>(a.display_priority||99)-(b.display_priority||99);
+      const stream=(fr&&fr.flatrate?fr.flatrate.slice().sort(byPrio):[]).slice(0,3);
+      const rent=(fr&&fr.rent?fr.rent.slice().sort(byPrio):[]).slice(0,2);
+      const buy=(fr&&fr.buy?fr.buy.slice().sort(byPrio):[]).slice(0,2);
+      if(!stream.length && !rent.length && !buy.length){ providersSection.hidden=true; return; }
+      const chip=(pr)=>{ const c=fr.link?document.createElement("a"):document.createElement("span"); c.className="prov"; c.title=pr.provider_name;
+        if(fr.link){ c.href=fr.link; c.target="_blank"; c.rel="noopener noreferrer"; }
+        c.innerHTML=pr.logo_path?`<img src="https://image.tmdb.org/t/p/w92${pr.logo_path}" alt="${esc(pr.provider_name)}" />`:`<span class="prov-name">${esc(pr.provider_name)}</span>`; return c; };
+      const mkRow=(label,arr)=>{ const row=document.createElement("div"); row.className="prov-row";
+        const lab=document.createElement("span"); lab.className="prov-label"; lab.textContent=label; row.appendChild(lab);
+        arr.forEach(pr=>row.appendChild(chip(pr))); return row; };
+      if(stream.length) providers.appendChild(mkRow("Stream", stream));
+      if(rent.length || buy.length){
+        const det=document.createElement("details"); det.className="prov-more";
+        const sum=document.createElement("summary"); sum.textContent="Other…"; det.appendChild(sum);
+        if(rent.length) det.appendChild(mkRow("Rent", rent));
+        if(buy.length) det.appendChild(mkRow("Buy", buy));
+        providers.appendChild(det);
+      }
+      providersSection.hidden=false;
     }
     function curEntry(){ return detailDisplay?myEntries[keyOf(detailDisplay.tmdbId,detailDisplay.type)]:null; }
     function renderSheet(){
@@ -975,6 +1150,7 @@
       let idx=list.findIndex(d=>d&&d.tmdbId===display.tmdbId&&d.type===display.type);
       if(idx<0){ detailList=[display]; detailIndex=0; } else { detailList=list; detailIndex=idx; }
       overlay.hidden=false; document.body.classList.add("no-scroll");
+      const _s=document.querySelector(".sheet"); if(_s){ _s.style.transition="none"; _s.style.transform="translateX(0)"; _s.style.opacity="1"; }
       fillDetail();
     }
     async function fillDetail(){
@@ -984,24 +1160,86 @@
       sheetTitle.textContent=display.title;
       sheetMeta.textContent=(display.year||"—")+" · "+(display.type==="tv"?"Series":"Movie");
       if(display.poster_url){ sheetPoster.src=display.poster_url; sheetPoster.style.display=""; } else { sheetPoster.style.display="none"; }
-      episodeSection.hidden=display.type!=="tv"; epTotal.textContent=""; providersSection.hidden=true;
+      episodeSection.hidden=display.type!=="tv"; epTotal.textContent=""; providersSection.hidden=true; $("cast-section").hidden=true;
+      statusSelect.querySelector('button[data-s="watching"]').style.display = display.type==="tv" ? "" : "none";
       sheetOverview.textContent="Loading..."; renderSheet(); renderRecommend();
-      try{ const d=await fetchDetails(display.type,display.tmdbId); if(seq!==detailSeq) return;
+      try{ const d=await fetchDetailsCredits(display.type,display.tmdbId); if(seq!==detailSeq) return;
         sheetOverview.textContent=d.overview||"No description available.";
         if(display.type==="tv"&&d.number_of_seasons) epTotal.textContent="Total: "+d.number_of_seasons+" seasons, "+(d.number_of_episodes||"?")+" episodes";
+        renderCast(d.credits);
       }catch(e){ if(seq===detailSeq) sheetOverview.textContent=""; }
       try{ const fr=await fetchProviders(display.type,display.tmdbId); if(seq!==detailSeq) return; renderProviders(fr); }catch(e){ if(seq===detailSeq) providersSection.hidden=true; }
     }
+    function renderCast(credits){
+      const sec=$("cast-section"), row=$("cast-row"); row.innerHTML="";
+      const cast=(credits&&credits.cast)?credits.cast.slice(0,12):[];
+      if(!cast.length){ sec.hidden=true; return; }
+      sec.hidden=false;
+      cast.forEach(c=>{ const el=document.createElement("div"); el.className="cast-card";
+        el.innerHTML=(c.profile_path?`<img src="https://image.tmdb.org/t/p/w185${c.profile_path}" alt="" loading="lazy"/>`:`<div class="cast-none">${esc((c.name||"?").charAt(0))}</div>`)+
+          `<div class="cn">${esc(c.name)}</div>`+(c.character?`<div class="cc">${esc(c.character)}</div>`:``);
+        el.onclick=()=>openPerson({id:c.id, name:c.name, profile:c.profile_path, roles:{Actor:1}, count:0, ours:[]}, detailDisplay&&detailDisplay.title);
+        row.appendChild(el); });
+    }
     function navDetail(dir){ const ni=detailIndex+dir; if(ni<0||ni>=detailList.length) return; detailIndex=ni; fillDetail(); }
-    function closeDetail(){ overlay.hidden=true; document.body.classList.remove("no-scroll"); if(detailOnClose) detailOnClose(); detailDisplay=null; detailOnClose=null; }
+    function closeDetail(){ overlay.hidden=true; document.body.classList.remove("no-scroll"); if(typeof removeGhost==="function") removeGhost(); if(detailOnClose) detailOnClose(); detailDisplay=null; detailOnClose=null; }
     sheetClose.onclick=closeDetail;
     overlay.onclick=(e)=>{ if(e.target===overlay) closeDetail(); };
     const sheetEl=document.querySelector(".sheet");
-    let swX=0, swY=0;
-    sheetEl.addEventListener("touchstart",(e)=>{ const t=e.changedTouches[0]; swX=t.clientX; swY=t.clientY; }, {passive:true});
-    sheetEl.addEventListener("touchend",(e)=>{ const t=e.changedTouches[0]; const dx=t.clientX-swX, dy=t.clientY-swY;
-      if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5){ navDetail(dx<0?1:-1); } }, {passive:true});
-    navPrev.onclick=()=>navDetail(-1); navNext.onclick=()=>navDetail(1);
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function canGo(dir){ return dir<0 ? detailIndex>0 : detailIndex<detailList.length-1; }
+    function slideSwitch(dir){
+      if(reduceMotion){ navDetail(dir); sheetEl.style.transform="translateX(0)"; sheetEl.style.opacity="1"; return; }
+      const w=sheetEl.offsetWidth;
+      sheetEl.style.transition="transform .16s ease-out, opacity .16s ease-out";
+      sheetEl.style.transform=`translateX(${-dir*w*0.6}px)`; sheetEl.style.opacity="0";
+      setTimeout(()=>{ navDetail(dir);
+        sheetEl.style.transition="none"; sheetEl.style.transform=`translateX(${dir*w*0.6}px)`; sheetEl.style.opacity="0";
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          sheetEl.style.transition="transform .2s ease-out, opacity .2s ease-out";
+          sheetEl.style.transform="translateX(0)"; sheetEl.style.opacity="1"; }));
+      },160);
+    }
+    const HSCROLL_SEL = ".cast-row, .prov-row, .shelf, .status-select, .ep-row, input, .stars, .rec-friends, .prov-more";
+    let swX=0, swY=0, dragX=0, axisLocked=null, swActive=false, ghostEl=null, ghostDir=0;
+    function removeGhost(){ if(ghostEl){ ghostEl.remove(); ghostEl=null; ghostDir=0; } }
+    function buildGhost(dir){
+      removeGhost(); const nb=detailList[detailIndex+dir]; if(!nb) return;
+      const r=sheetEl.getBoundingClientRect();
+      const g=document.createElement("div"); g.className="sheet sheet-ghost";
+      g.style.cssText="position:fixed;top:"+r.top+"px;left:"+r.left+"px;width:"+r.width+"px;min-height:"+r.height+"px;z-index:41;pointer-events:none;";
+      g.innerHTML=`<div class="sheet-head">${nb.poster_url?`<img src="${nb.poster_url}" alt=""/>`:``}<div><div class="sheet-title">${esc(nb.title)}</div><div class="sheet-meta">${(nb.year||"—")+" · "+(nb.type==="tv"?"Series":"Movie")}</div></div></div><div class="sheet-overview" style="color:var(--muted)">…</div>`;
+      g.style.transform="translateX("+(dir*r.width)+"px)";
+      overlay.appendChild(g); ghostEl=g; ghostDir=dir;
+    }
+    sheetEl.addEventListener("touchstart",(e)=>{
+      if(e.target.closest(HSCROLL_SEL)){ swActive=false; return; }
+      swActive=true; const t=e.changedTouches[0]; swX=t.clientX; swY=t.clientY; dragX=0; axisLocked=null;
+      sheetEl.style.transition="none"; sheetEl.style.opacity="1";
+    }, {passive:true});
+    sheetEl.addEventListener("touchmove",(e)=>{ if(!swActive) return; const t=e.changedTouches[0]; const dx=t.clientX-swX, dy=t.clientY-swY;
+      if(axisLocked===null && (Math.abs(dx)>10||Math.abs(dy)>10)) axisLocked = Math.abs(dx)>Math.abs(dy)*1.2 ? "x":"y";
+      if(axisLocked!=="x") return;
+      e.preventDefault();
+      const dir = dx<0?1:-1; const w=sheetEl.offsetWidth;
+      if(canGo(dir)){ if(ghostDir!==dir) buildGhost(dir); } else { removeGhost(); }
+      let d=dx; if(!canGo(dir)) d*=0.25;
+      dragX=d; sheetEl.style.transform="translateX("+d+"px)";
+      if(ghostEl) ghostEl.style.transform="translateX("+(ghostDir*w + d)+"px)";
+    }, {passive:false});
+    sheetEl.addEventListener("touchend",()=>{ if(!swActive) return; swActive=false;
+      if(axisLocked==="x"){ const w=sheetEl.offsetWidth; const dir=dragX<0?1:-1;
+        if(Math.abs(dragX)>w*0.28 && canGo(dir)){
+          sheetEl.style.transition="transform .18s ease-out"; sheetEl.style.transform="translateX("+(-dir*w)+"px)";
+          if(ghostEl){ ghostEl.style.transition="transform .18s ease-out"; ghostEl.style.transform="translateX(0)"; }
+          setTimeout(()=>{ navDetail(dir); sheetEl.style.transition="none"; sheetEl.style.transform="translateX(0)"; removeGhost(); },185);
+        } else {
+          sheetEl.style.transition="transform .2s ease-out"; sheetEl.style.transform="translateX(0)";
+          if(ghostEl){ ghostEl.style.transition="transform .2s ease-out"; ghostEl.style.transform="translateX("+(ghostDir*w)+"px)"; setTimeout(removeGhost,210); }
+        }
+      } else { removeGhost(); }
+      dragX=0; axisLocked=null; }, {passive:true});
+    navPrev.onclick=()=>slideSwitch(-1); navNext.onclick=()=>slideSwitch(1);
 
     statusSelect.querySelectorAll("button").forEach(b=>{ b.onclick=async()=>{
       try{ await setStatusByDisplay(detailDisplay,b.dataset.s); renderSheet(); showToast("Saved"); }
@@ -1027,7 +1265,7 @@
 
     sheetRemove.onclick=async()=>{ await removeByDisplay(detailDisplay); showToast("Removed"); closeDetail(); };
 
-    function fmtHours(min){ min=Math.round(min); const h=Math.floor(min/60), m=min%60; return h>0 ? (h+" h "+(m<10?"0"+m:m)) : (m+" min"); }
+    function fmtHours(min){ const h=Math.round((min||0)/60); return h+(h===1?" hour":" hours"); }
     async function cacheMedia(id, fields){ try{ await client.from("media").update(fields).eq("id", id); }catch(e){} }
 
     // ---- badges / achievements (computed from counts, nothing stored) ----
@@ -1058,8 +1296,22 @@
         el.innerHTML=`<span class="bi-emoji">${b.emoji}</span><div style="flex:1;min-width:0"><div class="bi-name">${esc(b.name)}</div>
           <div class="bi-sub">${b.earned?"Unlocked":esc(b.desc)+" ("+b.prog+")"}</div></div>
           <span class="rar rar-${b.rarity}">${b.rarity}</span>`;
-        grid.appendChild(el); });
+        el.onclick=()=>openBadge(b); grid.appendChild(el); });
     }
+    // ---- badge info card ----
+    function openBadge(b){
+      $("bm-emoji").textContent=b.emoji;
+      $("bm-emoji").className="bm-emoji "+b.rarity;
+      $("bm-name").textContent=b.name;
+      const rar=$("bm-rar"); rar.textContent=b.rarity; rar.className="rar rar-"+b.rarity;
+      $("bm-desc").textContent = b.earned ? ("Unlocked — "+b.desc.charAt(0).toLowerCase()+b.desc.slice(1)+".") : ("How to unlock: "+b.desc.charAt(0).toLowerCase()+b.desc.slice(1)+".");
+      $("bm-status").textContent = b.earned ? "Unlocked ✓" : ("Progress: "+b.prog);
+      $("bm-status").className = "bm-status "+(b.earned?"done":"");
+      $("badge-overlay").hidden=false; document.body.classList.add("no-scroll");
+    }
+    function closeBadge(){ $("badge-overlay").hidden=true; document.body.classList.remove("no-scroll"); }
+    $("badge-close").onclick=closeBadge;
+    $("badge-overlay").onclick=(e)=>{ if(e.target===$("badge-overlay")) closeBadge(); };
 
     async function fetchDetailsCredits(type,id){
       const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US&append_to_response=credits`);
@@ -1079,52 +1331,132 @@
           <div class="bar-track"><div class="bar-fill" style="width:${Math.round(val/max*100)}%"></div></div>`;
         el.appendChild(row); });
     }
-    function renderPeople(el, counts){
-      const arr=Object.keys(counts).map(k=>[k,counts[k]]).filter(x=>x[1]>=2).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    function roleLabel(roles){ const r=Object.keys(roles||{}); if(!r.length) return "";
+      if(r.includes("Actor") && (r.includes("Director")||r.includes("Creator"))) return "Actor · Director";
+      return r[0]; }
+    function renderPeople(el, people){
+      const arr=Object.values(people).filter(p=>p.count>=2).sort((a,b)=>b.count-a.count).slice(0,8);
       el.innerHTML="";
       if(!arr.length){ el.innerHTML=`<div class="stat-empty">Watch more titles to see recurring names.</div>`; return; }
-      arr.forEach(([name,val])=>{ const row=document.createElement("div"); row.className="person-row";
-        row.innerHTML=`<span>${esc(name)}</span><span class="pv">${val} titles</span>`; el.appendChild(row); });
+      arr.forEach(p=>{ const card=document.createElement("div"); card.className="face-card";
+        card.innerHTML=(p.profile?`<img class="face" src="https://image.tmdb.org/t/p/w185${p.profile}" alt="" loading="lazy"/>`:`<div class="face face-none">${esc((p.name||"?").charAt(0))}</div>`)+
+          `<div class="fc-name">${esc(p.name)}</div><div class="fc-meta">${p.count} titles</div><span class="fc-role">${esc(roleLabel(p.roles))}</span>`;
+        card.onclick=()=>openPerson(p); el.appendChild(card); });
     }
+    async function openPerson(p, extraExclude){
+      $("person-overlay").hidden=false; document.body.classList.add("no-scroll");
+      $("pm-name").textContent=p.name; $("pm-role").textContent=(roleLabel(p.roles)||"Actor")+(p.count>0?(" · seen in "+p.count+" of your titles"):""); $("pm-photo").style.display="none";
+      $("pm-hint").hidden=false; $("pm-also-wrap").hidden=true;
+      const oursBox=$("pm-ours"); oursBox.innerHTML="";
+      (p.ours||[]).forEach(o=>{ const el=document.createElement("div"); el.className="gemcard";
+        el.innerHTML=(o.poster?`<img src="${o.poster}" alt="" loading="lazy"/>`:`<img alt=""/>`)+`<div class="gt">${esc(o.title)}</div>`; oursBox.appendChild(el); });
+      $("pm-ours-wrap").hidden = !(p.ours&&p.ours.length);
+      try{
+        const d=await fetch(`https://api.themoviedb.org/3/person/${p.id}?api_key=${TMDB_KEY}&language=en-US&append_to_response=combined_credits`).then(r=>r.ok?r.json():null);
+        $("pm-hint").hidden=true;
+        if(!d) return;
+        if(d.profile_path){ $("pm-photo").src="https://image.tmdb.org/t/p/w185"+d.profile_path; $("pm-photo").style.display=""; }
+        const ourset=new Set((p.ours||[]).map(o=>o.title.toLowerCase()));
+        if(extraExclude) ourset.add(String(extraExclude).toLowerCase());
+        const sig=(c)=>{ const ch=(c.character||"").toLowerCase();
+          if(ch.includes("self")||ch.includes("himself")||ch.includes("herself")||ch.includes("archive")||ch.includes("uncredited")||ch.includes("narrator")) return false;
+          if(c.media_type==="tv" && (c.episode_count||0) < 3) return false;
+          if(c.media_type==="movie" && c.order!=null && c.order > 12) return false;
+          return true; };
+        const cast=((d.combined_credits&&d.combined_credits.cast)||[]).filter(c=>c.poster_path&&(c.media_type==="movie"||c.media_type==="tv")&&sig(c));
+        cast.sort((a,b)=>(b.popularity||0)-(a.popularity||0));
+        const seen={}, uniq=[];
+        for(const c of cast){ const title=c.title||c.name; if(!title) continue; const key=title.toLowerCase();
+          if(ourset.has(key)||seen[key]) continue; seen[key]=1;
+          uniq.push({title, poster:c.poster_path, type:c.media_type, id:c.id, year:(c.release_date||c.first_air_date||"").slice(0,4)});
+          if(uniq.length>=4) break; }
+        const alsoBox=$("pm-also"); alsoBox.innerHTML="";
+        uniq.forEach(u=>{ const el=document.createElement("div"); el.className="gemcard";
+          el.innerHTML=`<img src="https://image.tmdb.org/t/p/w185${u.poster}" alt="" loading="lazy"/><div class="gt">${esc(u.title)}</div>`;
+          el.onclick=()=>{ closePerson(); openDetail({tmdbId:u.id,type:u.type,title:u.title,year:u.year,poster_url:"https://image.tmdb.org/t/p/w342"+u.poster}, null); };
+          alsoBox.appendChild(el); });
+        $("pm-also-wrap").hidden = !uniq.length;
+      }catch(e){ $("pm-hint").hidden=true; }
+    }
+    function closePerson(){ $("person-overlay").hidden=true; document.body.classList.remove("no-scroll"); }
+    $("person-close").onclick=closePerson;
+    $("person-overlay").onclick=(e)=>{ if(e.target===$("person-overlay")) closePerson(); };
+    let homePickPool=[];
     async function loadHome(){
       const h=new Date().getHours();
       const part = h<5?"Good night":h<12?"Good morning":h<18?"Good afternoon":"Good evening";
       $("home-greet").textContent = part + (myUsername ? ", "+myUsername : "");
       const {data}=await client.from("entries")
-        .select("status,rating,is_gem,last_season,last_episode,media:media_id(tmdb_id,type,title,poster_url,year)")
+        .select("status,rating,is_gem,last_season,last_episode,media:media_id(id,tmdb_id,type,title,poster_url,year,runtime,avg_episode_runtime,total_episodes)")
         .eq("user_id",currentUserId);
       const rows=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
       const counts=computeCounts(rows);
-      const watched=rows.filter(e=>e.status==="watched").length;
-      const inprog=rows.filter(e=>e.status==="watching").length;
-      $("home-watched").textContent=watched;
-      $("home-titles").textContent=rows.length;
-      $("home-badges").textContent=badgeState(counts).earnedCount;
-      $("home-greetsub").textContent = rows.length ? (inprog+(inprog===1?" series in progress":" series in progress")+" · "+counts.gems+(counts.gems===1?" gem":" gems")) : "Your collection is empty — add something from Search.";
+      const inprog=rows.filter(e=>e.status==="watching" && e.media.type==="tv").length;
+      const watchlist=rows.filter(e=>e.status==="watchlist");
+      $("home-inprogress").textContent=inprog;
+      $("home-watchlist").textContent=watchlist.length;
+      $("home-greetsub").textContent = rows.length ? (counts.gems+(counts.gems===1?" gem":" gems")+" · "+friendsCache.length+(friendsCache.length===1?" friend":" friends")) : "Your collection is empty — add something from Search.";
       const brow=$("home-badges-row"); brow.innerHTML=""; $("home-badges-lab").hidden=!rows.length;
-      if(rows.length){ badgeState(counts).all.forEach(b=>{ const el=document.createElement("div");
-        el.className="hbadge "+b.rarity+(b.earned?" earned":" locked"); el.textContent=b.emoji; el.title=b.name+(b.earned?"":" — "+b.desc); brow.appendChild(el); }); }
+      if(rows.length){ badgeState(counts).all.slice().sort((a,b)=>(b.earned?1:0)-(a.earned?1:0)).slice(0,12).forEach(b=>{
+        const el=document.createElement("div"); el.className="hbadge "+b.rarity+(b.earned?" earned":" locked");
+        el.textContent=b.emoji; el.title=b.name; el.onclick=()=>openBadge(b); brow.appendChild(el); }); }
+      homePickPool = watchlist.slice(); $("home-pick-btn").hidden = !homePickPool.length;
       homeShelf("home-continue","home-continue-wrap", rows.filter(e=>e.status==="watching"));
       homeShelf("home-gems","home-gems-wrap", rows.filter(e=>e.is_gem));
+      loadHomeRecos();
+      $("home-time").textContent="…";
+      computeWatchMinutes(rows).then(min=>{ $("home-time").textContent = fmtHours(min); }).catch(()=>{ $("home-time").textContent="—"; });
+    }
+    async function computeWatchMinutes(rows){
+      let total=0;
+      for(const e of (rows||[])){
+        const m=e.media; if(!m) continue;
+        if(m.type==="movie"){
+          if(e.status!=="watched") continue;
+          let rt=m.runtime;
+          if(rt==null){ try{ const d=await fetchDetails("movie",m.tmdb_id); rt=d.runtime||0; cacheMedia(m.id,{runtime:rt}); }catch(_){ rt=0; } }
+          total += rt||0;
+        } else if(m.type==="tv"){
+          if(e.status!=="watched" && e.status!=="watching") continue;
+          try{
+            const d=await fetchDetails("tv",m.tmdb_id);
+            const avg=(d.episode_run_time&&d.episode_run_time[0])||m.avg_episode_runtime||42;
+            cacheMedia(m.id,{avg_episode_runtime:avg,total_episodes:d.number_of_episodes||null});
+            let eps=0;
+            if(e.status==="watched"){ eps=d.number_of_episodes||0; }
+            else { const ls=e.last_season||1, le=e.last_episode||0; let before=0;
+              for(const sea of (d.seasons||[])){ if(sea.season_number>=1&&sea.season_number<ls) before+=(sea.episode_count||0); }
+              eps=before+le; }
+            total += eps*avg;
+          }catch(_){}
+        }
+      }
+      return total;
     }
     function homeShelf(boxId, wrapId, entries){
       const wrap=$(wrapId), box=$(boxId); box.innerHTML="";
       if(!entries.length){ wrap.hidden=true; return; }
       wrap.hidden=false; entries.forEach(e=>box.appendChild(gemShelfCard(e.media, loadHome)));
     }
+    $("home-pick-btn").onclick=()=>{ if(!homePickPool.length) return;
+      const e=homePickPool[Math.floor(Math.random()*homePickPool.length)]; openDetail(displayFromMedia(e.media), loadHome); };
     async function loadStats(){
       statsBody.hidden=true; statsHint.hidden=false; statsHint.textContent="Computing your stats...";
       const { data, error } = await client.from("entries")
-        .select("status,rating,is_gem,rewatch_count,last_season,last_episode,media:media_id(id,tmdb_id,type,year,runtime,avg_episode_runtime,total_episodes)")
+        .select("status,rating,is_gem,rewatch_count,last_season,last_episode,media:media_id(id,tmdb_id,type,title,poster_url,year,runtime,avg_episode_runtime,total_episodes)")
         .eq("user_id", currentUserId);
       if(error){ statsHint.textContent="Could not load: "+error.message; return; }
-      renderBadges(computeCounts(data));
       let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0, ratingSum=0, ratingN=0, rewatchTotal=0;
       const genres={}, decades={}, people={};
       const addDecade=(y)=>{ if(y){ decades[(Math.floor(y/10)*10)+"s"]=(decades[(Math.floor(y/10)*10)+"s"]||0)+1; } };
-      const addPeople=(d)=>{ if(d.credits&&d.credits.cast) d.credits.cast.slice(0,3).forEach(p=>tally(people,p.name));
-        if(d.credits&&d.credits.crew) d.credits.crew.filter(c=>c.job==="Director").forEach(p=>tally(people,p.name));
-        if(d.created_by) d.created_by.forEach(p=>tally(people,p.name)); };
+      const addPeople=(d, m)=>{
+        const add=(p, role)=>{ if(!p||!p.id) return;
+          if(!people[p.id]) people[p.id]={id:p.id,name:p.name,count:0,ours:[],roles:{},profile:null};
+          const pe=people[p.id]; if(!pe.profile && p.profile_path) pe.profile=p.profile_path; if(role) pe.roles[role]=1;
+          if(m && m.title && !pe.ours.some(o=>o.title===m.title)){ pe.ours.push({title:m.title, poster:m.poster_url}); pe.count++; } };
+        if(d.credits&&d.credits.cast) d.credits.cast.slice(0,15).forEach(p=>add(p,"Actor"));
+        if(d.credits&&d.credits.crew) d.credits.crew.filter(c=>c.job==="Director").forEach(p=>add(p,"Director"));
+        if(d.created_by) d.created_by.forEach(p=>add(p,"Creator")); };
       for(const e of (data||[])){
         const m=e.media; if(!m) continue;
         if(e.rating){ ratingSum+=e.rating; ratingN++; }
@@ -1134,7 +1466,7 @@
           movieCount++;
           try{ const d=await fetchDetailsCredits("movie", m.tmdb_id);
             const rt=d.runtime||m.runtime||0; movieMin+=rt; if(d.runtime) cacheMedia(m.id,{runtime:d.runtime});
-            (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d);
+            (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d, m);
             addDecade(m.year || (d.release_date?parseInt(d.release_date.slice(0,4),10):null));
           }catch(_){ movieMin += m.runtime||0; addDecade(m.year); }
         } else if(m.type==="tv"){
@@ -1150,7 +1482,7 @@
               for(const sea of (d.seasons||[])){ if(sea.season_number>=1 && sea.season_number<ls) before += (sea.episode_count||0); }
               eps = before + le; }
             seriesMin += eps*avg;
-            (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d);
+            (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d, m);
             addDecade(m.year || (d.first_air_date?parseInt(d.first_air_date.slice(0,4),10):null));
           }catch(_){ addDecade(m.year); }
         }
@@ -1374,6 +1706,17 @@
 
     // ---- compare ----
     $("cmp-back").onclick=()=>showSection("friends");
+
+    // ---- achievements (dedicated screen, reached from Home) ----
+    async function openAchievements(){
+      sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
+      sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
+      $("section-achievements").hidden=false; window.scrollTo(0,0);
+      const {data}=await client.from("entries").select("status,rating,is_gem,media:media_id(type)").eq("user_id",currentUserId);
+      renderBadges(computeCounts((data||[]).filter(e=>e.media)));
+    }
+    $("ach-back").onclick=()=>showSection("home");
+    $("home-badges-lab").onclick=openAchievements;
 
     function progRank(e){
       if(e.status==="watched") return Number.MAX_SAFE_INTEGER;
