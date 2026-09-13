@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#0d0f14" />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" />
@@ -51,8 +52,8 @@
 
     #auth-view { max-width: 380px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 40px) 20px 40px; }
     .brandmark { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 8px 0 24px; }
-    .brand-eye { display: block; }
-    #auth-view .brand-eye { width: 62px; height: 62px; }
+    .brand-eye { display: block; width: auto; }
+    #auth-view .brand-eye { width: auto; height: 56px; }
     .logo { font-size: 44px; font-weight: 800; letter-spacing: 1px; text-align: center; margin: 0; }
     .logo span { color: var(--accent); }
     .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
@@ -80,7 +81,7 @@
     .topbar { display: flex; align-items: center; justify-content: space-between; padding: calc(env(safe-area-inset-top) + 16px) 2px 16px;
       position: sticky; top: 0; background: var(--bg); z-index: 5; }
     .topbar .brand { font-size: 24px; font-weight: 800; letter-spacing: .5px; display: flex; align-items: center; gap: 9px; }
-    .topbar .brand .brand-eye { width: 28px; height: 28px; }
+    .topbar .brand .brand-eye { width: auto; height: 26px; }
     .topbar .brand .ee { color: var(--accent); }
     .topbar .right { display: flex; align-items: center; gap: 12px; }
     .topbar .who { color: var(--muted); font-size: 14px; }
@@ -670,7 +671,7 @@
 <body>
   <div id="auth-view">
     <div class="brandmark">
-      <svg class="brand-eye" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M4 24 C 12 13, 36 13, 44 24 C 36 35, 12 35, 4 24 Z" stroke="var(--text)" stroke-width="3" stroke-linejoin="round"/><path d="M21 18.5 L 31.5 24 L 21 29.5 Z" fill="var(--accent)"/></svg>
+      <img class="brand-eye" src="logo.png" alt="Seen" />
       <div class="logo">S<span>ee</span>n</div>
     </div>
     <div class="card">
@@ -693,7 +694,7 @@
 
   <div id="app-view" hidden>
     <div class="topbar">
-      <div class="brand"><svg class="brand-eye" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M4 24 C 12 13, 36 13, 44 24 C 36 35, 12 35, 4 24 Z" stroke="var(--text)" stroke-width="3" stroke-linejoin="round"/><path d="M21 18.5 L 31.5 24 L 21 29.5 Z" fill="var(--accent)"/></svg><span class="wm">S<span class="ee">ee</span>n</span></div>
+      <div class="brand"><img class="brand-eye" src="logo.png" alt="Seen" /><span class="wm">S<span class="ee">ee</span>n</span></div>
       <div class="right">
         <button class="userbtn" id="userbtn" aria-haspopup="true" aria-expanded="false">
           <span class="uav" id="userbtn-av">?</span>
@@ -848,7 +849,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.18</div>
+    <div class="appfoot">Seen · v3.21</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
