@@ -585,9 +585,10 @@
     .pf-user { color: var(--muted); font-size: 14px; margin-top: 3px; }
     .pf-bio { font-size: 14px; color: var(--text-soft); line-height: 1.5; margin: 15px 2px 0; }
     .pf-actions { display: flex; gap: 8px; margin-top: 16px; }
-    .pf-btn { flex: 1; padding: 11px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text);
-      font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--body); }
-    .pf-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .pf-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 46px;
+      padding: 12px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text);
+      font-size: 14px; font-weight: 600; line-height: 1; cursor: pointer; font-family: var(--body); }
+    .pf-btn.pf-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
     .pf-stats { display: flex; gap: 8px; margin: 6px 0 4px; }
     .pf-stat { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 13px 8px; text-align: center; }
     .pf-stat .n { font-family: var(--disp); font-weight: 800; font-size: 22px; line-height: 1; }
@@ -847,7 +848,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.16</div>
+    <div class="appfoot">Seen · v3.18</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1112,7 +1113,7 @@
         '<div class="pf-top"><div class="pf-av">'+(p.avatar?esc(p.avatar):esc(initial(uname)))+'</div>'+
         '<div class="pf-id"><div class="pf-name">'+esc(dispName)+'</div><div class="pf-user">@'+esc(uname)+'</div></div></div>'+
         (p.bio?'<div class="pf-bio">'+esc(p.bio)+'</div>':'');
-      if(o.self){ html+='<div class="pf-actions"><button class="pf-btn primary" id="pf-edit-btn">✏️ Edit profile</button>'+
+      if(o.self){ html+='<div class="pf-actions"><button class="pf-btn pf-primary" id="pf-edit-btn">✏️ Edit profile</button>'+
         '<button class="pf-btn" id="pf-appearance-btn">🎨 Appearance</button></div>'; }
       html+='</div>';
       if(o.self){ html+='<div class="pf-note">This is how your profile looks to friends. Tap Edit to change your avatar, colour, bio and what\'s shown.</div>'; }
