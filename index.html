@@ -18,15 +18,34 @@
     :root {
       --bg: #0d0f14; --card: #151a23; --card-2: #1b2230; --field: #0c0e12; --line: #28303f;
       --text: #f3f6fb; --muted: #95a2b6; --faint: #5d6b80;
-      --accent: #ff5a5f; --gold: #ffb23e; --ok: #38c172; --err: #ff6b6b; --watch: #4a90d9;
+      --accent: #ff5a5f; --accent-rgb: 255,90,95; --gold: #ffb23e; --ok: #38c172; --err: #ff6b6b; --watch: #4a90d9;
       --epic: #a56bff;
+      /* neutres semantiques (remplacent les anciens gris codes en dur) */
+      --chip: #22262f; --avatar-bg: #2a303c; --text-soft: #cdd3dd;
+      --nav-bg: rgba(13,15,20,.94);
+      /* verre : fond des feuilles/cartes quand on les ouvre */
+      --glass: rgba(21,26,35,.72); --glass-blur: 22px;
       --disp: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       --body: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
+    /* ---- Theme clair (le sombre reste le defaut) ---- */
+    :root[data-theme="light"] {
+      --bg: #f4f6fb; --card: #ffffff; --card-2: #eef1f7; --field: #f0f2f7; --line: #dbe1ec;
+      --text: #10151f; --muted: #5a6678; --faint: #97a1b3;
+      --chip: #e7ebf2; --avatar-bg: #dde3ee; --text-soft: #384252;
+      --nav-bg: rgba(255,255,255,.9);
+      --glass: rgba(255,255,255,.72);
+    }
+    :root[data-theme="light"] body { background: var(--bg); }
+    :root[data-theme="light"] .hbadge.locked, :root[data-theme="light"] .badge-item.locked { opacity: .5; }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
     body { background: var(--bg); color: var(--text);
-      font-family: var(--body); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+      font-family: var(--body); min-height: 100vh; -webkit-font-smoothing: antialiased;
+      transition: background-color .25s ease, color .25s ease; }
+    :root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after {
+      animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important; }
     .logo, .topbar .brand, .stat-hero-num, .sheet-title, .ch-name, .greet, .home-big,
       .badge-count-hero, .section-title { font-family: var(--disp); letter-spacing: -.01em; }
 
@@ -70,24 +89,29 @@
 
     /* Navigation — bottom tab bar on mobile, left sidebar on desktop */
     .nav { display: flex; gap: 2px; margin: 0; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
-      background: rgba(13,15,20,.94); border-top: 1px solid var(--line); backdrop-filter: blur(10px);
+      background: var(--nav-bg); border-top: 1px solid var(--line); backdrop-filter: blur(10px);
       padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
     .nav .navtab { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
-      padding: 6px 2px; border-radius: 10px; cursor: pointer; background: transparent; border: none;
+      padding: 7px 2px; border-radius: 12px; cursor: pointer; background: transparent; border: 1px solid transparent;
       color: var(--faint); font-size: 10px; position: relative; }
-    .nav .navtab.active { color: var(--accent); background: transparent; }
+    /* onglet actif : cadre plein (pilule) + lueur, en plus de la couleur d'accent */
+    .nav .navtab.active { color: var(--accent); background: rgba(var(--accent-rgb),.15);
+      border-color: rgba(var(--accent-rgb),.45); box-shadow: 0 0 12px -4px rgba(var(--accent-rgb),.5); }
     .navtab .ni { width: 22px; height: 22px; flex: 0 0 auto; transition: transform .12s ease; }
     .navtab .nl { line-height: 1; }
-    .navtab { transition: color .15s ease; }
+    .navtab { transition: color .15s ease, background .18s ease, border-color .18s ease; }
+    .navtab.active .ni { transform: scale(1.06); }
     .navtab:active .ni { transform: scale(.85); }
-    @media (prefers-reduced-motion: reduce){ .navtab .ni, .navtab:active .ni { transition: none; transform: none; } }
+    @media (prefers-reduced-motion: reduce){ .navtab .ni, .navtab:active .ni, .navtab.active .ni { transition: none; transform: none; } }
     @media (min-width: 860px){
       .nav { position: fixed; top: 0; left: 0; bottom: 0; right: auto; width: 212px; flex-direction: column;
         justify-content: flex-start; gap: 4px; padding: 22px 12px; border-top: none; border-right: 1px solid var(--line);
         background: var(--bg); backdrop-filter: none; }
       .nav .navtab { flex: 0 0 auto; flex-direction: row; justify-content: flex-start; gap: 12px; font-size: 15px;
         padding: 11px 14px; color: var(--muted); }
-      .nav .navtab.active { background: rgba(255,90,95,.13); color: var(--text); font-weight: 600; }
+      .nav .navtab.active { background: rgba(var(--accent-rgb),.16); border-color: rgba(var(--accent-rgb),.42);
+        color: var(--text); font-weight: 600; box-shadow: none; }
+      .nav .navtab.active .ni { color: var(--accent); }
       .navtab .ni { width: 19px; height: 19px; }
     }
     .appfoot { text-align: center; color: var(--muted); font-size: 12px; margin-top: 32px; opacity: .6; }
@@ -115,7 +139,7 @@
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
     .poster { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 12px;
       overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
-    .poster .img { width: 100%; aspect-ratio: 2 / 3; background: #22262f; display: flex; align-items: center;
+    .poster .img { width: 100%; aspect-ratio: 2 / 3; background: var(--chip); display: flex; align-items: center;
       justify-content: center; color: var(--muted); font-size: 12px; text-align: center; padding: 8px; }
     .poster img.cover { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; }
     .poster .info { padding: 8px 10px; flex: 1; }
@@ -123,10 +147,10 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .poster .m { font-size: 11px; color: var(--muted); margin-top: 4px; }
     .badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 6px;
-      background: #22262f; color: var(--muted); margin-left: 6px; }
+      background: var(--chip); color: var(--muted); margin-left: 6px; }
     .status { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 600; }
     .status.watchlist { background: rgba(74,144,217,.18); color: var(--watch); }
-    .status.watching { background: rgba(255,90,95,.18); color: var(--accent); }
+    .status.watching { background: rgba(var(--accent-rgb),.18); color: var(--accent); }
     .status.watched { background: rgba(56,193,114,.18); color: var(--ok); }
 
     .bookmark { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 9px;
@@ -145,8 +169,10 @@
       align-items: flex-start; justify-content: center; padding: calc(24px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
     #detail-overlay[hidden] { display: none; }
     body.no-scroll { overflow: hidden; }
-    .sheet { background: var(--card); border: 1px solid var(--line); border-radius: 16px; width: 100%;
-      max-width: 460px; padding: 20px; position: relative; }
+    .sheet { background: var(--glass); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3); backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+      border: 1px solid var(--line); border-radius: 16px; width: 100%;
+      max-width: 460px; padding: 20px; position: relative; box-shadow: 0 24px 60px -20px rgba(0,0,0,.6); }
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .sheet { background: var(--card); } }
     .sheet .close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 8px;
       border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
     .nav-arrow { position: fixed; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%;
@@ -160,17 +186,27 @@
     .sheet-head img { width: 92px; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; flex: 0 0 auto; }
     .sheet-title { font-size: 20px; font-weight: 700; line-height: 1.25; padding-right: 30px; }
     .sheet-meta { color: var(--muted); font-size: 13px; margin-top: 4px; }
-    .sheet-overview { font-size: 14px; color: #cdd3dd; line-height: 1.5; margin: 16px 0; max-height: 120px; overflow-y: auto; }
+    .sheet-overview { font-size: 14px; color: var(--text-soft); line-height: 1.5; margin: 16px 0; max-height: 120px; overflow-y: auto; }
     .sheet-section { margin-top: 18px; }
     .sheet-label { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
     .status-select { display: flex; gap: 8px; }
-    .status-select button { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
-      background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; }
-    .status-select button.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    .status-select button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px;
+      padding: 13px 6px; border-radius: 13px; border: 1px solid var(--line); background: var(--field);
+      color: var(--muted); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+    .status-select button svg { width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .status-select button:active { transform: scale(.97); }
+    .status-select button[data-s="watchlist"].active { background: rgba(74,144,217,.16); color: var(--watch); border-color: var(--watch); }
+    .status-select button[data-s="watching"].active { background: rgba(var(--accent-rgb),.16); color: var(--accent); border-color: var(--accent); }
+    .status-select button[data-s="watched"].active { background: rgba(56,193,114,.16); color: var(--ok); border-color: var(--ok); }
+    .status-select button[data-s="watched"].active svg { fill: rgba(56,193,114,.18); }
     .ep-row { display: flex; gap: 10px; align-items: flex-end; }
     .ep-row .fieldw { flex: 1; }
     .ep-row .fieldw span { font-size: 12px; color: var(--muted); }
     .ep-total { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .ep-row select { width: 100%; padding: 12px 14px; background: var(--field); border: 1px solid var(--line);
+      border-radius: 10px; color: var(--text); font-size: 16px; }
+    .ep-row select:focus { outline: none; border-color: var(--accent); }
+    .ep-row select:disabled { opacity: .5; }
     .stars { display: flex; gap: 6px; }
     .stars .star { font-size: 26px; color: #3a4150; cursor: pointer; line-height: 1; }
     .stars .star.on { color: #ffca3a; }
@@ -205,7 +241,7 @@
     #install-btn[hidden] { display: none; }
     .ib-close { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 8px;
       width: 30px; height: 30px; font-size: 16px; cursor: pointer; }
-    #toast { position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); background: #22262f;
+    #toast { position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); background: var(--chip);
       color: var(--text); padding: 10px 16px; border-radius: 10px; font-size: 14px; border: 1px solid var(--line);
       opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
     #toast.show { opacity: 1; }
@@ -227,7 +263,7 @@
     .fr-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
       border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
     .fr-row.tap { cursor: pointer; }
-    .avatar { width: 38px; height: 38px; border-radius: 50%; background: #2a303c; color: var(--text); flex: 0 0 auto;
+    .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--avatar-bg); color: var(--text); flex: 0 0 auto;
       display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; text-transform: uppercase; }
     .fr-name { flex: 1; min-width: 0; }
     .fr-name .n { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -239,11 +275,11 @@
     .btn-sm.ghost { background: transparent; color: var(--muted); }
     .rec-card { display: flex; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px;
       padding: 10px; margin-bottom: 8px; }
-    .rec-card img { width: 52px; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; flex: 0 0 auto; background: #22262f; }
+    .rec-card img { width: 52px; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; flex: 0 0 auto; background: var(--chip); }
     .rec-card .rc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .rec-card .rc-t { font-size: 14px; font-weight: 600; line-height: 1.3; }
     .rec-card .rc-from { font-size: 12px; color: var(--muted); margin-top: 3px; }
-    .rec-card .rc-note { font-size: 13px; color: #cdd3dd; margin-top: 6px; font-style: italic; }
+    .rec-card .rc-note { font-size: 13px; color: var(--text-soft); margin-top: 6px; font-style: italic; }
     .rec-card .rc-btns { display: flex; gap: 6px; margin-top: 10px; }
 
     /* ---- Compare ---- */
@@ -265,15 +301,15 @@
     .cmp-sub { font-size: 15px; color: var(--text); font-weight: 700; margin: 22px 0 10px; }
     .cmp-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
       border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
-    .cmp-row img { width: 44px; aspect-ratio: 2/3; object-fit: cover; border-radius: 7px; flex: 0 0 auto; background: #22262f; }
+    .cmp-row img { width: 44px; aspect-ratio: 2/3; object-fit: cover; border-radius: 7px; flex: 0 0 auto; background: var(--chip); }
     .cmp-row .cr-body { flex: 1; min-width: 0; }
     .cmp-row .cr-t { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cmp-row .cr-p { font-size: 12px; color: var(--muted); margin-top: 3px; }
     .cmp-row .cr-p b { color: var(--text); font-weight: 600; }
     .verdict { flex: 0 0 auto; font-size: 12px; font-weight: 800; padding: 5px 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: .3px; }
     .verdict.nice { background: rgba(56,193,114,.18); color: var(--ok); }
-    .verdict.shame { background: rgba(255,90,95,.18); color: var(--accent); }
-    .verdict.even { background: #22262f; color: var(--muted); }
+    .verdict.shame { background: rgba(var(--accent-rgb),.18); color: var(--accent); }
+    .verdict.even { background: var(--chip); color: var(--muted); }
     .verdict.done { background: rgba(74,144,217,.18); color: var(--watch); }
 
     /* ---- Recommend in sheet ---- */
@@ -281,7 +317,7 @@
     .rec-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px;
       background: var(--field); border: 1px solid var(--line); color: var(--text); font-size: 13px; cursor: pointer; }
     .rec-chip:disabled { opacity: .5; cursor: default; }
-    .rec-chip .av { width: 20px; height: 20px; border-radius: 50%; background: #2a303c; display: flex;
+    .rec-chip .av { width: 20px; height: 20px; border-radius: 50%; background: var(--avatar-bg); display: flex;
       align-items: center; justify-content: center; font-size: 11px; font-weight: 700; text-transform: uppercase; }
 
     /* ---- Pépite (gem) ---- */
@@ -299,7 +335,7 @@
     .shelf::-webkit-scrollbar { height: 6px; } .shelf::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
     .gemcard { cursor: pointer; }
     .shelf .gemcard { flex: 0 0 96px; width: 96px; }
-    .gemcard img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; background: #22262f; display: block; }
+    .gemcard img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; background: var(--chip); display: block; }
     .gemcard .gt { font-size: 12px; margin-top: 6px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
@@ -343,8 +379,9 @@
     #badge-overlay, #person-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.62); z-index: 46; display: flex;
       align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
     #badge-overlay[hidden], #person-overlay[hidden] { display: none; }
-    .badge-modal { background: var(--card); border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 340px;
-      padding: 28px 24px; text-align: center; position: relative; }
+    .badge-modal { background: var(--glass); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3); backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+      border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 340px;
+      padding: 28px 24px; text-align: center; position: relative; box-shadow: 0 24px 60px -20px rgba(0,0,0,.6); }
     .badge-modal .close, .person-modal .close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 8px;
       border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
     .bm-emoji { font-size: 50px; width: 92px; height: 92px; margin: 6px auto 14px; border-radius: 22px; border: 2px solid var(--line);
@@ -353,13 +390,14 @@
     .bm-emoji.epic { border-color: rgba(165,107,255,.7); } .bm-emoji.legendary { border-color: rgba(255,178,62,.8); box-shadow: 0 0 22px -6px rgba(255,178,62,.6); }
     .bm-name { font-family: var(--disp); font-weight: 800; font-size: 22px; margin-bottom: 8px; }
     .badge-modal .rar { display: inline-block; margin-bottom: 14px; }
-    .bm-desc { color: #cdd3dd; font-size: 14.5px; line-height: 1.5; margin-bottom: 16px; }
+    .bm-desc { color: var(--text-soft); font-size: 14.5px; line-height: 1.5; margin-bottom: 16px; }
     .bm-status { font-size: 14px; font-weight: 700; color: var(--muted); }
     .bm-status.done { color: var(--ok); }
-    .person-modal { background: var(--card); border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 420px;
-      padding: 22px; position: relative; max-height: 86vh; overflow-y: auto; }
+    .person-modal { background: var(--glass); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3); backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+      border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 420px;
+      padding: 22px; position: relative; max-height: 86vh; overflow-y: auto; box-shadow: 0 24px 60px -20px rgba(0,0,0,.6); }
     .pm-head { display: flex; gap: 14px; align-items: center; margin-bottom: 4px; padding-right: 30px; }
-    .pm-head img { width: 66px; height: 66px; border-radius: 50%; object-fit: cover; background: #22262f; flex: 0 0 auto; }
+    .pm-head img { width: 66px; height: 66px; border-radius: 50%; object-fit: cover; background: var(--chip); flex: 0 0 auto; }
     .pm-name { font-family: var(--disp); font-weight: 800; font-size: 20px; }
     .pm-role { color: var(--muted); font-size: 13px; margin-top: 3px; }
     .pm-section { margin-top: 18px; }
@@ -369,20 +407,20 @@
     /* familiar faces grid + section descriptions */
     #stat-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
     .face-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; }
-    .face-card .face { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px; display: block; background: #22262f; }
+    .face-card .face { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px; display: block; background: var(--chip); }
     .face-card .face-none { display: flex; align-items: center; justify-content: center; font-family: var(--disp); font-weight: 700;
       font-size: 24px; color: var(--muted); text-transform: uppercase; }
     .fc-name { font-weight: 600; font-size: 14px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.4em; }
     .fc-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
     .fc-role { display: inline-block; margin-top: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
-      font-weight: 700; color: var(--accent); background: rgba(255,90,95,.14); padding: 3px 8px; border-radius: 999px; }
+      font-weight: 700; color: var(--accent); background: rgba(var(--accent-rgb),.14); padding: 3px 8px; border-radius: 999px; }
     .stat-desc { color: var(--muted); font-size: 13px; margin: -6px 0 12px; }
     .upcoming-intro { color: var(--muted); font-size: 13px; margin: 2px 0 16px; }
     /* cast row in the detail sheet */
     .cast-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
     .cast-card { flex: 0 0 62px; width: 62px; text-align: center; cursor: pointer; }
-    .cast-card img, .cast-card .cast-none { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; margin: 0 auto 6px; display: block; background: #22262f; }
+    .cast-card img, .cast-card .cast-none { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; margin: 0 auto 6px; display: block; background: var(--chip); }
     .cast-card .cast-none { display: flex; align-items: center; justify-content: center; font-family: var(--disp); font-weight: 700; font-size: 20px; color: var(--muted); text-transform: uppercase; }
     .cast-card .cn { font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .cast-card .cc { font-size: 10px; color: var(--muted); line-height: 1.2; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -401,11 +439,11 @@
     .greet { font-size: 26px; font-weight: 800; margin: 4px 0 2px; }
     .greet-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 18px; }
     .home-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 6px; }
-    .hh-tile { background: linear-gradient(150deg, rgba(255,90,95,.13), transparent), var(--card);
+    .hh-tile { background: linear-gradient(150deg, rgba(var(--accent-rgb),.13), transparent), var(--card);
       border: 1px solid var(--line); border-radius: 14px; padding: 16px 14px; text-align: center;
       display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .hh-tile.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between;
-      gap: 10px; text-align: left; background: linear-gradient(140deg, rgba(255,90,95,.16), transparent 70%), var(--card); }
+      gap: 10px; text-align: left; background: linear-gradient(140deg, rgba(var(--accent-rgb),.16), transparent 70%), var(--card); }
     .hh-tile.wide .hh-num { font-size: 36px; }
     .hh-tile.wide .hh-lab { margin-top: 0; }
     .hh-num { font-size: 30px; font-weight: 800; line-height: 1; }
@@ -422,7 +460,7 @@
     .hbadge.epic { border-color: rgba(165,107,255,.7); }
     .hbadge.legendary { border-color: rgba(255,178,62,.8); box-shadow: 0 0 14px -5px rgba(255,178,62,.6); }
     .pick-btn { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; cursor: pointer;
-      background: linear-gradient(150deg, rgba(255,90,95,.18), rgba(255,90,95,.04)); border: 1px solid rgba(255,90,95,.4);
+      background: linear-gradient(150deg, rgba(var(--accent-rgb),.18), rgba(var(--accent-rgb),.04)); border: 1px solid rgba(var(--accent-rgb),.4);
       border-radius: 16px; padding: 16px; color: var(--text); margin-top: 26px; }
     .pick-btn:active { transform: scale(.99); }
     .pick-die { font-size: 34px; flex: 0 0 auto; line-height: 1; }
@@ -432,7 +470,7 @@
     /* state label tones for shared series (neutral, no judgement) */
     .verdict.st-done { background: rgba(56,193,114,.18); color: var(--ok); }
     .verdict.st-progress { background: rgba(74,144,217,.18); color: var(--watch); }
-    .verdict.st-todo { background: #22262f; color: var(--muted); }
+    .verdict.st-todo { background: var(--chip); color: var(--muted); }
 
     /* ---- Universes ---- */
     #home-universes-wrap { margin: 26px 0 6px; }
@@ -467,7 +505,7 @@
     .uni-prog-bar { height: 9px; border-radius: 5px; background: var(--field); overflow: hidden; margin-top: 12px; border: 1px solid var(--line); }
     .uni-prog-fill { height: 100%; border-radius: 5px; transition: width .3s ease; }
     .uni-next { display: flex; align-items: center; gap: 11px; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--line); cursor: pointer; }
-    .uni-next img { width: 36px; aspect-ratio: 2/3; object-fit: cover; border-radius: 5px; background: #22262f; flex: 0 0 auto; }
+    .uni-next img { width: 36px; aspect-ratio: 2/3; object-fit: cover; border-radius: 5px; background: var(--chip); flex: 0 0 auto; }
     .uni-next .un-lab { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--uaccent, var(--accent)); font-weight: 700; }
     .uni-next .un-t { font-size: 14.5px; font-weight: 600; margin-top: 2px; }
     /* frieze */
@@ -476,7 +514,7 @@
     .uni-frieze { position: relative; display: inline-flex; gap: 0; padding: 4px 0 6px; }
     .uni-baseline { position: absolute; top: 46px; left: 36px; right: 36px; height: 2px; background: var(--line); }
     .uni-node { flex: 0 0 auto; width: 72px; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; }
-    .uni-node .un-poster { width: 56px; aspect-ratio: 2/3; object-fit: cover; border-radius: 7px; background: #22262f; position: relative; z-index: 1; border: 2px solid var(--line); }
+    .uni-node .un-poster { width: 56px; aspect-ratio: 2/3; object-fit: cover; border-radius: 7px; background: var(--chip); position: relative; z-index: 1; border: 2px solid var(--line); }
     .uni-node.todo .un-poster { opacity: .5; }
     .uni-node.upcoming .un-poster { opacity: .32; }
     .uni-node.done .un-poster { border-color: var(--uaccent, var(--accent)); opacity: 1; }
@@ -491,7 +529,7 @@
     .uni-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
       border-radius: 12px; padding: 9px 12px; cursor: pointer; }
     .uni-row .ur-idx { font-family: var(--disp); font-weight: 700; font-size: 13px; color: var(--faint); width: 18px; flex: 0 0 auto; text-align: center; }
-    .uni-row .ur-img { width: 40px; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; background: #22262f; flex: 0 0 auto; }
+    .uni-row .ur-img { width: 40px; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; background: var(--chip); flex: 0 0 auto; }
     .uni-row .ur-body { flex: 1; min-width: 0; }
     .uni-row .ur-t { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .uni-row .ur-m { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -500,7 +538,131 @@
       background: transparent; color: var(--muted); font-size: 15px; cursor: pointer; }
     .uni-row .ur-check.on { background: var(--uaccent, var(--accent)); color: var(--uink, #0d0f14); border-color: transparent; }
     .uni-row .ur-check:disabled { opacity: .35; cursor: default; }
+    .uni-passnote { font-size: 12.5px; color: var(--uaccent, var(--accent)); background: var(--card); border: 1px solid var(--line);
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+    .uni-reset { width: 100%; padding: 13px; border-radius: 12px; border: 1px solid rgba(var(--accent-rgb),.5);
+      background: transparent; color: var(--err); font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s ease, color .15s ease; }
+    .uni-reset.armed { background: var(--err); color: #fff; border-color: var(--err); }
+    .uni-exit { width: 100%; margin-top: 8px; padding: 10px; border: none; background: transparent;
+      color: var(--muted); font-size: 13px; cursor: pointer; text-decoration: underline; }
+
+    /* ============ User menu (topbar) ============ */
+    .userbtn { display: flex; align-items: center; gap: 8px; padding: 5px 10px 5px 5px; border-radius: 999px;
+      background: var(--card); border: 1px solid var(--line); color: var(--text); cursor: pointer; font-size: 14px; font-family: var(--body); }
+    .userbtn:active { transform: scale(.98); }
+    .uav { width: 30px; height: 30px; border-radius: 50%; background: var(--avatar-bg); flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; text-transform: uppercase; line-height: 1; }
+    .userbtn .uname { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+    .userbtn .uchev { color: var(--muted); font-size: 10px; }
+    #user-menu { position: fixed; top: calc(env(safe-area-inset-top) + 62px); right: 12px; z-index: 60; width: 250px;
+      background: var(--glass); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3); backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+      border: 1px solid var(--line); border-radius: 16px; padding: 8px; box-shadow: 0 24px 60px -20px rgba(0,0,0,.6); }
+    #user-menu[hidden] { display: none; }
+    .um-head { display: flex; align-items: center; gap: 11px; padding: 8px 8px 12px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+    .um-head .uav { width: 42px; height: 42px; font-size: 21px; }
+    .um-head .umn { font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .um-head .ums { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .um-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 10px; border-radius: 10px; background: transparent;
+      border: none; color: var(--text); font-size: 14px; cursor: pointer; text-align: left; font-family: var(--body); }
+    .um-item:hover { background: var(--card-2); }
+    .um-item .umi { width: 20px; text-align: center; font-size: 16px; opacity: .95; flex: 0 0 auto; }
+    .um-item.danger { color: var(--err); }
+    .um-sep { height: 1px; background: var(--line); margin: 6px 4px; }
+
+    /* ============ Profile showcase (mine + friend) ============ */
+    #section-profile { padding-top: 4px; }
+    .pf-banner { position: relative; border-radius: 18px; overflow: hidden; padding: 20px; margin-bottom: 14px; border: 1px solid var(--line);
+      background: radial-gradient(120% 150% at 12% -10%, rgba(var(--pf-rgb),.55), transparent 60%),
+        linear-gradient(160deg, rgba(var(--pf-rgb),.34), rgba(var(--pf-rgb),.05) 72%), var(--card); }
+    .pf-top { display: flex; align-items: center; gap: 16px; }
+    .pf-av { width: 84px; height: 84px; border-radius: 22px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
+      font-size: 46px; line-height: 1; background: rgba(var(--pf-rgb),.2); border: 2px solid rgba(var(--pf-rgb),.6);
+      box-shadow: 0 8px 22px -8px rgba(var(--pf-rgb),.8); }
+    .pf-id { min-width: 0; flex: 1; }
+    .pf-name { font-family: var(--disp); font-weight: 800; font-size: 26px; line-height: 1.05; word-break: break-word; }
+    .pf-user { color: var(--muted); font-size: 14px; margin-top: 3px; }
+    .pf-bio { font-size: 14px; color: var(--text-soft); line-height: 1.5; margin: 15px 2px 0; }
+    .pf-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .pf-btn { flex: 1; padding: 11px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text);
+      font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--body); }
+    .pf-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .pf-stats { display: flex; gap: 8px; margin: 6px 0 4px; }
+    .pf-stat { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 13px 8px; text-align: center; }
+    .pf-stat .n { font-family: var(--disp); font-weight: 800; font-size: 22px; line-height: 1; }
+    .pf-stat .l { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-top: 5px; }
+    .pf-seclab { font-size: 15px; color: var(--text); font-weight: 700; margin: 24px 2px 12px; }
+    .pf-genres { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 2px 0; }
+    .pf-genre { font-size: 12.5px; padding: 6px 13px; border-radius: 999px; background: rgba(var(--pf-rgb),.14);
+      color: var(--text); border: 1px solid rgba(var(--pf-rgb),.4); font-weight: 600; }
+    .pf-note { text-align: center; color: var(--muted); font-size: 12.5px; margin: 0 0 14px;
+      background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+    .pf-badges { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    /* ============ Settings / Edit modal (shared) ============ */
+    .modal-ov { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 55; display: flex; align-items: flex-end; justify-content: center; overflow-y: auto; }
+    .modal-ov[hidden] { display: none; }
+    @media (min-width: 620px){ .modal-ov { align-items: center; padding: 20px; } }
+    .modal-sheet { background: var(--glass); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3); backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+      border: 1px solid var(--line); width: 100%; max-width: 480px; border-radius: 20px 20px 0 0;
+      padding: 22px 20px calc(24px + env(safe-area-inset-bottom)); position: relative; box-shadow: 0 -10px 50px -12px rgba(0,0,0,.6);
+      max-height: 92vh; overflow-y: auto; }
+    @media (min-width: 620px){ .modal-sheet { border-radius: 20px; } }
+    .modal-title { font-family: var(--disp); font-weight: 800; font-size: 21px; margin-bottom: 3px; }
+    .modal-sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+    .modal-sheet .close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line);
+      background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
+    .fld { margin-bottom: 20px; }
+    .fld > .fl { font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 9px; }
+    .fld textarea { width: 100%; padding: 12px 14px; background: var(--field); border: 1px solid var(--line); border-radius: 10px;
+      color: var(--text); font-size: 15px; font-family: var(--body); resize: vertical; min-height: 62px; }
+    .fld textarea:focus { outline: none; border-color: var(--accent); }
+    .charcount { font-size: 11px; color: var(--faint); text-align: right; margin-top: 5px; }
+    .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+    .emoji-grid button { aspect-ratio: 1; border-radius: 10px; border: 1px solid var(--line); background: var(--field); font-size: 20px; cursor: pointer; padding: 0; }
+    .emoji-grid button.sel { border-color: var(--accent); background: rgba(var(--accent-rgb),.18); }
+    .swatches { display: flex; flex-wrap: wrap; gap: 12px; }
+    .swatch { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; padding: 0; }
+    .swatch.sel { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text); }
+    .tg-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 0; border-top: 1px solid var(--line); }
+    .tg-row.first, .tg-list .tg-row:first-child { border-top: none; }
+    .tg-row .tgl { font-size: 14.5px; font-weight: 600; }
+    .tg-row .tgs { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .switch { position: relative; width: 46px; height: 27px; flex: 0 0 auto; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .sl { position: absolute; inset: 0; background: var(--chip); border: 1px solid var(--line); border-radius: 999px; transition: background .18s; cursor: pointer; }
+    .switch .sl:before { content: ""; position: absolute; width: 21px; height: 21px; left: 3px; top: 2px; border-radius: 50%; background: #fff; transition: transform .18s; }
+    .switch input:checked + .sl { background: var(--accent); border-color: var(--accent); }
+    .switch input:checked + .sl:before { transform: translateX(19px); }
+    .seg { display: flex; gap: 4px; background: var(--field); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+    .seg button { flex: 1; padding: 10px 6px; border-radius: 9px; border: none; background: transparent; color: var(--muted);
+      font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--body); display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .seg button.sel { background: var(--accent); color: #fff; }
+    .gsel { display: flex; flex-wrap: wrap; gap: 8px; }
+    .gsel button { font-size: 13px; padding: 8px 13px; border-radius: 999px; background: var(--field); border: 1px solid var(--line);
+      color: var(--muted); cursor: pointer; font-family: var(--body); }
+    .gsel button.sel { background: rgba(var(--accent-rgb),.16); border-color: var(--accent); color: var(--text); font-weight: 600; }
+    .gsel button:disabled { opacity: .4; cursor: default; }
+    .modal-save { width: 100%; margin-top: 6px; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; cursor: pointer; font-family: var(--body); }
+    .modal-save:disabled { opacity: .5; }
+    .sett-lab { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; margin: 22px 0 10px; }
+    .sett-lab.first { margin-top: 2px; }
+    .sett-ver { text-align: center; color: var(--faint); font-size: 12px; margin-top: 20px; }
   </style>
+  <script>
+    /* Applique le theme + l'accent en cache AVANT le rendu, pour eviter le flash. */
+    (function(){ try{
+      var m = localStorage.getItem("seen_theme") || "dark";
+      var light = m==="light" || (m==="system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches);
+      document.documentElement.setAttribute("data-theme", light ? "light" : "dark");
+      var ac = localStorage.getItem("seen_accent");
+      if(ac && /^#[0-9a-fA-F]{6}$/.test(ac)){
+        var r=parseInt(ac.slice(1,3),16), g=parseInt(ac.slice(3,5),16), b=parseInt(ac.slice(5,7),16);
+        document.documentElement.style.setProperty("--accent", ac);
+        document.documentElement.style.setProperty("--accent-rgb", r+","+g+","+b);
+      }
+    }catch(e){} })();
+  </script>
 </head>
 <body>
   <div id="auth-view">
@@ -530,9 +692,23 @@
     <div class="topbar">
       <div class="brand"><svg class="brand-eye" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M4 24 C 12 13, 36 13, 44 24 C 36 35, 12 35, 4 24 Z" stroke="var(--text)" stroke-width="3" stroke-linejoin="round"/><path d="M21 18.5 L 31.5 24 L 21 29.5 Z" fill="var(--accent)"/></svg><span class="wm">S<span class="ee">ee</span>n</span></div>
       <div class="right">
-        <span class="who" id="who"></span>
-        <button class="ghost" id="logout">Log out</button>
+        <button class="userbtn" id="userbtn" aria-haspopup="true" aria-expanded="false">
+          <span class="uav" id="userbtn-av">?</span>
+          <span class="uname" id="who"></span>
+          <span class="uchev">▾</span>
+        </button>
       </div>
+    </div>
+    <div id="user-menu" hidden role="menu">
+      <div class="um-head">
+        <span class="uav" id="um-av">?</span>
+        <div style="min-width:0"><div class="umn" id="um-name">—</div><div class="ums" id="um-user"></div></div>
+      </div>
+      <button class="um-item" id="um-profile"><span class="umi">👤</span>View my profile</button>
+      <button class="um-item" id="um-edit"><span class="umi">✏️</span>Edit profile</button>
+      <button class="um-item" id="um-settings"><span class="umi">⚙️</span>Settings</button>
+      <div class="um-sep"></div>
+      <button class="um-item danger" id="um-logout"><span class="umi">⎋</span>Log out</button>
     </div>
     <div class="nav">
       <div class="navtab active" id="nav-home"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="nl">Home</span></div>
@@ -665,8 +841,16 @@
       <button class="cmp-back" id="uni-back">‹ Home</button>
       <div id="uni-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.11</div>
+    <div id="section-profile" hidden>
+      <button class="cmp-back" id="pf-back">‹ Home</button>
+      <div id="pf-body"></div>
+    </div>
+    <div class="appfoot">Seen · v3.15</div>
   </div>
+
+  <!-- Edit profile + Settings (filled in by JS) -->
+  <div id="edit-ov" class="modal-ov" hidden></div>
+  <div id="settings-ov" class="modal-ov" hidden></div>
 
   <!-- Detail sheet -->
   <div id="detail-overlay" hidden>
@@ -689,16 +873,16 @@
       <div class="sheet-section">
         <div class="sheet-label">Status</div>
         <div class="status-select" id="status-select">
-          <button data-s="watchlist">Watchlist</button>
-          <button data-s="watching">Watching</button>
-          <button data-s="watched">Watched</button>
+          <button data-s="watchlist"><svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg><span>Watchlist</span></button>
+          <button data-s="watching"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span>Watching</span></button>
+          <button data-s="watched"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>Watched</span></button>
         </div>
       </div>
       <div class="sheet-section" id="episode-section" hidden>
         <div class="sheet-label">Progress</div>
         <div class="ep-row">
-          <div class="fieldw"><span>Season</span><input id="ep-season" type="number" min="1" inputmode="numeric" /></div>
-          <div class="fieldw"><span>Episode</span><input id="ep-episode" type="number" min="1" inputmode="numeric" /></div>
+          <div class="fieldw"><span>Season</span><select id="ep-season"></select></div>
+          <div class="fieldw"><span>Episode</span><select id="ep-episode"></select></div>
         </div>
         <div class="ep-total" id="ep-total"></div>
       </div>
@@ -784,6 +968,7 @@
     const BOOKMARK = '<svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/></svg>';
     let currentUserId = null;
     let myUsername = null;
+    let myProfile = null; // { username, display_name, avatar, accent, bio, show_gems, show_badges, show_stats, fav_genres }
     let myEntries = {}; // key -> { entryId, status, rating, last_season, last_episode }
 
     const $ = (id) => document.getElementById(id);
@@ -820,12 +1005,18 @@
     function setMsg(t,k){ msg.textContent=t; msg.className="msg"+(k?" "+k:""); }
 
     async function showApp(session){ currentUserId=session.user.id; authView.hidden=true; appView.hidden=false;
-      const {data}=await client.from("profiles").select("username").eq("id",currentUserId).maybeSingle();
+      const {data}=await client.from("profiles")
+        .select("username,display_name,avatar,accent,bio,show_gems,show_badges,show_stats,fav_genres")
+        .eq("id",currentUserId).maybeSingle();
+      myProfile=data||{};
       myUsername=(data&&data.username)?data.username:null;
-      who.textContent=myUsername||session.user.email; await loadMyEntries();
-      loadFriendsCache(); refreshFriendsBadge(); showSection("home"); }
+      who.textContent=myUsername||session.user.email;
+      applyMyAccent(myProfile&&myProfile.accent);
+      refreshUserButton();
+      await loadMyEntries();
+      loadFriendsCache(); refreshFriendsBadge(); showSection(landingTab()); }
     function render(session){ if(session&&session.user){ showApp(session); }
-      else { currentUserId=null; myEntries={}; friendsCache=[]; compareFriend=null; appView.hidden=true; authView.hidden=false; } }
+      else { currentUserId=null; myEntries={}; myProfile=null; friendsCache=[]; compareFriend=null; applyMyAccent(null); appView.hidden=true; authView.hidden=false; } }
 
     submitBtn.onclick=async()=>{ const email=emailInput.value.trim(),password=passwordInput.value,username=usernameInput.value.trim();
       if(!email||!password){ setMsg("Please fill in email and password.","err"); return; }
@@ -835,7 +1026,213 @@
           if(error) throw error; setMsg(data.session?"Account created.":"Account created. Check your email to confirm, then log in.","ok");
         } else { const {error}=await client.auth.signInWithPassword({email,password}); if(error) throw error; }
       }catch(e){ setMsg(e&&e.message?e.message:String(e),"err"); } finally{ submitBtn.disabled=false; } };
-    $("logout").onclick=async()=>{ await client.auth.signOut(); };
+    // ================= Appearance: theme + accent =================
+    const THEME_KEY="seen_theme", ACCENT_KEY="seen_accent", LAND_KEY="seen_landing", MOTION_KEY="seen_reduce_motion";
+    const ACCENTS=[
+      {name:"Coral",  hex:"#ff5a5f"}, {name:"Sunset", hex:"#ff8a3d"}, {name:"Gold",   hex:"#ffb23e"},
+      {name:"Lime",   hex:"#57c96b"}, {name:"Teal",   hex:"#1fb6a6"}, {name:"Sky",    hex:"#3fa9f5"},
+      {name:"Indigo", hex:"#6d7cff"}, {name:"Violet", hex:"#a56bff"}, {name:"Pink",   hex:"#ff5ea8"},
+      {name:"Slate",  hex:"#8b98ad"}
+    ];
+    function hexToRgb(h){ h=String(h||"").replace("#",""); if(h.length!==6) return "255,90,95";
+      return parseInt(h.slice(0,2),16)+","+parseInt(h.slice(2,4),16)+","+parseInt(h.slice(4,6),16); }
+    function accentOf(p){ return (p&&p.accent&&/^#[0-9a-fA-F]{6}$/.test(p.accent))?p.accent:"#ff5a5f"; }
+    function currentTheme(){ try{ return localStorage.getItem(THEME_KEY)||"dark"; }catch(e){ return "dark"; } }
+    function effectiveLight(mode){ return mode==="light" || (mode==="system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches); }
+    function applyTheme(mode){
+      const light=effectiveLight(mode);
+      document.documentElement.setAttribute("data-theme", light?"light":"dark");
+      try{ localStorage.setItem(THEME_KEY, mode); }catch(e){}
+      const mc=document.querySelector('meta[name="theme-color"]'); if(mc) mc.setAttribute("content", light?"#f4f6fb":"#0d0f14");
+    }
+    function applyMyAccent(hex){
+      const root=document.documentElement;
+      if(hex && /^#[0-9a-fA-F]{6}$/.test(hex)){
+        root.style.setProperty("--accent", hex); root.style.setProperty("--accent-rgb", hexToRgb(hex));
+        try{ localStorage.setItem(ACCENT_KEY, hex); }catch(e){}
+      } else {
+        root.style.removeProperty("--accent"); root.style.removeProperty("--accent-rgb");
+        try{ localStorage.removeItem(ACCENT_KEY); }catch(e){}
+      }
+    }
+    function applyMotionPref(){ let reduce=false; try{ reduce=localStorage.getItem(MOTION_KEY)==="1"; }catch(e){}
+      document.documentElement.classList.toggle("reduce-motion", reduce); }
+    function landingTab(){ try{ const v=localStorage.getItem(LAND_KEY); return ["home","collection","upcoming"].includes(v)?v:"home"; }catch(e){ return "home"; } }
+    applyMotionPref();
+    if(window.matchMedia){ try{ window.matchMedia("(prefers-color-scheme: light)").addEventListener("change",()=>{ if(currentTheme()==="system") applyTheme("system"); }); }catch(e){} }
+
+    // ================= User menu =================
+    function avatarGlyph(p){ return (p&&p.avatar)?p.avatar : initial((p&&p.username)||myUsername||"?"); }
+    function refreshUserButton(){
+      $("userbtn-av").textContent=avatarGlyph(myProfile);
+      $("um-av").textContent=avatarGlyph(myProfile);
+      $("um-name").textContent=(myProfile&&myProfile.display_name)||myUsername||"You";
+      $("um-user").textContent=myUsername?("@"+myUsername):"";
+    }
+    const userMenu=$("user-menu"), userBtn=$("userbtn");
+    let menuOpen=false;
+    function openMenu(){ menuOpen=true; userMenu.hidden=false; userBtn.setAttribute("aria-expanded","true"); }
+    function closeMenu(){ menuOpen=false; userMenu.hidden=true; userBtn.setAttribute("aria-expanded","false"); }
+    userBtn.onclick=(e)=>{ e.stopPropagation(); menuOpen?closeMenu():openMenu(); };
+    document.addEventListener("click",(e)=>{ if(menuOpen && !userMenu.contains(e.target) && !userBtn.contains(e.target)) closeMenu(); });
+    $("um-logout").onclick=async()=>{ closeMenu(); await client.auth.signOut(); };
+    $("um-profile").onclick=()=>{ closeMenu(); openMyProfile(); };
+    $("um-edit").onclick=()=>{ closeMenu(); openEditProfile(); };
+    $("um-settings").onclick=()=>{ closeMenu(); openSettings(); };
+
+    // ================= My profile (as friends see it) =================
+    function openMyProfile(){
+      sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
+      sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
+      $("section-achievements").hidden=true; $("section-universe").hidden=true;
+      $("section-profile").hidden=false; window.scrollTo(0,0);
+      renderMyProfile();
+    }
+    $("pf-back").onclick=()=>showSection("home");
+    async function renderMyProfile(){
+      const body=$("pf-body"); body.innerHTML='<div class="hint">Loading your profile...</div>';
+      const entries=await fetchEntriesFull(currentUserId);
+      renderProfileShowcase(body, {profile:myProfile, username:myUsername, entries, self:true});
+    }
+
+    // Shared renderer: banner + stats + genres + gems + badges, honouring visibility toggles.
+    const GENRES=["Action","Adventure","Animation","Comedy","Crime","Documentary","Drama","Fantasy","Horror","Mystery","Romance","Sci-Fi","Thriller","Family","Music","War","Western","History"];
+    function renderProfileShowcase(container, o){
+      const p=o.profile||{}, uname=o.username||p.username||"unknown", entries=o.entries||[];
+      const rgb=hexToRgb(accentOf(p));
+      const counts=computeCounts(entries);
+      const {earnedCount, all}=badgeState(counts);
+      const watched=entries.filter(e=>e.status==="watched").length;
+      const gems=entries.filter(e=>e.is_gem);
+      const showGems=p.show_gems!==false, showBadges=p.show_badges!==false, showStats=p.show_stats!==false;
+      const dispName=(p.display_name||uname);
+      let html='<div class="pf-banner" style="--pf-rgb:'+rgb+'">'+
+        '<div class="pf-top"><div class="pf-av">'+(p.avatar?esc(p.avatar):esc(initial(uname)))+'</div>'+
+        '<div class="pf-id"><div class="pf-name">'+esc(dispName)+'</div><div class="pf-user">@'+esc(uname)+'</div></div></div>'+
+        (p.bio?'<div class="pf-bio">'+esc(p.bio)+'</div>':'');
+      if(o.self){ html+='<div class="pf-actions"><button class="pf-btn primary" id="pf-edit-btn">✏️ Edit profile</button>'+
+        '<button class="pf-btn" id="pf-appearance-btn">🎨 Appearance</button></div>'; }
+      html+='</div>';
+      if(o.self){ html+='<div class="pf-note">This is how your profile looks to friends. Tap Edit to change your avatar, colour, bio and what\'s shown.</div>'; }
+      if(showStats){ html+='<div class="pf-stats">'+
+        '<div class="pf-stat"><div class="n">'+watched+'</div><div class="l">Watched</div></div>'+
+        '<div class="pf-stat"><div class="n">'+gems.length+'</div><div class="l">Gems</div></div>'+
+        '<div class="pf-stat"><div class="n">'+earnedCount+'</div><div class="l">Badges</div></div></div>'; }
+      const favs=(p.fav_genres||[]).filter(Boolean);
+      if(favs.length){ html+='<div class="pf-seclab">Favourite genres</div><div class="pf-genres">'+
+        favs.map(g=>'<span class="pf-genre">'+esc(g)+'</span>').join("")+'</div>'; }
+      container.innerHTML=html;
+      if(o.self){ const eb=$("pf-edit-btn"); if(eb) eb.onclick=openEditProfile;
+        const ab=$("pf-appearance-btn"); if(ab) ab.onclick=openSettings; }
+      const back=o.self?openMyProfile:(o.onClose||null);
+      if(showGems && gems.length){
+        const wrap=document.createElement("div"); wrap.className="shelf-wrap";
+        wrap.innerHTML='<div class="shelf-title">'+(o.self?"Your":esc(uname)+"'s")+' gems 💎</div>';
+        const shelf=document.createElement("div"); shelf.className="shelf";
+        gems.forEach(e=>shelf.appendChild(gemShelfCard(e.media, back)));
+        wrap.appendChild(shelf); container.appendChild(wrap);
+      }
+      if(showBadges){
+        const lab=document.createElement("div"); lab.className="pf-seclab"; lab.textContent="Achievements ("+earnedCount+"/"+all.length+")";
+        container.appendChild(lab);
+        const row=document.createElement("div"); row.className="pf-badges";
+        all.forEach(b=>{ const el=document.createElement("div"); el.className="hbadge "+b.rarity+(b.earned?"":" locked");
+          el.textContent=b.emoji; el.title=b.name; el.onclick=()=>openBadge(b); row.appendChild(el); });
+        container.appendChild(row);
+      }
+      return {rows:null};
+    }
+
+    // ================= Edit profile =================
+    const AVATAR_EMOJIS=["🎬","🍿","📺","🎞️","🎥","⭐","💎","👑","🔥","🚀","🦇","🐉","👾","🎮","🧙","🦸","🕵️","🤖","👽","🎭","🎨","🎧","🌙","⚡","🍥","🐺","🦈","🌸","🏆","💀","😎","🐱","🦉","🌟","🧟","🎯"];
+    function openEditProfile(){
+      const p=myProfile||{}; const ov=$("edit-ov");
+      const sel={ avatar:p.avatar||"", accent:accentOf(p), bio:p.bio||"", fav:(p.fav_genres||[]).slice(0,3),
+                  show_gems:p.show_gems!==false, show_badges:p.show_badges!==false, show_stats:p.show_stats!==false };
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="edit-close">×</button>'+
+        '<div class="modal-title">Edit profile</div>'+
+        '<div class="modal-sub">Personalise what friends see when they open your profile.</div>'+
+        '<div class="fld"><div class="fl">Avatar</div><div class="emoji-grid" id="ed-emojis"></div></div>'+
+        '<div class="fld"><div class="fl">Accent colour (used across the app)</div><div class="swatches" id="ed-swatches"></div></div>'+
+        '<div class="fld"><div class="fl">Status / bio</div>'+
+          '<textarea id="ed-bio" maxlength="180" placeholder="A line about your taste, what you\'re watching, anything..."></textarea>'+
+          '<div class="charcount"><span id="ed-bio-n">0</span>/180</div></div>'+
+        '<div class="fld"><div class="fl">Favourite genres (up to 3)</div><div class="gsel" id="ed-genres"></div></div>'+
+        '<div class="fld"><div class="fl">What friends can see</div><div class="tg-list" id="ed-vis"></div></div>'+
+        '<button class="modal-save" id="ed-save">Save profile</button></div>';
+      ov.hidden=false; document.body.classList.add("no-scroll");
+      const eg=$("ed-emojis");
+      const noneBtn=document.createElement("button"); noneBtn.textContent="🔤"; noneBtn.dataset.val=""; noneBtn.title="Use my initial";
+      eg.appendChild(noneBtn);
+      AVATAR_EMOJIS.forEach(em=>{ const b=document.createElement("button"); b.textContent=em; b.dataset.val=em; eg.appendChild(b); });
+      function paintEmojis(){ [...eg.children].forEach(b=>b.classList.toggle("sel", b.dataset.val===sel.avatar)); }
+      [...eg.children].forEach(b=>b.onclick=()=>{ sel.avatar=b.dataset.val; paintEmojis(); });
+      paintEmojis();
+      const sw=$("ed-swatches");
+      ACCENTS.forEach(a=>{ const b=document.createElement("button"); b.className="swatch"; b.style.background=a.hex; b.title=a.name; b.dataset.hex=a.hex.toLowerCase();
+        b.onclick=()=>{ sel.accent=a.hex; [...sw.children].forEach(c=>c.classList.toggle("sel", c===b)); }; sw.appendChild(b); });
+      [...sw.children].forEach(c=>c.classList.toggle("sel", c.dataset.hex===sel.accent.toLowerCase()));
+      const bio=$("ed-bio"), bn=$("ed-bio-n"); bio.value=sel.bio; const upd=()=>bn.textContent=bio.value.length; bio.oninput=upd; upd();
+      const gs=$("ed-genres");
+      GENRES.forEach(g=>{ const b=document.createElement("button"); b.textContent=g;
+        b.onclick=()=>{ const i=sel.fav.indexOf(g); if(i>=0) sel.fav.splice(i,1);
+          else { if(sel.fav.length>=3){ showToast("Up to 3 genres"); return; } sel.fav.push(g); } paintGenres(); };
+        gs.appendChild(b); });
+      function paintGenres(){ [...gs.children].forEach(b=>b.classList.toggle("sel", sel.fav.includes(b.textContent))); }
+      paintGenres();
+      const vis=$("ed-vis");
+      [["show_gems","Gems shelf","Your pinned gems"],["show_badges","Achievements","Badges you've unlocked"],["show_stats","Stats row","Watched / gems / badges counts"]]
+        .forEach(([k,l,s])=>{ const row=document.createElement("div"); row.className="tg-row";
+          row.innerHTML='<div><div class="tgl">'+l+'</div><div class="tgs">'+s+'</div></div>'+
+            '<label class="switch"><input type="checkbox" '+(sel[k]?"checked":"")+'><span class="sl"></span></label>';
+          row.querySelector("input").onchange=(e)=>{ sel[k]=e.target.checked; }; vis.appendChild(row); });
+      $("edit-close").onclick=closeEdit; ov.onclick=(e)=>{ if(e.target===ov) closeEdit(); };
+      $("ed-save").onclick=async()=>{
+        const btn=$("ed-save"); btn.disabled=true; btn.textContent="Saving...";
+        const patch={ avatar:sel.avatar||null, accent:sel.accent, bio:bio.value.trim()||null,
+          fav_genres:sel.fav, show_gems:sel.show_gems, show_badges:sel.show_badges, show_stats:sel.show_stats };
+        const {error}=await client.from("profiles").update(patch).eq("id",currentUserId);
+        if(error){ btn.disabled=false; btn.textContent="Save profile"; showToast("Could not save: "+error.message); return; }
+        myProfile=Object.assign(myProfile||{}, patch);
+        applyMyAccent(patch.accent); refreshUserButton();
+        closeEdit(); showToast("Profile saved");
+        if(!$("section-profile").hidden) renderMyProfile();
+      };
+    }
+    function closeEdit(){ $("edit-ov").hidden=true; document.body.classList.remove("no-scroll"); }
+
+    // ================= Settings =================
+    function openSettings(){
+      const ov=$("settings-ov"); const theme=currentTheme(); const landing=landingTab();
+      let reduce=false; try{ reduce=localStorage.getItem(MOTION_KEY)==="1"; }catch(e){}
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="set-close">×</button>'+
+        '<div class="modal-title">Settings</div>'+
+        '<div class="modal-sub">Appearance and app preferences. Saved on this device.</div>'+
+        '<div class="sett-lab first">Theme</div>'+
+        '<div class="seg" id="set-theme"><button data-v="light">☀️ Light</button><button data-v="dark">🌙 Dark</button><button data-v="system">🖥 System</button></div>'+
+        '<div class="sett-lab">Accent colour</div><div class="swatches" id="set-accent"></div>'+
+        '<div class="sett-lab">Start on</div>'+
+        '<div class="seg" id="set-landing"><button data-v="home">Home</button><button data-v="collection">Collection</button><button data-v="upcoming">Soon</button></div>'+
+        '<div class="sett-lab">Motion</div>'+
+        '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
+          '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
+        '<div class="sett-ver">Seen · v3.15</div></div>';
+      ov.hidden=false; document.body.classList.add("no-scroll");
+      const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
+      const th=$("set-theme"); paintSeg(th, theme);
+      th.querySelectorAll("button").forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.v); paintSeg(th,b.dataset.v); });
+      const sa=$("set-accent");
+      const paintAcc=()=>{ const cur=accentOf(myProfile).toLowerCase(); [...sa.children].forEach(c=>c.classList.toggle("sel", c.dataset.hex===cur)); };
+      ACCENTS.forEach(a=>{ const b=document.createElement("button"); b.className="swatch"; b.style.background=a.hex; b.title=a.name; b.dataset.hex=a.hex.toLowerCase();
+        b.onclick=async()=>{ applyMyAccent(a.hex); myProfile=Object.assign(myProfile||{},{accent:a.hex}); paintAcc(); refreshUserButton();
+          await client.from("profiles").update({accent:a.hex}).eq("id",currentUserId); }; sa.appendChild(b); });
+      paintAcc();
+      const ld=$("set-landing"); paintSeg(ld, landing);
+      ld.querySelectorAll("button").forEach(b=>b.onclick=()=>{ try{ localStorage.setItem(LAND_KEY,b.dataset.v);}catch(e){} paintSeg(ld,b.dataset.v); showToast("Start tab set"); });
+      $("set-motion").onchange=(e)=>{ try{ localStorage.setItem(MOTION_KEY, e.target.checked?"1":"0"); }catch(_){} applyMotionPref(); };
+      $("set-close").onclick=closeSettings; ov.onclick=(e)=>{ if(e.target===ov) closeSettings(); };
+    }
+    function closeSettings(){ $("settings-ov").hidden=true; document.body.classList.remove("no-scroll"); }
 
     // ---- nav ----
     function showSection(name){
@@ -854,6 +1251,7 @@
       sectionCompare.hidden = true;
       $("section-achievements").hidden = true;
       $("section-universe").hidden = true;
+      $("section-profile").hidden = true;
       if(name==="home") loadHome();
       if(name==="search") syncSearch();
       if(name==="collection") loadCollection();
@@ -1137,6 +1535,7 @@
 
     // ---- detail sheet ----
     let detailDisplay=null, detailOnClose=null, detailList=[], detailIndex=0, detailSeq=0, currentDisplays=[];
+    let detailSeasons=null; // [{num, eps}] real seasons of the current series, from TMDB
     async function fetchDetails(type,id){
       const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US`);
       if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
@@ -1175,8 +1574,7 @@
       statusSelect.querySelectorAll("button").forEach(b=>b.classList.toggle("active", !!e&&e.status===b.dataset.s));
       const rating=e&&e.rating?e.rating:0;
       stars.querySelectorAll(".star").forEach(s=>s.classList.toggle("on", parseInt(s.dataset.v,10)<=rating));
-      epSeason.value=(e&&e.last_season!=null)?e.last_season:"";
-      epEpisode.value=(e&&e.last_episode!=null)?e.last_episode:"";
+      if(detailDisplay && detailDisplay.type==="tv" && detailSeasons) buildEpisodeControls(e);
       sheetRemove.hidden=!e;
       renderGem(); renderRewatch();
     }
@@ -1235,11 +1633,18 @@
       sheetMeta.textContent=(display.year||"—")+" · "+(display.type==="tv"?"Series":"Movie");
       if(display.poster_url){ sheetPoster.src=display.poster_url; sheetPoster.style.display=""; } else { sheetPoster.style.display="none"; }
       episodeSection.hidden=display.type!=="tv"; epTotal.textContent=""; providersSection.hidden=true; $("cast-section").hidden=true;
+      detailSeasons=null;
+      if(display.type==="tv"){ epSeason.innerHTML='<option>…</option>'; epEpisode.innerHTML='<option>…</option>'; epSeason.disabled=true; epEpisode.disabled=true; }
       statusSelect.querySelector('button[data-s="watching"]').style.display = display.type==="tv" ? "" : "none";
       sheetOverview.textContent="Loading..."; renderSheet(); renderRecommend();
       try{ const d=await fetchDetailsCredits(display.type,display.tmdbId); if(seq!==detailSeq) return;
         sheetOverview.textContent=d.overview||"No description available.";
-        if(display.type==="tv"&&d.number_of_seasons) epTotal.textContent="Total: "+d.number_of_seasons+" seasons, "+(d.number_of_episodes||"?")+" episodes";
+        if(display.type==="tv"){
+          detailSeasons=(d.seasons||[]).filter(s=>s.season_number>=1 && (s.episode_count||0)>0).map(s=>({num:s.season_number, eps:s.episode_count}));
+          epSeason.disabled=false;
+          buildEpisodeControls(curEntry());
+          if(d.number_of_seasons) epTotal.textContent="Total: "+d.number_of_seasons+" seasons, "+(d.number_of_episodes||"?")+" episodes";
+        }
         renderCast(d.credits);
       }catch(e){ if(seq===detailSeq) sheetOverview.textContent=""; }
       try{ const fr=await fetchProviders(display.type,display.tmdbId); if(seq!==detailSeq) return; renderProviders(fr); }catch(e){ if(seq===detailSeq) providersSection.hidden=true; }
@@ -1326,6 +1731,23 @@
         ent.rating=newVal; renderSheet();
       }catch(err){ showToast("Error: "+(err.message||err)); } }; });
 
+    function optionEl(val,label){ const o=document.createElement("option"); o.value=val; o.textContent=label; return o; }
+    function seasonEpisodes(num){ const s=(detailSeasons||[]).find(x=>x.num===Number(num)); return s?s.eps:1; }
+    function populateEpisodesFor(seasonNum, current){
+      epEpisode.innerHTML=""; epEpisode.appendChild(optionEl("","Episode —"));
+      if(seasonNum){ const max=Math.max(1, seasonEpisodes(seasonNum));
+        for(let n=1;n<=max;n++) epEpisode.appendChild(optionEl(n,"Episode "+n)); }
+      epEpisode.value = (current!=null && String(current)!=="") ? String(current) : "";
+      epEpisode.disabled = !seasonNum;
+    }
+    function buildEpisodeControls(entry){
+      epSeason.innerHTML=""; epSeason.appendChild(optionEl("","Season —"));
+      (detailSeasons||[]).forEach(s=> epSeason.appendChild(optionEl(s.num,"Season "+s.num)));
+      const curS = (entry && entry.last_season!=null) ? entry.last_season : null;
+      const exists = (detailSeasons||[]).some(s=>s.num===Number(curS));
+      epSeason.value = exists ? String(curS) : "";
+      populateEpisodesFor(exists?Number(curS):null, (entry&&entry.last_episode!=null)?entry.last_episode:null);
+    }
     async function saveEpisode(){
       const s=epSeason.value?parseInt(epSeason.value,10):null;
       const ep=epEpisode.value?parseInt(epEpisode.value,10):null;
@@ -1334,8 +1756,8 @@
         await client.from("entries").update({last_season:s,last_episode:ep,status:ent.status==="watchlist"?"watching":ent.status}).eq("id",ent.entryId);
         ent.last_season=s; ent.last_episode=ep; if(ent.status==="watchlist") ent.status="watching"; renderSheet(); showToast("Progress saved");
       }catch(err){ showToast("Error: "+(err.message||err)); } }
-    epSeason.addEventListener("change",saveEpisode);
-    epEpisode.addEventListener("change",saveEpisode);
+    epSeason.addEventListener("change", ()=>{ const sv=epSeason.value?parseInt(epSeason.value,10):null; populateEpisodesFor(sv, null); saveEpisode(); });
+    epEpisode.addEventListener("change", saveEpisode);
 
     sheetRemove.onclick=async()=>{ await removeByDisplay(detailDisplay); showToast("Removed"); closeDetail(); };
 
@@ -1581,8 +2003,15 @@
     async function fetchProfilesMap(ids){
       const uniq=[...new Set((ids||[]).filter(Boolean))]; const map={};
       if(!uniq.length) return map;
-      const {data}=await client.from("profiles").select("id,username,display_name").in("id",uniq);
+      const {data}=await client.from("profiles")
+        .select("id,username,display_name,avatar,accent,bio,show_gems,show_badges,show_stats,fav_genres").in("id",uniq);
       (data||[]).forEach(p=>map[p.id]=p); return map;
+    }
+    function friendObj(otherId, friendshipId, profs){
+      const p=profs[otherId]||{};
+      return {friendId:otherId, friendshipId, username:p.username||"unknown", display_name:p.display_name||null,
+        avatar:p.avatar||null, accent:p.accent||null, bio:p.bio||null,
+        show_gems:p.show_gems, show_badges:p.show_badges, show_stats:p.show_stats, fav_genres:p.fav_genres||[]};
     }
 
     // All friendships involving me, split by state.
@@ -1604,9 +2033,7 @@
       try{
         const {accepted}=await loadFriendships();
         const profs=await fetchProfilesMap(accepted.map(r=>r.otherId));
-        friendsCache=accepted.map(r=>({friendId:r.otherId, friendshipId:r.id,
-          username:(profs[r.otherId]&&profs[r.otherId].username)||"unknown",
-          display_name:(profs[r.otherId]&&profs[r.otherId].display_name)||null}));
+        friendsCache=accepted.map(r=>friendObj(r.otherId, r.id, profs));
       }catch(_){}
     }
 
@@ -1625,9 +2052,7 @@
       hintEl.hidden=false; hintEl.textContent="Loading...";
       const {accepted,incoming,outgoing}=await loadFriendships();
       const profs=await fetchProfilesMap([...accepted,...incoming,...outgoing].map(r=>r.otherId));
-      friendsCache=accepted.map(r=>({friendId:r.otherId, friendshipId:r.id,
-        username:(profs[r.otherId]&&profs[r.otherId].username)||"unknown",
-        display_name:(profs[r.otherId]&&profs[r.otherId].display_name)||null}));
+      friendsCache=accepted.map(r=>friendObj(r.otherId, r.id, profs));
       listEl.innerHTML="";
       if(!friendsCache.length){ hintEl.hidden=false; hintEl.textContent="No friends yet. Add one by username above."; }
       else { hintEl.hidden=true; friendsCache.forEach(f=>listEl.appendChild(friendRow(f))); }
@@ -1848,34 +2273,14 @@
       });
       const tOrder={"st-progress":0,"st-done":1,"st-todo":2};
       rows.sort((a,b)=> (tOrder[a.st.tone]-tOrder[b.st.tone]) || (a.media.title||"").localeCompare(b.media.title||""));
-
-      const theirGems=theirs.filter(e=>e.is_gem);
       const theyOnly=theirs.filter(e=>e.status==="watched" && !mineMap[keyE(e)]);
-      const {earnedCount}=badgeState(computeCounts(theirs));
-      const watched=theirs.filter(e=>e.status==="watched").length;
-
       currentDisplays=rows.map(r=>displayFromMedia(r.media));
 
-      const av=esc(initial(friend.username));
-      body.innerHTML=`<div class="cmp-head">
-          <div class="avatar">${av}</div>
-          <div style="flex:1"><div class="ch-name">${esc(friend.username)}</div>
-            <div class="ch-sub">🏅 ${earnedCount} badge${earnedCount===1?"":"s"} · ${watched} watched · 💎 ${theirGems.length}</div></div>
-          <button class="btn-sm ghost" id="cmp-remove">Remove</button>
-        </div>`;
+      // Personalised profile header — the same showcase as "view my profile",
+      // honouring this friend's own avatar, accent, bio, genres and visibility toggles.
+      renderProfileShowcase(body, {profile:friend, username:friend.username, entries:theirs, self:false,
+        onClose:()=>{ if(compareFriend) openCompare(compareFriend); }});
 
-      const rmBtn=$("cmp-remove"); let removeArmed=false;
-      rmBtn.onclick=async()=>{ if(!removeArmed){ removeArmed=true; rmBtn.textContent="Sure?"; setTimeout(()=>{ removeArmed=false; rmBtn.textContent="Remove"; },2500); return; }
-        await client.from("friendships").delete().eq("id",friend.friendshipId);
-        showToast("Removed"); compareFriend=null; await loadFriendsCache(); showSection("friends"); };
-
-      if(theirGems.length){
-        const wrap=document.createElement("div"); wrap.className="shelf-wrap";
-        wrap.innerHTML=`<div class="shelf-title">${esc(friend.username)}'s gems 💎</div>`;
-        const shelf=document.createElement("div"); shelf.className="shelf";
-        theirGems.forEach(e=>shelf.appendChild(gemShelfCard(e.media, ()=>{ if(compareFriend) openCompare(compareFriend); })));
-        wrap.appendChild(shelf); body.appendChild(wrap);
-      }
       if(rows.length){
         const lab=document.createElement("div"); lab.className="cmp-sub"; lab.textContent="Series in common"; body.appendChild(lab);
         rows.forEach(r=>body.appendChild(compareRow(r)));
@@ -1884,9 +2289,15 @@
         const lab=document.createElement("div"); lab.className="cmp-sub"; lab.textContent=friend.username+" watched, you haven't"; body.appendChild(lab);
         theyOnly.slice(0,24).forEach(e=>body.appendChild(discoverRow(e)));
       }
-      if(!rows.length && !theyOnly.length && !theirGems.length){
+      if(!rows.length && !theyOnly.length){
         const h=document.createElement("div"); h.className="hint"; h.textContent="Nothing in common yet. Add more titles or recommend one to "+friend.username+"."; body.appendChild(h);
       }
+      const rm=document.createElement("button"); rm.className="uni-exit"; rm.id="cmp-remove"; rm.textContent="Remove friend";
+      let removeArmed=false;
+      rm.onclick=async()=>{ if(!removeArmed){ removeArmed=true; rm.textContent="Tap again to remove "+friend.username; setTimeout(()=>{ removeArmed=false; rm.textContent="Remove friend"; },2800); return; }
+        await client.from("friendships").delete().eq("id",friend.friendshipId);
+        showToast("Removed"); compareFriend=null; await loadFriendsCache(); showSection("friends"); };
+      body.appendChild(rm);
     }
     function compareRow(r){
       const m=r.media;
@@ -1953,14 +2364,175 @@
             seq:["m11","m1891","m1894","m1895","m1892"] }
         ],
         defaultOrder: "release"
+      },
+      {
+        id: "marvel",
+        name: "MCU",
+        tagline: "The Marvel Cinematic Universe",
+        heroKey: "m299534",
+        theme: { accent:"#ed1d24", ink:"#ffffff", bg:"#0b0d12", glow:"rgba(237,29,36,.16)" },
+        titles: [
+          {t:"movie",id:1726,label:"Iron Man"},
+          {t:"movie",id:1724,label:"The Incredible Hulk"},
+          {t:"movie",id:10138,label:"Iron Man 2"},
+          {t:"movie",id:10195,label:"Thor"},
+          {t:"movie",id:1771,label:"Captain America: The First Avenger"},
+          {t:"movie",id:24428,label:"The Avengers"},
+          {t:"movie",id:68721,label:"Iron Man 3"},
+          {t:"movie",id:76338,label:"Thor: The Dark World"},
+          {t:"movie",id:100402,label:"Captain America: The Winter Soldier"},
+          {t:"movie",id:118340,label:"Guardians of the Galaxy"},
+          {t:"movie",id:99861,label:"Avengers: Age of Ultron"},
+          {t:"movie",id:102899,label:"Ant-Man"},
+          {t:"movie",id:271110,label:"Captain America: Civil War"},
+          {t:"movie",id:284052,label:"Doctor Strange"},
+          {t:"movie",id:283995,label:"Guardians of the Galaxy Vol. 2"},
+          {t:"movie",id:315635,label:"Spider-Man: Homecoming"},
+          {t:"movie",id:284053,label:"Thor: Ragnarok"},
+          {t:"movie",id:284054,label:"Black Panther"},
+          {t:"movie",id:299536,label:"Avengers: Infinity War"},
+          {t:"movie",id:363088,label:"Ant-Man and the Wasp"},
+          {t:"movie",id:299537,label:"Captain Marvel"},
+          {t:"movie",id:299534,label:"Avengers: Endgame"},
+          {t:"movie",id:429617,label:"Spider-Man: Far From Home"},
+          {t:"movie",id:497698,label:"Black Widow"},
+          {t:"movie",id:566525,label:"Shang-Chi and the Legend of the Ten Rings"},
+          {t:"movie",id:524434,label:"Eternals"},
+          {t:"movie",id:634649,label:"Spider-Man: No Way Home"},
+          {t:"movie",id:453395,label:"Doctor Strange in the Multiverse of Madness"},
+          {t:"movie",id:616037,label:"Thor: Love and Thunder"},
+          {t:"movie",id:894205,label:"Werewolf by Night"},
+          {t:"movie",id:505642,label:"Black Panther: Wakanda Forever"},
+          {t:"movie",id:774752,label:"The Guardians of the Galaxy Holiday Special"},
+          {t:"movie",id:640146,label:"Ant-Man and the Wasp: Quantumania"},
+          {t:"movie",id:447365,label:"Guardians of the Galaxy Vol. 3"},
+          {t:"movie",id:609681,label:"The Marvels"},
+          {t:"movie",id:533535,label:"Deadpool & Wolverine"},
+          {t:"movie",id:822119,label:"Captain America: Brave New World"},
+          {t:"movie",id:986056,label:"Thunderbolts*"},
+          {t:"movie",id:617126,label:"The Fantastic Four: First Steps"},
+          {t:"tv",id:85271,label:"WandaVision"},
+          {t:"tv",id:88396,label:"The Falcon and the Winter Soldier"},
+          {t:"tv",id:84958,label:"Loki"},
+          {t:"tv",id:91363,label:"What If...?"},
+          {t:"tv",id:88329,label:"Hawkeye"},
+          {t:"tv",id:92749,label:"Moon Knight"},
+          {t:"tv",id:92782,label:"Ms. Marvel"},
+          {t:"tv",id:92783,label:"She-Hulk: Attorney at Law"},
+          {t:"tv",id:114472,label:"Secret Invasion"},
+          {t:"tv",id:122226,label:"Echo"},
+          {t:"tv",id:138501,label:"Agatha All Along"},
+          {t:"tv",id:202555,label:"Daredevil: Born Again"},
+          {t:"tv",id:114471,label:"Ironheart"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"In-universe order (my best pass — the MCU timeline is debated, easy to tweak).", seq:[
+            "m1771","m299537","m1726","m1724","m10138","m10195","m24428","m68721","m76338","m100402",
+            "m118340","m283995","m99861","m102899","m271110","m497698","m284054","m315635","m284052","m284053",
+            "m363088","m299536","m299534","t85271","t88396","t84958","t91363","m429617","t88329","t92749",
+            "t92782","m566525","m524434","m634649","m453395","m616037","m894205","m505642","m774752","t92783",
+            "t114472","m447365","t122226","m640146","m609681","t138501","t114471","m533535","m822119","m986056",
+            "t202555","m617126"
+          ]}
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "wizarding-world",
+        name: "Wizarding World",
+        tagline: "Harry Potter & Fantastic Beasts",
+        heroKey: "m671",
+        theme: { accent:"#d3a625", ink:"#0d0f14", bg:"#0a0b10", glow:"rgba(211,166,37,.15)" },
+        titles: [
+          {t:"movie",id:671,label:"Harry Potter and the Philosopher's Stone"},
+          {t:"movie",id:672,label:"Harry Potter and the Chamber of Secrets"},
+          {t:"movie",id:673,label:"Harry Potter and the Prisoner of Azkaban"},
+          {t:"movie",id:674,label:"Harry Potter and the Goblet of Fire"},
+          {t:"movie",id:675,label:"Harry Potter and the Order of the Phoenix"},
+          {t:"movie",id:767,label:"Harry Potter and the Half-Blood Prince"},
+          {t:"movie",id:12444,label:"Harry Potter and the Deathly Hallows: Part 1"},
+          {t:"movie",id:12445,label:"Harry Potter and the Deathly Hallows: Part 2"},
+          {t:"movie",id:259316,label:"Fantastic Beasts and Where to Find Them"},
+          {t:"movie",id:338952,label:"Fantastic Beasts: The Crimes of Grindelwald"},
+          {t:"movie",id:338953,label:"Fantastic Beasts: The Secrets of Dumbledore"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"Story order — Fantastic Beasts (1920s-30s) comes before Harry Potter.", seq:[
+            "m259316","m338952","m338953","m671","m672","m673","m674","m675","m767","m12444","m12445"
+          ]}
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "middle-earth",
+        name: "Middle-earth",
+        tagline: "The Lord of the Rings & The Hobbit",
+        heroKey: "m122",
+        theme: { accent:"#c9a227", ink:"#0d0f14", bg:"#0a0c0a", glow:"rgba(201,162,39,.14)" },
+        titles: [
+          {t:"movie",id:120,label:"The Fellowship of the Ring"},
+          {t:"movie",id:121,label:"The Two Towers"},
+          {t:"movie",id:122,label:"The Return of the King"},
+          {t:"movie",id:49051,label:"The Hobbit: An Unexpected Journey"},
+          {t:"movie",id:57158,label:"The Hobbit: The Desolation of Smaug"},
+          {t:"movie",id:122917,label:"The Hobbit: The Battle of the Five Armies"},
+          {t:"movie",id:839033,label:"The War of the Rohirrim"},
+          {t:"tv",id:84773,label:"The Rings of Power"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"Middle-earth timeline — The Rings of Power (Second Age) first.", seq:[
+            "t84773","m839033","m49051","m57158","m122917","m120","m121","m122"
+          ]}
+        ],
+        defaultOrder: "release"
       }
     ];
 
     const uniCache = {};        // key -> {tmdbId,type,title,year,poster_url,backdrop,date}
-    let currentUniverse = null, currentUniOrder = null;
+    let currentUniverse = null, currentUniOrder = null, currentUniRun = null;
 
     function uniKey(t){ return t.t.charAt(0) + t.id; }               // {t:"movie",id:11} -> "m11"
     function uniStatusOf(rec){ const e = myEntries[keyOf(rec.tmdbId, rec.type)]; return e ? e.status : null; }
+    // "Done" means watched overall, unless a rewatch pass is active — then it means re-seen in this pass.
+    function uniDone(rec){
+      const k = uniKey({t:rec.type, id:rec.tmdbId});
+      if(currentUniRun) return currentUniRun.keys.has(k);
+      return uniStatusOf(rec)==="watched";
+    }
+    async function loadUniRun(universeId){
+      try{
+        const {data}=await client.from("universe_progress").select("watched_keys,pass")
+          .eq("user_id",currentUserId).eq("universe_id",universeId).maybeSingle();
+        if(data) return { keys:new Set(data.watched_keys||[]), pass:data.pass||1 };
+      }catch(_){}
+      return null;
+    }
+    async function setUniRunKey(key, on){
+      if(!currentUniRun) return;
+      if(on) currentUniRun.keys.add(key); else currentUniRun.keys.delete(key);
+      try{
+        await client.from("universe_progress").update({watched_keys:[...currentUniRun.keys], updated_at:new Date().toISOString()})
+          .eq("user_id",currentUserId).eq("universe_id",currentUniverse.id);
+      }catch(e){ showToast("Error: "+(e.message||e)); }
+    }
+    async function resetUniverse(){
+      const u=currentUniverse; if(!u) return;
+      const toBump=u.titles.map(t=>myEntries[keyOf(t.id,t.t)]).filter(e=>e && e.status==="watched");
+      for(const e of toBump){
+        try{ const {data}=await client.from("entries").update({rewatch_count:(e.rewatch_count||0)+1}).eq("id",e.entryId).select("rewatch_count");
+          if(data&&data.length) e.rewatch_count=data[0].rewatch_count; }catch(_){}
+      }
+      const newPass=(currentUniRun?currentUniRun.pass:0)+1;
+      try{
+        await client.from("universe_progress").upsert({user_id:currentUserId, universe_id:u.id, watched_keys:[], pass:newPass, updated_at:new Date().toISOString()},{onConflict:"user_id,universe_id"});
+        currentUniRun={keys:new Set(), pass:newPass};
+        showToast("Rewatch started · +1 rewatch on "+toBump.length+" title"+(toBump.length===1?"":"s"));
+      }catch(e){ showToast("Error: "+(e.message||e)); }
+      renderUniverse();
+    }
     function displayFromUni(rec){ return {tmdbId:rec.tmdbId, type:rec.type, title:rec.title, year:rec.year, poster_url:rec.poster_url}; }
 
     async function fetchUniTitle(t){
@@ -2031,6 +2603,8 @@
       $("uni-body").innerHTML=`<div class="hint">Loading ${esc(u.name)}…</div>`;
       await Promise.all(u.titles.map(fetchUniTitle));
       if(currentUniverse!==u) return;
+      currentUniRun = await loadUniRun(u.id);
+      if(currentUniverse!==u) return;
       renderUniverse();
     }
     $("uni-back").onclick=()=>showSection("home");
@@ -2043,11 +2617,11 @@
       const today=new Date(); today.setHours(0,0,0,0);
       const isUpcoming=(rec)=>{ if(!rec.date) return false; return new Date(rec.date+"T00:00:00") > today; };
       const released=recs.filter(r=>!isUpcoming(r));
-      const doneCount=released.filter(r=>uniStatusOf(r)==="watched").length;
+      const doneCount=released.filter(r=>uniDone(r)).length;
       const total=released.length;
       const pct= total ? Math.round(doneCount/total*100) : 0;
       let nextRec=null;
-      for(const r of recs){ if(isUpcoming(r)) continue; if(uniStatusOf(r)!=="watched"){ nextRec=r; break; } }
+      for(const r of recs){ if(isUpcoming(r)) continue; if(!uniDone(r)){ nextRec=r; break; } }
       const hero=(u.heroKey&&uniCache[u.heroKey]) || recs.find(r=>r.backdrop) || recs[0] || null;
       const heroBg=hero&&hero.backdrop ? hero.backdrop : null;
 
@@ -2062,7 +2636,7 @@
 
       html+=`<div class="uni-prog-card">
           <div class="uni-prog-pct">${pct}%</div>
-          <div class="uni-prog-sub">${doneCount} of ${total} watched${(order.seq && order.note)?" (this order)":""}</div>
+          <div class="uni-prog-sub">${currentUniRun?("Rewatch · pass "+currentUniRun.pass+" — "):""}${doneCount} of ${total} watched${(order.seq && order.note)?" (this order)":""}</div>
           <div class="uni-prog-bar"><div class="uni-prog-fill" style="width:${pct}%;background:var(--uaccent)"></div></div>`;
       if(nextRec){
         html+=`<div class="uni-next" data-nextkey="${uniKey({t:nextRec.type,id:nextRec.tmdbId})}">
@@ -2076,10 +2650,10 @@
 
       html+=`<div class="uni-frieze-scroll"><div class="uni-frieze"><div class="uni-baseline"></div>`;
       recs.forEach((r,i)=>{
-        const st=uniStatusOf(r); const up=isUpcoming(r);
-        const cls= up?"upcoming":(st==="watched"?"done":(st==="watching"?"watching todo":"todo"));
+        const up=isUpcoming(r); const done=uniDone(r); const st=uniStatusOf(r);
+        const cls= up?"upcoming":(done?"done":((!currentUniRun && st==="watching")?"watching todo":"todo"));
         const isNext= nextRec && r.tmdbId===nextRec.tmdbId && r.type===nextRec.type;
-        const badge= st==="watched"?"✓":(up?"·":(i+1));
+        const badge= done?"✓":(up?"·":(i+1));
         html+=`<div class="uni-node ${cls}${isNext?" next":""}" data-key="${uniKey({t:r.type,id:r.tmdbId})}" title="${esc(r.title)}">
             ${r.poster_url?`<img class="un-poster" src="${r.poster_url}" alt=""/>`:`<div class="un-poster"></div>`}
             <div class="un-badge">${badge}</div></div>`;
@@ -2088,18 +2662,26 @@
 
       html+=`<div class="uni-list">`;
       recs.forEach((r,i)=>{
-        const st=uniStatusOf(r); const up=isUpcoming(r);
-        const label= up?"Upcoming":(st==="watched"?"Watched":(st==="watching"?"Watching":(st==="watchlist"?"Watchlist":"Not seen")));
-        const tone= st==="watched"?"st-done":((st==="watching"||st==="watchlist")?"st-progress":"st-todo");
+        const up=isUpcoming(r); const done=uniDone(r); const st=uniStatusOf(r);
+        let label, tone;
+        if(up){ label="Upcoming"; tone="st-todo"; }
+        else if(currentUniRun){ label= done?"Re-seen":"To re-watch"; tone= done?"st-done":"st-todo"; }
+        else { label= st==="watched"?"Watched":(st==="watching"?"Watching":(st==="watchlist"?"Watchlist":"Not seen"));
+               tone= st==="watched"?"st-done":((st==="watching"||st==="watchlist")?"st-progress":"st-todo"); }
         const k=uniKey({t:r.type,id:r.tmdbId});
         html+=`<div class="uni-row" data-key="${k}">
             <div class="ur-idx">${i+1}</div>
             ${r.poster_url?`<img class="ur-img" src="${r.poster_url}" alt=""/>`:`<div class="ur-img"></div>`}
             <div class="ur-body"><div class="ur-t">${esc(r.title)}</div><div class="ur-m">${r.year||"—"} · ${r.type==="tv"?"Series":"Movie"}</div></div>
             <span class="verdict ${tone} ur-status">${esc(label)}</span>
-            <button class="ur-check${st==="watched"?" on":""}" data-key="${k}" title="Mark watched"${up?" disabled":""}>✓</button>
+            <button class="ur-check${done?" on":""}" data-key="${k}" title="${currentUniRun?"Mark re-seen":"Mark watched"}"${up?" disabled":""}>✓</button>
           </div>`;
       });
+      html+=`</div>`;
+      html+=`<div style="margin-top:26px">`;
+      if(currentUniRun) html+=`<div class="uni-passnote">Rewatch in progress — pass ${currentUniRun.pass}. Your overall collection still counts these as watched.</div>`;
+      html+=`<button class="uni-reset" id="uni-reset">${currentUniRun?"Restart this rewatch":"Rewatch this universe"}</button>`;
+      if(currentUniRun) html+=`<button class="uni-exit" id="uni-exit">Show my overall progress instead</button>`;
       html+=`</div>`;
       body.innerHTML=html;
 
@@ -2113,12 +2695,24 @@
       const nx=body.querySelector(".uni-next[data-nextkey]"); if(nx) nx.onclick=()=>openFromKey(nx.dataset.nextkey);
       body.querySelectorAll(".ur-check").forEach(btn=>btn.onclick=async(ev)=>{
         ev.stopPropagation(); if(btn.disabled) return;
-        const d=byKey[btn.dataset.key]; if(!d) return;
+        const k=btn.dataset.key; const d=byKey[k]; if(!d) return;
+        if(currentUniRun){ await setUniRunKey(k, !currentUniRun.keys.has(k)); renderUniverse(); return; }
         const cur=myEntries[keyOf(d.tmdbId,d.type)];
-        if(cur&&cur.status==="watched"){ openFromKey(btn.dataset.key); return; }
+        if(cur&&cur.status==="watched"){ openFromKey(k); return; }
         try{ await setStatusByDisplay(d,"watched"); showToast("Marked as watched"); renderUniverse(); }
         catch(e){ showToast("Error: "+(e.message||e)); }
       });
+      let resetArmed=false; const rb=body.querySelector("#uni-reset");
+      if(rb) rb.onclick=async()=>{
+        if(!resetArmed){ resetArmed=true; rb.textContent="Tap again to confirm"; rb.classList.add("armed");
+          setTimeout(()=>{ resetArmed=false; rb.textContent=currentUniRun?"Restart this rewatch":"Rewatch this universe"; rb.classList.remove("armed"); },2600); return; }
+        await resetUniverse();
+      };
+      const xb=body.querySelector("#uni-exit");
+      if(xb) xb.onclick=async()=>{
+        try{ await client.from("universe_progress").delete().eq("user_id",currentUserId).eq("universe_id",currentUniverse.id); }catch(_){}
+        currentUniRun=null; showToast("Back to overall progress"); renderUniverse();
+      };
     }
 
     client.auth.getSession().then(({data})=>render(data.session));
