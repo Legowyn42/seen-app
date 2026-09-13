@@ -206,6 +206,8 @@
     .ep-row .fieldw { flex: 1; }
     .ep-row .fieldw span { font-size: 12px; color: var(--muted); }
     .ep-total { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .up-head { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); margin: 18px 2px 8px; }
+    .up-head:first-child { margin-top: 4px; }
     .ep-next { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 12px;
       background: rgba(var(--accent-rgb),.10); border: 1px solid rgba(var(--accent-rgb),.35); border-radius: 12px; }
     .ep-next .epn-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -740,7 +742,7 @@
       <div class="navtab active" id="nav-home"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="nl">Home</span></div>
       <div class="navtab" id="nav-search"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="nl">Search</span></div>
       <div class="navtab" id="nav-collection"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="7" height="18" rx="1.5"/><rect x="14" y="3" width="6" height="18" rx="1.5"/></svg><span class="nl">Collection</span></div>
-      <div class="navtab" id="nav-upcoming"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="nl">Soon</span></div>
+      <div class="navtab" id="nav-upcoming"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="nl">Next</span></div>
       <div class="navtab" id="nav-friends"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.4"/></svg><span class="nl">Friends</span><span class="dot" id="friends-dot" hidden></span></div>
       <div class="navtab" id="nav-stats"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="nl">Stats</span></div>
     </div>
@@ -819,7 +821,7 @@
       </div>
     </div>
     <div id="section-upcoming" hidden>
-      <div class="upcoming-intro">When the next episode drops for the series you're watching, plus release dates from your watchlist.</div>
+      <div class="upcoming-intro">What to watch next: the series you're behind on, plus release dates coming up on your lists.</div>
       <div class="hint" id="upcoming-hint">Loading what's coming...</div>
       <div id="upcoming-list"></div>
     </div>
@@ -1236,7 +1238,7 @@
         '<div class="seg" id="set-theme"><button data-v="light">☀️ Light</button><button data-v="dark">🌙 Dark</button><button data-v="system">🖥 System</button></div>'+
         '<div class="sett-lab">Accent colour</div><div class="swatches" id="set-accent"></div>'+
         '<div class="sett-lab">Start on</div>'+
-        '<div class="seg" id="set-landing"><button data-v="home">Home</button><button data-v="collection">Collection</button><button data-v="upcoming">Soon</button></div>'+
+        '<div class="seg" id="set-landing"><button data-v="home">Home</button><button data-v="collection">Collection</button><button data-v="upcoming">Next</button></div>'+
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
@@ -1510,51 +1512,77 @@
       wrap.hidden=false; rows.forEach(e=>box.appendChild(gemShelfCard(e.media, loadCollection)));
     }
 
-    // ---- upcoming ("Soon") ----
+    // ---- Next tab (catch up + upcoming) ----
     async function loadUpcoming(){
       const hint=$("upcoming-hint"), list=$("upcoming-list");
-      list.innerHTML=""; hint.hidden=false; hint.textContent="Checking release dates...";
+      list.innerHTML=""; hint.hidden=false; hint.textContent="Checking your series...";
       const {data,error}=await client.from("entries")
-        .select("status,last_season,last_episode,media:media_id(tmdb_id,type,title,poster_url,year)")
+        .select("status,last_season,last_episode,watched_eps,media:media_id(tmdb_id,type,title,poster_url,year)")
         .eq("user_id", currentUserId)
         .in("status",["watchlist","watching"]);
       if(error){ hint.textContent="Could not load: "+error.message; return; }
       const entries=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
-      if(!entries.length){ hint.textContent="Add films or series to your watchlist to see what's coming."; return; }
+      if(!entries.length){ hint.textContent="Add films or series to your lists to see what's next."; return; }
       const today=new Date(); today.setHours(0,0,0,0); const DAY=86400000;
       const items=await Promise.all(entries.map(async e=>{
         const m=e.media;
         try{
           const d=await fetchDetails(m.type, m.tmdb_id);
-          let date=null, kind="", next=null, network=null;
-          if(m.type==="movie"){ date=d.release_date||null; kind="release"; }
-          else { if(d.networks && d.networks[0]) network=d.networks[0].name;
-            if(d.next_episode_to_air && d.next_episode_to_air.air_date){ date=d.next_episode_to_air.air_date; kind="episode"; next=d.next_episode_to_air; }
-            else if(e.status==="watchlist" && d.first_air_date){ date=d.first_air_date; kind="premiere"; }
-            else if(d.last_episode_to_air && d.last_episode_to_air.air_date){ date=d.last_episode_to_air.air_date; kind="last"; } }
-          if(!date) return null;
-          return {media:m, date:new Date(date+"T00:00:00"), rawdate:date, kind, next, network};
+          if(m.type==="movie"){
+            const date=d.release_date||null; if(!date) return null;
+            return {media:m, behind:0, nextWatch:null, network:null,
+              upDate:new Date(date+"T00:00:00"), rawdate:date, kind:"release", next:null};
+          }
+          const grid=(d.seasons||[]).filter(s=>s.season_number>=1&&(s.episode_count||0)>0).map(s=>({num:s.season_number,eps:s.episode_count}));
+          const network=(d.networks&&d.networks[0])?d.networks[0].name:null;
+          const lea=d.last_episode_to_air;
+          const wset=new Set();
+          if(Array.isArray(e.watched_eps)&&e.watched_eps.length){ e.watched_eps.forEach(k=>wset.add(k)); }
+          else if(e.last_season!=null){ const ls=e.last_season, le=e.last_episode||0;
+            grid.forEach(se=>{ for(let n=1;n<=se.eps;n++){ if(se.num<ls||(se.num===ls&&n<=le)) wset.add("S"+se.num+"E"+n); } }); }
+          let behind=0, nextWatch=null;
+          if(e.status==="watching" && lea && lea.season_number){
+            for(const se of grid){ for(let n=1;n<=se.eps;n++){
+              const aired = se.num<lea.season_number || (se.num===lea.season_number && n<=lea.episode_number);
+              if(!aired) continue;
+              if(!wset.has("S"+se.num+"E"+n)){ behind++; if(!nextWatch) nextWatch={s:se.num,e:n}; }
+            } }
+          }
+          let upDate=null, rawdate=null, kind="", next=null;
+          if(d.next_episode_to_air && d.next_episode_to_air.air_date){ rawdate=d.next_episode_to_air.air_date; kind="episode"; next=d.next_episode_to_air; upDate=new Date(rawdate+"T00:00:00"); }
+          else if(e.status==="watchlist" && d.first_air_date){ rawdate=d.first_air_date; kind="premiere"; upDate=new Date(rawdate+"T00:00:00"); }
+          else if(lea && lea.air_date){ rawdate=lea.air_date; kind="last"; upDate=new Date(rawdate+"T00:00:00"); }
+          return {media:m, behind, nextWatch, network, upDate, rawdate, kind, next};
         }catch(_){ return null; }
       }));
-      let rows=items.filter(Boolean).filter(r=>((r.date-today)/DAY)>=-30);
-      rows.sort((a,b)=> a.date-b.date);
-      if(!rows.length){ hint.textContent="Nothing on the horizon from your lists right now."; return; }
+      const all=items.filter(Boolean);
+      const key=r=>r.media.tmdb_id+"_"+r.media.type;
+      const ready=all.filter(r=>r.behind>0).sort((a,b)=>b.behind-a.behind);
+      const readyKeys=new Set(ready.map(key));
+      const coming=all.filter(r=>!readyKeys.has(key(r)) && r.upDate && ((r.upDate-today)/DAY)>=-30).sort((a,b)=>a.upDate-b.upDate);
+      if(!ready.length && !coming.length){ hint.textContent="Nothing to catch up on and nothing on the horizon right now."; return; }
       hint.hidden=true;
-      currentDisplays=rows.map(r=>displayFromMedia(r.media));
-      rows.forEach(r=>list.appendChild(upcomingRow(r, today, DAY)));
+      currentDisplays=[...ready,...coming].map(r=>displayFromMedia(r.media));
+      if(ready.length){ list.appendChild(nextHead("Ready to watch")); ready.forEach(r=>list.appendChild(upcomingRow(r, today, DAY))); }
+      if(coming.length){ list.appendChild(nextHead("Coming soon")); coming.forEach(r=>list.appendChild(upcomingRow(r, today, DAY))); }
     }
+    function nextHead(txt){ const h=document.createElement("div"); h.className="up-head"; h.textContent=txt; return h; }
     function prettyDate(s){ try{ return new Date(s+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}); }catch(_){ return s; } }
     function upcomingRow(r, today, DAY){
-      const m=r.media; const diff=Math.round((r.date-today)/DAY);
-      const timing = diff>0 ? (diff===1?"Tomorrow":("in "+diff+" days")) : (diff===0?"Today":"Out now");
-      const tone = diff<0 ? "st-done" : (diff===0?"st-done":"st-progress");
-      let sub;
-      if(m.type==="movie") sub="Movie · "+prettyDate(r.rawdate)+" · "+timing;
-      else if(r.kind==="episode" && r.next) sub="S"+r.next.season_number+"E"+r.next.episode_number+" · "+prettyDate(r.rawdate)+" · "+timing;
-      else if(r.kind==="premiere") sub="Premiere · "+prettyDate(r.rawdate)+" · "+timing;
-      else sub="Latest · "+prettyDate(r.rawdate);
-      const badge = r.network || timing;
-      const badgeTone = r.network ? "st-todo" : tone;
+      const m=r.media;
+      let sub, badge, badgeTone;
+      if(r.behind>0 && r.nextWatch){
+        sub=r.behind+" episode"+(r.behind>1?"s":"")+" behind · next S"+r.nextWatch.s+"E"+r.nextWatch.e;
+        badge=r.behind+" behind"; badgeTone="st-progress";
+      } else {
+        const diff = r.upDate? Math.round((r.upDate-today)/DAY) : null;
+        const timing = diff==null?"" : (diff>0 ? (diff===1?"Tomorrow":("in "+diff+" days")) : (diff===0?"Today":"Out now"));
+        if(m.type==="movie") sub="Movie · "+prettyDate(r.rawdate)+(timing?" · "+timing:"");
+        else if(r.kind==="episode" && r.next) sub="Next S"+r.next.season_number+"E"+r.next.episode_number+" · "+prettyDate(r.rawdate)+(timing?" · "+timing:"");
+        else if(r.kind==="premiere") sub="Premiere · "+prettyDate(r.rawdate)+(timing?" · "+timing:"");
+        else sub="Latest · "+prettyDate(r.rawdate);
+        badge = r.network || timing || "·"; badgeTone = r.network ? "st-todo" : (diff!=null&&diff<=0?"st-done":"st-progress");
+      }
       const el=document.createElement("div"); el.className="cmp-row";
       el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
         `<div class="cr-body"><div class="cr-t">${esc(m.title)}</div><div class="cr-p">${esc(sub)}</div></div>
