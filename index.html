@@ -205,7 +205,29 @@
     .ep-row { display: flex; gap: 10px; align-items: flex-end; }
     .ep-row .fieldw { flex: 1; }
     .ep-row .fieldw span { font-size: 12px; color: var(--muted); }
-    .ep-total { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .ep-total { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .ep-next { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 12px;
+      background: rgba(var(--accent-rgb),.10); border: 1px solid rgba(var(--accent-rgb),.35); border-radius: 12px; }
+    .ep-next .epn-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .ep-next .epn-lab { font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+    .ep-next .epn-ep { font-size: 17px; font-weight: 800; color: var(--text); }
+    .ep-next .epn-btn { flex: 0 0 auto; padding: 10px 14px; border-radius: 10px; border: none;
+      background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .ep-next .epn-btn:active { transform: scale(.97); }
+    .ep-seasons { display: flex; flex-direction: column; gap: 8px; }
+    .ep-season { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .ep-shead { display: flex; align-items: center; gap: 10px; padding: 11px 13px; cursor: pointer; background: var(--field); }
+    .ep-shead .eps-caret { color: var(--muted); font-size: 12px; width: 12px; }
+    .ep-shead .eps-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+    .ep-shead .eps-count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .ep-shead .eps-count.full { color: var(--ok); font-weight: 700; }
+    .ep-grid { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 13px 4px; }
+    .ep-chip { width: 38px; height: 34px; border-radius: 8px; border: 1px solid var(--line);
+      background: var(--field); color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
+    .ep-chip.on { background: rgba(56,193,114,.16); border-color: var(--ok); color: var(--ok); }
+    .ep-chip:active { transform: scale(.94); }
+    .ep-sfoot { padding: 4px 13px 12px; }
+    .ep-allbtn { font-size: 12px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; padding: 4px 0; }
     .ep-row select { width: 100%; padding: 12px 14px; background: var(--field); border: 1px solid var(--line);
       border-radius: 10px; color: var(--text); font-size: 16px; }
     .ep-row select:focus { outline: none; border-color: var(--accent); }
@@ -849,7 +871,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.21</div>
+    <div class="appfoot">Seen · v3.22</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -884,10 +906,8 @@
       </div>
       <div class="sheet-section" id="episode-section" hidden>
         <div class="sheet-label">Progress</div>
-        <div class="ep-row">
-          <div class="fieldw"><span>Season</span><select id="ep-season"></select></div>
-          <div class="fieldw"><span>Episode</span><select id="ep-episode"></select></div>
-        </div>
+        <div class="ep-next" id="ep-next" hidden></div>
+        <div class="ep-seasons" id="ep-seasons"></div>
         <div class="ep-total" id="ep-total"></div>
       </div>
       <div class="sheet-section">
@@ -989,7 +1009,7 @@
     const navUpcoming=$("nav-upcoming"), sectionUpcoming=$("section-upcoming");
     const overlay=$("detail-overlay"), sheetPoster=$("sheet-poster"), sheetTitle=$("sheet-title"),
       sheetMeta=$("sheet-meta"), sheetOverview=$("sheet-overview"), statusSelect=$("status-select"),
-      episodeSection=$("episode-section"), epSeason=$("ep-season"), epEpisode=$("ep-episode"),
+      episodeSection=$("episode-section"),
       epTotal=$("ep-total"), stars=$("stars"), sheetRemove=$("sheet-remove"), sheetClose=$("sheet-close");
     const navPrev=$("nav-prev"), navNext=$("nav-next");
     const providersSection=$("providers-section"), providers=$("providers");
@@ -1281,11 +1301,11 @@
 
     async function loadMyEntries(){
       const {data,error}=await client.from("entries")
-        .select("id, status, rating, last_season, last_episode, is_gem, rewatch_count, media:media_id ( tmdb_id, type )")
+        .select("id, status, rating, last_season, last_episode, watched_eps, is_gem, rewatch_count, media:media_id ( tmdb_id, type )")
         .eq("user_id", currentUserId);
       myEntries={};
       if(!error&&data) data.forEach(e=>{ if(e.media&&e.media.tmdb_id!=null)
-        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,is_gem:e.is_gem,rewatch_count:e.rewatch_count||0}; });
+        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,watched_eps:e.watched_eps||[],is_gem:e.is_gem,rewatch_count:e.rewatch_count||0}; });
     }
     function gemCount(){ return Object.values(myEntries).filter(e=>e&&e.is_gem).length; }
     const GEM_MAX=6;
@@ -1303,10 +1323,10 @@
       const mediaId=await upsertMedia(mediaFields(display));
       const {data,error}=await client.from("entries")
         .upsert({user_id:currentUserId,media_id:mediaId,status},{onConflict:"user_id,media_id"})
-        .select("id,status,rating,last_season,last_episode,is_gem,rewatch_count").single();
+        .select("id,status,rating,last_season,last_episode,watched_eps,is_gem,rewatch_count").single();
       if(error) throw error;
       const k=keyOf(display.tmdbId,display.type);
-      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,is_gem:data.is_gem,rewatch_count:data.rewatch_count||0};
+      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],is_gem:data.is_gem,rewatch_count:data.rewatch_count||0};
       return myEntries[k];
     }
     async function ensureEntry(display,statusIfNew){
@@ -1584,7 +1604,7 @@
       statusSelect.querySelectorAll("button").forEach(b=>b.classList.toggle("active", !!e&&e.status===b.dataset.s));
       const rating=e&&e.rating?e.rating:0;
       stars.querySelectorAll(".star").forEach(s=>s.classList.toggle("on", parseInt(s.dataset.v,10)<=rating));
-      if(detailDisplay && detailDisplay.type==="tv" && detailSeasons) buildEpisodeControls(e);
+      if(detailDisplay && detailDisplay.type==="tv" && detailSeasons) renderEpisodes();
       sheetRemove.hidden=!e;
       renderGem(); renderRewatch();
     }
@@ -1644,15 +1664,14 @@
       if(display.poster_url){ sheetPoster.src=display.poster_url; sheetPoster.style.display=""; } else { sheetPoster.style.display="none"; }
       episodeSection.hidden=display.type!=="tv"; epTotal.textContent=""; providersSection.hidden=true; $("cast-section").hidden=true;
       detailSeasons=null;
-      if(display.type==="tv"){ epSeason.innerHTML='<option>…</option>'; epEpisode.innerHTML='<option>…</option>'; epSeason.disabled=true; epEpisode.disabled=true; }
+      if(display.type==="tv"){ expandedSeasons=new Set(); $("ep-next").hidden=true; $("ep-seasons").innerHTML=""; }
       statusSelect.querySelector('button[data-s="watching"]').style.display = display.type==="tv" ? "" : "none";
       sheetOverview.textContent="Loading..."; renderSheet(); renderRecommend();
       try{ const d=await fetchDetailsCredits(display.type,display.tmdbId); if(seq!==detailSeq) return;
         sheetOverview.textContent=d.overview||"No description available.";
         if(display.type==="tv"){
           detailSeasons=(d.seasons||[]).filter(s=>s.season_number>=1 && (s.episode_count||0)>0).map(s=>({num:s.season_number, eps:s.episode_count}));
-          epSeason.disabled=false;
-          buildEpisodeControls(curEntry());
+          renderEpisodes();
           if(d.number_of_seasons) epTotal.textContent="Total: "+d.number_of_seasons+" seasons, "+(d.number_of_episodes||"?")+" episodes";
         }
         renderCast(d.credits);
@@ -1741,33 +1760,90 @@
         ent.rating=newVal; renderSheet();
       }catch(err){ showToast("Error: "+(err.message||err)); } }; });
 
-    function optionEl(val,label){ const o=document.createElement("option"); o.value=val; o.textContent=label; return o; }
-    function seasonEpisodes(num){ const s=(detailSeasons||[]).find(x=>x.num===Number(num)); return s?s.eps:1; }
-    function populateEpisodesFor(seasonNum, current){
-      epEpisode.innerHTML=""; epEpisode.appendChild(optionEl("","Episode —"));
-      if(seasonNum){ const max=Math.max(1, seasonEpisodes(seasonNum));
-        for(let n=1;n<=max;n++) epEpisode.appendChild(optionEl(n,"Episode "+n)); }
-      epEpisode.value = (current!=null && String(current)!=="") ? String(current) : "";
-      epEpisode.disabled = !seasonNum;
+    // ---- per-episode tracking ----
+    let expandedSeasons=new Set();
+    function epKey(s,e){ return "S"+s+"E"+e; }
+    function parseEpKey(k){ const m=/^S(\d+)E(\d+)$/.exec(k||""); return m?{s:+m[1],e:+m[2]}:null; }
+    function allEpisodes(){ const out=[]; (detailSeasons||[]).forEach(se=>{ for(let n=1;n<=se.eps;n++) out.push({s:se.num,e:n}); }); return out; }
+    // effective watched set: explicit watched_eps if present, else derived from the old last_season/last_episode pointer
+    function watchedSet(entry){
+      const set=new Set();
+      if(entry && Array.isArray(entry.watched_eps) && entry.watched_eps.length){ entry.watched_eps.forEach(k=>set.add(k)); return set; }
+      if(entry && entry.last_season!=null){ const ls=entry.last_season, le=entry.last_episode||0;
+        for(const ep of allEpisodes()){ if(ep.s<ls || (ep.s===ls && ep.e<=le)) set.add(epKey(ep.s,ep.e)); } }
+      return set;
     }
-    function buildEpisodeControls(entry){
-      epSeason.innerHTML=""; epSeason.appendChild(optionEl("","Season —"));
-      (detailSeasons||[]).forEach(s=> epSeason.appendChild(optionEl(s.num,"Season "+s.num)));
-      const curS = (entry && entry.last_season!=null) ? entry.last_season : null;
-      const exists = (detailSeasons||[]).some(s=>s.num===Number(curS));
-      epSeason.value = exists ? String(curS) : "";
-      populateEpisodesFor(exists?Number(curS):null, (entry&&entry.last_episode!=null)?entry.last_episode:null);
+    function nextEpisode(set){ for(const ep of allEpisodes()){ if(!set.has(epKey(ep.s,ep.e))) return ep; } return null; }
+    function furthestWatched(set){ let last=null; for(const ep of allEpisodes()){ if(set.has(epKey(ep.s,ep.e))) last=ep; } return last; }
+    async function persistWatched(entry, set){
+      const keys=[]; for(const ep of allEpisodes()){ const k=epKey(ep.s,ep.e); if(set.has(k)) keys.push(k); }
+      const fw=furthestWatched(set);
+      const upd={ watched_eps:keys, last_season: fw?fw.s:null, last_episode: fw?fw.e:null };
+      if(!entry.status || entry.status==="watchlist") upd.status="watching";
+      const {error}=await client.from("entries").update(upd).eq("id",entry.entryId);
+      if(error){ showToast("Error: "+(error.message||error)); return false; }
+      entry.watched_eps=keys; entry.last_season=upd.last_season; entry.last_episode=upd.last_episode;
+      if(upd.status) entry.status=upd.status;
+      return true;
     }
-    async function saveEpisode(){
-      const s=epSeason.value?parseInt(epSeason.value,10):null;
-      const ep=epEpisode.value?parseInt(epEpisode.value,10):null;
-      if(s==null&&ep==null) return;
-      try{ const ent=await ensureEntry(detailDisplay,"watching");
-        await client.from("entries").update({last_season:s,last_episode:ep,status:ent.status==="watchlist"?"watching":ent.status}).eq("id",ent.entryId);
-        ent.last_season=s; ent.last_episode=ep; if(ent.status==="watchlist") ent.status="watching"; renderSheet(); showToast("Progress saved");
-      }catch(err){ showToast("Error: "+(err.message||err)); } }
-    epSeason.addEventListener("change", ()=>{ const sv=epSeason.value?parseInt(epSeason.value,10):null; populateEpisodesFor(sv, null); saveEpisode(); });
-    epEpisode.addEventListener("change", saveEpisode);
+    async function toggleEpisode(s,e){
+      const ent=await ensureEntry(detailDisplay,"watching");
+      const set=watchedSet(ent); const k=epKey(s,e);
+      if(set.has(k)) set.delete(k); else set.add(k);
+      if(await persistWatched(ent,set)) renderSheet();
+    }
+    async function toggleSeason(num){
+      const se=(detailSeasons||[]).find(x=>x.num===num); if(!se) return;
+      const ent=await ensureEntry(detailDisplay,"watching");
+      const set=watchedSet(ent);
+      let allIn=true; for(let n=1;n<=se.eps;n++){ if(!set.has(epKey(num,n))){ allIn=false; break; } }
+      for(let n=1;n<=se.eps;n++){ const k=epKey(num,n); if(allIn) set.delete(k); else set.add(k); }
+      if(await persistWatched(ent,set)) renderSheet();
+    }
+    async function markNextWatched(){
+      const ent=await ensureEntry(detailDisplay,"watching");
+      const set=watchedSet(ent); const nx=nextEpisode(set); if(!nx) return;
+      set.add(epKey(nx.s,nx.e));
+      if(await persistWatched(ent,set)){ renderSheet(); showToast("S"+nx.s+"E"+nx.e+" watched"); }
+    }
+    function renderEpisodes(){
+      const nextBox=$("ep-next"), seasonsBox=$("ep-seasons");
+      if(!nextBox||!seasonsBox) return;
+      if(!detailDisplay || detailDisplay.type!=="tv" || !detailSeasons){ nextBox.hidden=true; seasonsBox.innerHTML=""; return; }
+      const ent=curEntry(); const set=watchedSet(ent);
+      const eps=allEpisodes(); const total=eps.length; let seen=0; for(const ep of eps) if(set.has(epKey(ep.s,ep.e))) seen++;
+      const nx=nextEpisode(set);
+      nextBox.hidden=false;
+      if(nx){
+        nextBox.innerHTML='<div class="epn-mid"><div class="epn-lab">Watch next</div><div class="epn-ep">S'+nx.s+'E'+nx.e+'</div></div><button class="epn-btn" id="ep-marknext">Mark watched</button>';
+        const b=$("ep-marknext"); if(b) b.onclick=markNextWatched;
+      } else {
+        nextBox.innerHTML='<div class="epn-mid"><div class="epn-lab">All caught up</div><div class="epn-ep">'+seen+'/'+total+' episodes</div></div>';
+      }
+      seasonsBox.innerHTML="";
+      (detailSeasons||[]).forEach(se=>{
+        let sc=0; for(let n=1;n<=se.eps;n++) if(set.has(epKey(se.num,n))) sc++;
+        const open=expandedSeasons.has(se.num);
+        const wrap=document.createElement("div"); wrap.className="ep-season";
+        const head=document.createElement("div"); head.className="ep-shead";
+        head.innerHTML='<span class="eps-caret">'+(open?"▾":"▸")+'</span><span class="eps-name">Season '+se.num+'</span><span class="eps-count '+(sc===se.eps?"full":"")+'">'+sc+'/'+se.eps+'</span>';
+        head.onclick=()=>{ if(expandedSeasons.has(se.num)) expandedSeasons.delete(se.num); else expandedSeasons.add(se.num); renderEpisodes(); };
+        wrap.appendChild(head);
+        if(open){
+          const body=document.createElement("div"); body.className="ep-grid";
+          for(let n=1;n<=se.eps;n++){ const nn=n; const chip=document.createElement("button");
+            chip.className="ep-chip"+(set.has(epKey(se.num,nn))?" on":""); chip.textContent=nn; chip.title="Episode "+nn;
+            chip.onclick=()=>toggleEpisode(se.num,nn); body.appendChild(chip); }
+          const foot=document.createElement("div"); foot.className="ep-sfoot";
+          const allBtn=document.createElement("button"); allBtn.className="ep-allbtn";
+          allBtn.textContent = sc===se.eps ? "Unmark whole season" : "Mark whole season";
+          allBtn.onclick=()=>toggleSeason(se.num);
+          foot.appendChild(allBtn);
+          wrap.appendChild(body); wrap.appendChild(foot);
+        }
+        seasonsBox.appendChild(wrap);
+      });
+    }
 
     sheetRemove.onclick=async()=>{ await removeByDisplay(detailDisplay); showToast("Removed"); closeDetail(); };
 
