@@ -1,6 +1,6 @@
 // Seen - minimal service worker. Network-first so updates always show up,
 // with a cache fallback so the app still opens offline.
-const CACHE = "seen-v9";
+const CACHE = "seen-v10";
 const ASSETS = ["./", "./index.html", "./config.js", "./manifest.json",
   "./icon-192.png", "./icon-512.png", "./icon-180.png"];
 

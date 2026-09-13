@@ -433,6 +433,73 @@
     .verdict.st-done { background: rgba(56,193,114,.18); color: var(--ok); }
     .verdict.st-progress { background: rgba(74,144,217,.18); color: var(--watch); }
     .verdict.st-todo { background: #22262f; color: var(--muted); }
+
+    /* ---- Universes ---- */
+    #home-universes-wrap { margin: 26px 0 6px; }
+    .uni-shelf { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+    .uni-shelf::-webkit-scrollbar { height: 6px; } .uni-shelf::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+    .uni-card { flex: 0 0 auto; width: 236px; border-radius: 16px; padding: 16px; cursor: pointer; position: relative;
+      overflow: hidden; border: 1px solid var(--line); min-height: 128px; display: flex; flex-direction: column; justify-content: flex-end; background: #0b0f1a; }
+    .uni-card .uc-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: .45; }
+    .uni-card .uc-shade { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(0,0,0,.25), rgba(0,0,0,.86) 78%); }
+    .uni-card .uc-body { position: relative; }
+    .uni-card .uc-name { font-family: var(--disp); font-weight: 800; font-size: 21px; color: #fff; line-height: 1.1; }
+    .uni-card .uc-tag { font-size: 12px; color: #d7dde7; margin-top: 3px; }
+    .uni-card .uc-prog { position: relative; margin-top: 12px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.2); overflow: hidden; }
+    .uni-card .uc-fill { height: 100%; border-radius: 3px; }
+    .uni-card .uc-pct { position: relative; font-size: 11px; color: #eef1f6; margin-top: 6px; font-weight: 600; }
+
+    #section-universe .cmp-back { color: var(--muted); }
+    .uni-hero { position: relative; border-radius: 18px; overflow: hidden; margin-bottom: 16px; min-height: 156px;
+      display: flex; align-items: flex-end; padding: 18px; border: 1px solid var(--line); background: #0b0f1a; }
+    .uni-hero .uh-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+    .uni-hero .uh-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,7,13,.15), rgba(5,7,13,.55) 45%, rgba(5,7,13,.94)); }
+    .uni-hero .uh-body { position: relative; }
+    .uni-hero .uh-name { font-family: var(--disp); font-weight: 800; font-size: 31px; color: #fff; line-height: 1.05; }
+    .uni-hero .uh-tag { color: #dfe4ec; font-size: 13.5px; margin-top: 4px; }
+    .uni-orders { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .uni-order { padding: 8px 15px; border-radius: 999px; border: 1px solid var(--line); background: var(--card);
+      color: var(--muted); font-size: 13px; cursor: pointer; font-weight: 600; }
+    .uni-note { font-size: 12px; color: var(--muted); margin: -4px 0 14px; }
+    .uni-prog-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 15px 16px; margin-bottom: 18px; }
+    .uni-prog-pct { font-family: var(--disp); font-weight: 800; font-size: 30px; line-height: 1; }
+    .uni-prog-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .uni-prog-bar { height: 9px; border-radius: 5px; background: var(--field); overflow: hidden; margin-top: 12px; border: 1px solid var(--line); }
+    .uni-prog-fill { height: 100%; border-radius: 5px; transition: width .3s ease; }
+    .uni-next { display: flex; align-items: center; gap: 11px; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--line); cursor: pointer; }
+    .uni-next img { width: 36px; aspect-ratio: 2/3; object-fit: cover; border-radius: 5px; background: #22262f; flex: 0 0 auto; }
+    .uni-next .un-lab { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--uaccent, var(--accent)); font-weight: 700; }
+    .uni-next .un-t { font-size: 14.5px; font-weight: 600; margin-top: 2px; }
+    /* frieze */
+    .uni-frieze-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 22px; padding-bottom: 4px; }
+    .uni-frieze-scroll::-webkit-scrollbar { height: 6px; } .uni-frieze-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+    .uni-frieze { position: relative; display: inline-flex; gap: 0; padding: 4px 0 6px; }
+    .uni-baseline { position: absolute; top: 46px; left: 36px; right: 36px; height: 2px; background: var(--line); }
+    .uni-node { flex: 0 0 auto; width: 72px; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; }
+    .uni-node .un-poster { width: 56px; aspect-ratio: 2/3; object-fit: cover; border-radius: 7px; background: #22262f; position: relative; z-index: 1; border: 2px solid var(--line); }
+    .uni-node.todo .un-poster { opacity: .5; }
+    .uni-node.upcoming .un-poster { opacity: .32; }
+    .uni-node.done .un-poster { border-color: var(--uaccent, var(--accent)); opacity: 1; }
+    .uni-node.next .un-poster { border-color: var(--uaccent, var(--accent)); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--uaccent, var(--accent)); opacity: 1; }
+    .uni-node .un-badge { position: absolute; top: 2px; left: 50%; transform: translateX(9px); z-index: 2; min-width: 17px; height: 17px;
+      border-radius: 999px; background: var(--card-2); border: 1px solid var(--line); color: var(--muted); font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; padding: 0 3px; }
+    .uni-node.done .un-badge { background: var(--uaccent, var(--accent)); color: var(--uink, #0d0f14); border-color: transparent; }
+    .uni-node.next .un-badge { background: var(--uaccent, var(--accent)); color: var(--uink, #0d0f14); border-color: transparent; }
+    /* list */
+    .uni-list { display: flex; flex-direction: column; gap: 8px; }
+    .uni-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
+      border-radius: 12px; padding: 9px 12px; cursor: pointer; }
+    .uni-row .ur-idx { font-family: var(--disp); font-weight: 700; font-size: 13px; color: var(--faint); width: 18px; flex: 0 0 auto; text-align: center; }
+    .uni-row .ur-img { width: 40px; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; background: #22262f; flex: 0 0 auto; }
+    .uni-row .ur-body { flex: 1; min-width: 0; }
+    .uni-row .ur-t { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .uni-row .ur-m { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .uni-row .ur-status { flex: 0 0 auto; }
+    .uni-row .ur-check { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--line);
+      background: transparent; color: var(--muted); font-size: 15px; cursor: pointer; }
+    .uni-row .ur-check.on { background: var(--uaccent, var(--accent)); color: var(--uink, #0d0f14); border-color: transparent; }
+    .uni-row .ur-check:disabled { opacity: .35; cursor: default; }
   </style>
 </head>
 <body>
@@ -487,6 +554,8 @@
         <span class="pick-die">🎲</span>
         <span class="pick-txt"><span class="pick-title">Pick for me!</span><span class="pick-desc">Let Seen choose your next watch from your watchlist</span></span>
       </button>
+      <div class="row-lab" id="home-universes-lab" hidden>Universe watch orders</div>
+      <div id="home-universes-wrap" hidden><div class="uni-shelf" id="home-universes"></div></div>
       <div class="row-lab home-tap" id="home-badges-lab" hidden>Latest achievements<span class="seeall">See all ›</span></div>
       <div class="home-badges home-tap" id="home-badges-row"></div>
       <div class="shelf-wrap" id="home-continue-wrap" hidden>
@@ -592,7 +661,11 @@
       </div>
       <div class="badge-grid" id="badge-grid"></div>
     </div>
-    <div class="appfoot">Seen · v3.10</div>
+    <div id="section-universe" hidden>
+      <button class="cmp-back" id="uni-back">‹ Home</button>
+      <div id="uni-body"></div>
+    </div>
+    <div class="appfoot">Seen · v3.11</div>
   </div>
 
   <!-- Detail sheet -->
@@ -780,6 +853,7 @@
       sectionStats.hidden = name!=="stats";
       sectionCompare.hidden = true;
       $("section-achievements").hidden = true;
+      $("section-universe").hidden = true;
       if(name==="home") loadHome();
       if(name==="search") syncSearch();
       if(name==="collection") loadCollection();
@@ -1403,6 +1477,7 @@
       homePickPool = watchlist.slice(); $("home-pick-btn").hidden = !homePickPool.length;
       homeShelf("home-continue","home-continue-wrap", rows.filter(e=>e.status==="watching"));
       homeShelf("home-gems","home-gems-wrap", rows.filter(e=>e.is_gem));
+      loadHomeUniverses();
       loadHomeRecos();
       $("home-time").textContent="…";
       computeWatchMinutes(rows).then(min=>{ $("home-time").textContent = fmtHours(min); }).catch(()=>{ $("home-time").textContent="—"; });
@@ -1711,6 +1786,7 @@
     async function openAchievements(){
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
+      $("section-universe").hidden=true;
       $("section-achievements").hidden=false; window.scrollTo(0,0);
       const {data}=await client.from("entries").select("status,rating,is_gem,media:media_id(type)").eq("user_id",currentUserId);
       renderBadges(computeCounts((data||[]).filter(e=>e.media)));
@@ -1831,6 +1907,218 @@
          <span class="fr-cta">+</span>`;
       el.onclick=()=>openDetail(displayFromMedia(m), ()=>{ if(compareFriend) openCompare(compareFriend); });
       return el;
+    }
+
+    // ================= Universes (curated watch orders) =================
+    // Editorial data, kept in the app (not in the database). "Watched" state and the
+    // completion % are read from the user's existing entries, so nothing new is stored.
+    const UNIVERSES = [
+      {
+        id: "star-wars",
+        name: "Star Wars",
+        tagline: "A galaxy far, far away",
+        heroKey: "m140607",
+        theme: { accent: "#ffe81f", ink: "#0d0f14", bg: "#05070d", glow: "rgba(255,232,31,.14)" },
+        titles: [
+          {t:"movie", id:1893,    label:"The Phantom Menace"},
+          {t:"movie", id:1894,    label:"Attack of the Clones"},
+          {t:"movie", id:1895,    label:"Revenge of the Sith"},
+          {t:"movie", id:11,      label:"A New Hope"},
+          {t:"movie", id:1891,    label:"The Empire Strikes Back"},
+          {t:"movie", id:1892,    label:"Return of the Jedi"},
+          {t:"movie", id:140607,  label:"The Force Awakens"},
+          {t:"movie", id:181808,  label:"The Last Jedi"},
+          {t:"movie", id:181812,  label:"The Rise of Skywalker"},
+          {t:"movie", id:330459,  label:"Rogue One"},
+          {t:"movie", id:348350,  label:"Solo"},
+          {t:"movie", id:1228710, label:"The Mandalorian & Grogu"},
+          {t:"tv", id:4194,   label:"The Clone Wars"},
+          {t:"tv", id:60554,  label:"Star Wars Rebels"},
+          {t:"tv", id:105971, label:"The Bad Batch"},
+          {t:"tv", id:83867,  label:"Andor"},
+          {t:"tv", id:92830,  label:"Obi-Wan Kenobi"},
+          {t:"tv", id:82856,  label:"The Mandalorian"},
+          {t:"tv", id:115036, label:"The Book of Boba Fett"},
+          {t:"tv", id:114461, label:"Ahsoka"},
+          {t:"tv", id:202879, label:"Skeleton Crew"},
+          {t:"tv", id:114479, label:"The Acolyte"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", seq:[
+            "t114479","m1893","m1894","t4194","m1895","t105971","m348350","t92830","t83867","t60554",
+            "m330459","m11","m1891","m1892","t82856","t115036","t202879","t114461","m1228710","m140607","m181808","m181812"
+          ]},
+          { id:"machete", name:"Machete", note:"Films only — the cult order that skips Episode I.",
+            seq:["m11","m1891","m1894","m1895","m1892"] }
+        ],
+        defaultOrder: "release"
+      }
+    ];
+
+    const uniCache = {};        // key -> {tmdbId,type,title,year,poster_url,backdrop,date}
+    let currentUniverse = null, currentUniOrder = null;
+
+    function uniKey(t){ return t.t.charAt(0) + t.id; }               // {t:"movie",id:11} -> "m11"
+    function uniStatusOf(rec){ const e = myEntries[keyOf(rec.tmdbId, rec.type)]; return e ? e.status : null; }
+    function displayFromUni(rec){ return {tmdbId:rec.tmdbId, type:rec.type, title:rec.title, year:rec.year, poster_url:rec.poster_url}; }
+
+    async function fetchUniTitle(t){
+      const key = uniKey(t);
+      if(uniCache[key]) return uniCache[key];
+      try{
+        const d = await fetchDetails(t.t, t.id);
+        uniCache[key] = { tmdbId:t.id, type:t.t,
+          title: d.title || d.name || t.label,
+          year: (d.release_date || d.first_air_date || "").slice(0,4),
+          poster_url: d.poster_path ? IMG + d.poster_path : null,
+          backdrop: d.backdrop_path ? "https://image.tmdb.org/t/p/w780" + d.backdrop_path : null,
+          date: d.release_date || d.first_air_date || "" };
+      }catch(_){
+        uniCache[key] = { tmdbId:t.id, type:t.t, title:t.label, year:"", poster_url:null, backdrop:null, date:"" };
+      }
+      return uniCache[key];
+    }
+
+    function uniProgress(u){
+      const total = u.titles.length;
+      const done = u.titles.filter(t=>{ const e=myEntries[keyOf(t.id, t.t)]; return e && e.status==="watched"; }).length;
+      return { done, total, pct: total ? Math.round(done/total*100) : 0 };
+    }
+
+    async function loadHomeUniverses(){
+      const wrap=$("home-universes-wrap"), lab=$("home-universes-lab"), box=$("home-universes");
+      if(!UNIVERSES.length){ wrap.hidden=true; lab.hidden=true; return; }
+      wrap.hidden=false; lab.hidden=false; box.innerHTML="";
+      UNIVERSES.forEach(u=>{
+        const p=uniProgress(u);
+        const el=document.createElement("div"); el.className="uni-card"; el.style.background=u.theme.bg;
+        el.innerHTML=`<div class="uc-bg" id="ucbg-${u.id}"></div><div class="uc-shade"></div>
+          <div class="uc-body"><div class="uc-name">${esc(u.name)}</div><div class="uc-tag">${esc(u.tagline)}</div>
+            <div class="uc-prog"><div class="uc-fill" style="width:${p.pct}%;background:${u.theme.accent}"></div></div>
+            <div class="uc-pct">${p.done}/${p.total} watched · ${p.pct}%</div></div>`;
+        el.onclick=()=>openUniverse(u.id);
+        box.appendChild(el);
+        // pull a backdrop for the card, without blocking
+        const heroT = u.titles.find(t=>uniKey(t)===u.heroKey) || u.titles[0];
+        if(heroT) fetchUniTitle(heroT).then(rec=>{ if(rec && rec.backdrop){ const bg=$("ucbg-"+u.id); if(bg) bg.style.backgroundImage="url('"+rec.backdrop+"')"; } });
+      });
+    }
+
+    function currentUniSeq(){
+      const u=currentUniverse;
+      const order=u.orders.find(o=>o.id===currentUniOrder) || u.orders[0];
+      let keys;
+      if(order.auto==="date"){
+        keys=u.titles.map(uniKey).sort((a,b)=>{
+          const da=(uniCache[a]&&uniCache[a].date)||"9999", db=(uniCache[b]&&uniCache[b].date)||"9999";
+          return da.localeCompare(db);
+        });
+      } else { keys=order.seq.slice(); }
+      return { order, keys };
+    }
+
+    async function openUniverse(id){
+      const u=UNIVERSES.find(x=>x.id===id); if(!u) return;
+      currentUniverse=u; currentUniOrder=u.defaultOrder;
+      sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
+      sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true;
+      sectionCompare.hidden=true; $("section-achievements").hidden=true;
+      const sec=$("section-universe"); sec.hidden=false;
+      sec.style.setProperty("--uaccent", u.theme.accent);
+      sec.style.setProperty("--uink", u.theme.ink || "#0d0f14");
+      window.scrollTo(0,0);
+      $("uni-body").innerHTML=`<div class="hint">Loading ${esc(u.name)}…</div>`;
+      await Promise.all(u.titles.map(fetchUniTitle));
+      if(currentUniverse!==u) return;
+      renderUniverse();
+    }
+    $("uni-back").onclick=()=>showSection("home");
+
+    function renderUniverse(){
+      const u=currentUniverse; if(!u) return;
+      const body=$("uni-body");
+      const { order, keys } = currentUniSeq();
+      const recs = keys.map(k=>uniCache[k]).filter(Boolean);
+      const today=new Date(); today.setHours(0,0,0,0);
+      const isUpcoming=(rec)=>{ if(!rec.date) return false; return new Date(rec.date+"T00:00:00") > today; };
+      const released=recs.filter(r=>!isUpcoming(r));
+      const doneCount=released.filter(r=>uniStatusOf(r)==="watched").length;
+      const total=released.length;
+      const pct= total ? Math.round(doneCount/total*100) : 0;
+      let nextRec=null;
+      for(const r of recs){ if(isUpcoming(r)) continue; if(uniStatusOf(r)!=="watched"){ nextRec=r; break; } }
+      const hero=(u.heroKey&&uniCache[u.heroKey]) || recs.find(r=>r.backdrop) || recs[0] || null;
+      const heroBg=hero&&hero.backdrop ? hero.backdrop : null;
+
+      let html=`<div class="uni-hero"><div class="uh-bg"${heroBg?` style="background-image:url('${heroBg}')"`:``}></div>
+        <div class="uh-shade"></div>
+        <div class="uh-body"><div class="uh-name">${esc(u.name)}</div><div class="uh-tag">${esc(u.tagline)}</div></div></div>`;
+
+      html+=`<div class="uni-orders">`+ u.orders.map(o=>
+        `<button class="uni-order" data-o="${o.id}"${o.id===currentUniOrder?` style="background:var(--uaccent);color:var(--uink);border-color:transparent"`:``}>${esc(o.name)}</button>`
+      ).join("") +`</div>`;
+      if(order.note) html+=`<div class="uni-note">${esc(order.note)}</div>`;
+
+      html+=`<div class="uni-prog-card">
+          <div class="uni-prog-pct">${pct}%</div>
+          <div class="uni-prog-sub">${doneCount} of ${total} watched${(order.seq && order.note)?" (this order)":""}</div>
+          <div class="uni-prog-bar"><div class="uni-prog-fill" style="width:${pct}%;background:var(--uaccent)"></div></div>`;
+      if(nextRec){
+        html+=`<div class="uni-next" data-nextkey="${uniKey({t:nextRec.type,id:nextRec.tmdbId})}">
+            ${nextRec.poster_url?`<img src="${nextRec.poster_url}" alt=""/>`:`<img alt=""/>`}
+            <div><div class="un-lab">Up next — you are here</div><div class="un-t">${esc(nextRec.title)}</div></div>
+          </div>`;
+      } else {
+        html+=`<div class="uni-next" style="cursor:default"><div><div class="un-lab">Complete</div><div class="un-t">You've seen everything released 🎉</div></div></div>`;
+      }
+      html+=`</div>`;
+
+      html+=`<div class="uni-frieze-scroll"><div class="uni-frieze"><div class="uni-baseline"></div>`;
+      recs.forEach((r,i)=>{
+        const st=uniStatusOf(r); const up=isUpcoming(r);
+        const cls= up?"upcoming":(st==="watched"?"done":(st==="watching"?"watching todo":"todo"));
+        const isNext= nextRec && r.tmdbId===nextRec.tmdbId && r.type===nextRec.type;
+        const badge= st==="watched"?"✓":(up?"·":(i+1));
+        html+=`<div class="uni-node ${cls}${isNext?" next":""}" data-key="${uniKey({t:r.type,id:r.tmdbId})}" title="${esc(r.title)}">
+            ${r.poster_url?`<img class="un-poster" src="${r.poster_url}" alt=""/>`:`<div class="un-poster"></div>`}
+            <div class="un-badge">${badge}</div></div>`;
+      });
+      html+=`</div></div>`;
+
+      html+=`<div class="uni-list">`;
+      recs.forEach((r,i)=>{
+        const st=uniStatusOf(r); const up=isUpcoming(r);
+        const label= up?"Upcoming":(st==="watched"?"Watched":(st==="watching"?"Watching":(st==="watchlist"?"Watchlist":"Not seen")));
+        const tone= st==="watched"?"st-done":((st==="watching"||st==="watchlist")?"st-progress":"st-todo");
+        const k=uniKey({t:r.type,id:r.tmdbId});
+        html+=`<div class="uni-row" data-key="${k}">
+            <div class="ur-idx">${i+1}</div>
+            ${r.poster_url?`<img class="ur-img" src="${r.poster_url}" alt=""/>`:`<div class="ur-img"></div>`}
+            <div class="ur-body"><div class="ur-t">${esc(r.title)}</div><div class="ur-m">${r.year||"—"} · ${r.type==="tv"?"Series":"Movie"}</div></div>
+            <span class="verdict ${tone} ur-status">${esc(label)}</span>
+            <button class="ur-check${st==="watched"?" on":""}" data-key="${k}" title="Mark watched"${up?" disabled":""}>✓</button>
+          </div>`;
+      });
+      html+=`</div>`;
+      body.innerHTML=html;
+
+      // wire up
+      const byKey={}; recs.forEach(r=>byKey[uniKey({t:r.type,id:r.tmdbId})]=displayFromUni(r));
+      currentDisplays=recs.map(displayFromUni);
+      const openFromKey=(k)=>{ const d=byKey[k]; if(d) openDetail(d, ()=>{ if(currentUniverse) renderUniverse(); }); };
+      body.querySelectorAll(".uni-order").forEach(b=>b.onclick=()=>{ currentUniOrder=b.dataset.o; renderUniverse(); });
+      body.querySelectorAll(".uni-node").forEach(n=>n.onclick=()=>openFromKey(n.dataset.key));
+      body.querySelectorAll(".uni-row").forEach(rw=>rw.onclick=()=>openFromKey(rw.dataset.key));
+      const nx=body.querySelector(".uni-next[data-nextkey]"); if(nx) nx.onclick=()=>openFromKey(nx.dataset.nextkey);
+      body.querySelectorAll(".ur-check").forEach(btn=>btn.onclick=async(ev)=>{
+        ev.stopPropagation(); if(btn.disabled) return;
+        const d=byKey[btn.dataset.key]; if(!d) return;
+        const cur=myEntries[keyOf(d.tmdbId,d.type)];
+        if(cur&&cur.status==="watched"){ openFromKey(btn.dataset.key); return; }
+        try{ await setStatusByDisplay(d,"watched"); showToast("Marked as watched"); renderUniverse(); }
+        catch(e){ showToast("Error: "+(e.message||e)); }
+      });
     }
 
     client.auth.getSession().then(({data})=>render(data.session));
