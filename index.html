@@ -565,6 +565,126 @@
       background: transparent; color: var(--muted); font-size: 15px; cursor: pointer; }
     .uni-row .ur-check.on { background: var(--uaccent, var(--accent)); color: var(--uink, #0d0f14); border-color: transparent; }
     .uni-row .ur-check:disabled { opacity: .35; cursor: default; }
+    .uni-row.guided .ur-caret { flex: 0 0 auto; color: var(--muted); font-size: 12px; width: 20px; text-align: center; }
+    .uni-row.guided.open { border-color: var(--uaccent, var(--accent)); }
+    .uni-eps { margin: -4px 0 4px 30px; padding: 8px 12px; background: var(--card-2, var(--card)); border: 1px solid var(--line);
+      border-left: 2px solid var(--uaccent, var(--accent)); border-radius: 0 12px 12px 0; display: flex; flex-direction: column; gap: 1px; }
+    .uni-eps[hidden] { display: none; }
+    .ue-ep { display: flex; align-items: center; gap: 9px; padding: 3px 2px; }
+    .ue-check { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line);
+      background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; line-height: 1; padding: 0; }
+    .ue-check.on { background: var(--uaccent, var(--accent)); color: var(--uink, #0d0f14); border-color: transparent; }
+    .ue-k { flex: 0 0 auto; font-family: var(--disp, monospace); font-size: 11px; font-weight: 700; color: var(--faint); width: 46px; }
+    .ue-t { flex: 1; min-width: 0; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ue-note { font-size: 11.5px; color: var(--uaccent, var(--accent)); font-style: italic; padding: 7px 2px 5px; border-top: 1px dashed var(--line); margin-top: 4px; }
+    .ue-actions { margin-top: 8px; }
+    .ue-all { font-size: 11.5px; padding: 6px 11px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+    .uni-edit { width: 100%; margin-top: 8px; padding: 12px; border-radius: 12px; border: 1px solid var(--line);
+      background: transparent; color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; }
+    /* create card */
+    .uni-card-create { width: 236px; display: flex; align-items: center; justify-content: center; border: 1.5px dashed var(--line);
+      background: var(--card); min-height: 150px; }
+    .uni-card-create .ucc-inner { text-align: center; color: var(--muted); }
+    .uni-card-create .ucc-plus { font-size: 34px; line-height: 1; font-weight: 300; color: var(--accent); }
+    .uni-card-create .ucc-t { font-family: var(--disp); font-weight: 700; font-size: 16px; color: var(--text); margin-top: 6px; }
+    .uni-card-create .ucc-s { font-size: 11.5px; margin-top: 3px; }
+    /* builder */
+    #section-uni-builder { padding-bottom: 40px; }
+    .ub-h { font-family: var(--disp); font-weight: 800; font-size: 24px; margin: 6px 0 16px; }
+    .ub-field { margin-bottom: 16px; }
+    .ub-field > label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .ub-inp { width: 100%; padding: 11px 13px; border-radius: 11px; border: 1px solid var(--line); background: var(--card);
+      color: var(--text); font-size: 15px; font-family: var(--body); }
+    .ub-swatches { display: flex; gap: 9px; flex-wrap: wrap; }
+    .ub-sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+    .ub-sw.on { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text); }
+    .ub-results { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .ub-res { display: flex; align-items: center; gap: 11px; padding: 7px 9px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--card); cursor: pointer; }
+    .ub-res .ur-img, .ub-item .ur-img { width: 34px; aspect-ratio: 2/3; object-fit: cover; border-radius: 5px; background: var(--chip); flex: 0 0 auto; }
+    .ub-res .ur-body, .ub-item .ur-body { flex: 1; min-width: 0; }
+    .ub-res .ur-t, .ub-item .ur-t { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ub-res .ur-m, .ub-item .ur-m { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .ub-add { flex: 0 0 auto; color: var(--accent); font-size: 20px; font-weight: 300; width: 24px; text-align: center; }
+    .ub-list-lab { font-size: 12px; font-weight: 600; color: var(--muted); margin: 18px 0 8px; }
+    .ub-list { display: flex; flex-direction: column; gap: 7px; }
+    .ub-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 11px; border: 1px solid var(--line); background: var(--card); }
+    .ub-item .ur-idx { font-family: var(--disp); font-weight: 700; font-size: 13px; color: var(--faint); width: 18px; flex: 0 0 auto; text-align: center; }
+    .ub-move { display: flex; flex-direction: column; gap: 2px; flex: 0 0 auto; }
+    .ub-up, .ub-down { width: 26px; height: 18px; border-radius: 5px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 9px; cursor: pointer; padding: 0; }
+    .ub-up:disabled, .ub-down:disabled { opacity: .3; cursor: default; }
+    .ub-rm { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; }
+    .ub-actions { margin-top: 22px; }
+    .ub-save { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
+    /* shared universes (subscribe) */
+    .uni-share-row { align-items: center; }
+    .uni-mini { width: 40px; height: 40px; border-radius: 9px; flex: 0 0 auto; }
+    .uni-subbtn { flex: 0 0 auto; padding: 7px 12px; border-radius: 9px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+    .uni-subbtn.on { background: var(--accent); color: #fff; border-color: transparent; }
+    .upv-list { display: flex; flex-direction: column; gap: 7px; margin: 6px 0 4px; max-height: 52vh; overflow-y: auto; }
+    .upv-item { display: flex; align-items: center; gap: 11px; }
+    .upv-item .ur-idx { font-family: var(--disp); font-weight: 700; font-size: 13px; color: var(--faint); width: 18px; flex: 0 0 auto; text-align: center; }
+    .upv-poster { width: 34px; aspect-ratio: 2/3; object-fit: cover; border-radius: 5px; background: var(--chip); flex: 0 0 auto; }
+    .upv-item .ur-body { flex: 1; min-width: 0; }
+    .upv-item .ur-t { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .upv-item .ur-m { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    #uni-preview-ov .ub-save { margin-top: 14px; }
+    /* ciné club */
+    .ub-join { width: 100%; padding: 13px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--text); font-size: 15px; font-weight: 600; cursor: pointer; }
+    .clb-or { text-align: center; color: var(--muted); font-size: 12px; margin: 14px 0; }
+    .club-head { margin-bottom: 18px; }
+    .club-name { font-family: var(--disp); font-weight: 800; font-size: 26px; }
+    .club-meta { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+    .club-code { color: var(--text); letter-spacing: 1px; }
+    .club-copy { border: none; background: transparent; color: var(--accent); font-size: 12px; cursor: pointer; padding: 0 4px; }
+    .club-members { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .club-chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--muted); }
+    .club-chip.picker { border-color: var(--accent); color: var(--accent); }
+    .club-round { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+    .cr-film { display: flex; gap: 13px; }
+    .cr-film img, .cr-noimg { width: 66px; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; background: var(--chip); flex: 0 0 auto; }
+    .cr-info { flex: 1; min-width: 0; }
+    .cr-lab { font-size: 11.5px; color: var(--muted); }
+    .cr-title { font-size: 17px; font-weight: 700; margin-top: 3px; }
+    .cr-year { color: var(--muted); font-weight: 400; font-size: 14px; }
+    .cr-deadline { margin-top: 8px; }
+    .crd-by { display: block; font-size: 12.5px; color: var(--text); font-weight: 600; }
+    .crd-days { display: block; font-size: 20px; font-weight: 800; color: var(--accent); margin-top: 1px; }
+    .crd-days.over { color: var(--err); }
+    .cr-status { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+    .crs-row { display: flex; justify-content: space-between; align-items: center; }
+    .crs-name { font-size: 13.5px; font-weight: 600; }
+    .crs-rate { color: #ffca3a; font-size: 13px; letter-spacing: 1px; }
+    .crs-pending { font-size: 12px; color: var(--muted); }
+    .crs-review { font-size: 12.5px; color: var(--text); background: var(--card-2, var(--chip)); border-radius: 8px; padding: 7px 10px; margin: 2px 0 4px; }
+    .cr-validate { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .cr-vlab { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+    .cr-stars { margin-bottom: 10px; }
+    .cr-ta { min-height: 72px; resize: vertical; font-family: var(--body); display: block; }
+    .club-turn { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; text-align: center; }
+    .ct-lab { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+    .club-hist { display: flex; flex-direction: column; gap: 8px; }
+    .hist-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 11px; cursor: pointer; }
+    .hist-row img, .hist-row .cr-noimg { width: 38px; aspect-ratio: 2/3; border-radius: 6px; flex: 0 0 auto; }
+    .rd-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+    .rd-head img { width: 54px; aspect-ratio: 2/3; object-fit: cover; border-radius: 7px; }
+    .rd-review { border-top: 1px solid var(--line); padding: 10px 0; }
+    .rd-who { font-size: 13px; font-weight: 700; }
+    .rd-stars { color: #ffca3a; font-weight: 400; margin-left: 6px; }
+    .rd-text { font-size: 13px; color: var(--text); margin-top: 4px; }
+    .club-disc { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .cd-lab { font-size: 12.5px; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+    .cd-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .cd-msg { font-size: 13px; line-height: 1.35; }
+    .cd-who { font-weight: 700; color: var(--accent); margin-right: 5px; }
+    .cd-body { color: var(--text); }
+    .cd-input { display: flex; gap: 8px; }
+    .cd-input .ub-inp { flex: 1; }
+    .cd-send { flex: 0 0 auto; padding: 0 16px; border-radius: 11px; border: none; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+    .social-seg { margin-bottom: 16px; }
+    .club-list { display: flex; flex-direction: column; gap: 8px; }
+    .club-list-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer; }
+    .clr-badge { width: 38px; height: 38px; border-radius: 9px; background: var(--chip); display: flex; align-items: center; justify-content: center; font-size: 18px; flex: 0 0 auto; }
     .uni-passnote { font-size: 12.5px; color: var(--uaccent, var(--accent)); background: var(--card); border: 1px solid var(--line);
       border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
     .uni-reset { width: 100%; padding: 13px; border-radius: 12px; border: 1px solid rgba(var(--accent-rgb),.5);
@@ -743,7 +863,7 @@
       <div class="navtab" id="nav-search"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="nl">Search</span></div>
       <div class="navtab" id="nav-collection"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="7" height="18" rx="1.5"/><rect x="14" y="3" width="6" height="18" rx="1.5"/></svg><span class="nl">Collection</span></div>
       <div class="navtab" id="nav-upcoming"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="nl">Next</span></div>
-      <div class="navtab" id="nav-friends"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.4"/></svg><span class="nl">Friends</span><span class="dot" id="friends-dot" hidden></span></div>
+      <div class="navtab" id="nav-friends"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.4"/></svg><span class="nl">Social</span><span class="dot" id="friends-dot" hidden></span></div>
       <div class="navtab" id="nav-stats"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="nl">Stats</span></div>
     </div>
     <div id="section-home" hidden>
@@ -826,6 +946,9 @@
       <div id="upcoming-list"></div>
     </div>
     <div id="section-friends" hidden>
+      <div class="seg social-seg" id="social-seg"><button data-s="friends" class="sel">Friends</button><button data-s="clubs">Ciné clubs</button></div>
+      <div id="social-clubs" hidden></div>
+      <div id="social-friends-wrap">
       <div class="fr-block">
         <h3>Add a friend</h3>
         <div class="fr-add">
@@ -851,6 +974,7 @@
         <h3>Pending (sent)</h3>
         <div id="fr-outgoing"></div>
       </div>
+      </div>
     </div>
     <div id="section-compare" hidden>
       <button class="cmp-back" id="cmp-back">‹ Friends</button>
@@ -869,16 +993,26 @@
       <button class="cmp-back" id="uni-back">‹ Home</button>
       <div id="uni-body"></div>
     </div>
+    <div id="section-uni-builder" hidden>
+      <button class="cmp-back" id="ub-back">‹ Home</button>
+      <div id="ub-body"></div>
+    </div>
+    <div id="section-club" hidden>
+      <button class="cmp-back" id="club-back">‹ Home</button>
+      <div id="club-body"></div>
+    </div>
     <div id="section-profile" hidden>
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.22</div>
+    <div class="appfoot">Seen · v3.30</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
   <div id="edit-ov" class="modal-ov" hidden></div>
   <div id="settings-ov" class="modal-ov" hidden></div>
+  <div id="uni-preview-ov" class="modal-ov" hidden></div>
+  <div id="club-ov" class="modal-ov" hidden></div>
 
   <!-- Detail sheet -->
   <div id="detail-overlay" hidden>
@@ -1242,7 +1376,7 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.15</div></div>';
+        '<div class="sett-ver">Seen · v3.30</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -1277,6 +1411,8 @@
       sectionCompare.hidden = true;
       $("section-achievements").hidden = true;
       $("section-universe").hidden = true;
+      $("section-uni-builder").hidden = true;
+      $("section-club").hidden = true;
       $("section-profile").hidden = true;
       if(name==="home") loadHome();
       if(name==="search") syncSearch();
@@ -1650,7 +1786,7 @@
       try{
         const {data,error}=await client.from("entries").update({rewatch_count:n}).eq("id",e.entryId).select("rewatch_count");
         if(error) throw error;
-        if(!data || !data.length){ showToast("Not saved — try logging out and back in"); return; }
+        if(!data || !data.length){ showToast("Not saved. Try logging out and back in."); return; }
         e.rewatch_count=data[0].rewatch_count; renderRewatch();
       }catch(err){ showToast("Error: "+(err.message||err)); }
     }
@@ -1914,7 +2050,7 @@
       $("bm-emoji").className="bm-emoji "+b.rarity;
       $("bm-name").textContent=b.name;
       const rar=$("bm-rar"); rar.textContent=b.rarity; rar.className="rar rar-"+b.rarity;
-      $("bm-desc").textContent = b.earned ? ("Unlocked — "+b.desc.charAt(0).toLowerCase()+b.desc.slice(1)+".") : ("How to unlock: "+b.desc.charAt(0).toLowerCase()+b.desc.slice(1)+".");
+      $("bm-desc").textContent = b.earned ? ("Unlocked: "+b.desc.charAt(0).toLowerCase()+b.desc.slice(1)+".") : ("How to unlock: "+b.desc.charAt(0).toLowerCase()+b.desc.slice(1)+".");
       $("bm-status").textContent = b.earned ? "Unlocked ✓" : ("Progress: "+b.prog);
       $("bm-status").className = "bm-status "+(b.earned?"done":"");
       $("badge-overlay").hidden=false; document.body.classList.add("no-scroll");
@@ -2005,7 +2141,7 @@
       const watchlist=rows.filter(e=>e.status==="watchlist");
       $("home-inprogress").textContent=inprog;
       $("home-watchlist").textContent=watchlist.length;
-      $("home-greetsub").textContent = rows.length ? (counts.gems+(counts.gems===1?" gem":" gems")+" · "+friendsCache.length+(friendsCache.length===1?" friend":" friends")) : "Your collection is empty — add something from Search.";
+      $("home-greetsub").textContent = rows.length ? (counts.gems+(counts.gems===1?" gem":" gems")+" · "+friendsCache.length+(friendsCache.length===1?" friend":" friends")) : "Your collection is empty. Add something from Search.";
       const brow=$("home-badges-row"); brow.innerHTML=""; $("home-badges-lab").hidden=!rows.length;
       if(rows.length){ badgeState(counts).all.slice().sort((a,b)=>(b.earned?1:0)-(a.earned?1:0)).slice(0,12).forEach(b=>{
         const el=document.createElement("div"); el.className="hbadge "+b.rarity+(b.earned?" earned":" locked");
@@ -2371,10 +2507,11 @@
       sectionStats.hidden=true; sectionCompare.hidden=false;
       const body=$("cmp-body"), hint=$("cmp-hint");
       body.innerHTML=""; hint.hidden=false; hint.textContent="Loading "+friend.username+"'s collection...";
-      const [mine, theirs]=await Promise.all([ fetchEntriesFull(currentUserId), fetchEntriesFull(friend.friendId) ]);
-      hint.hidden=true; renderCompare(friend, mine, theirs);
+      const [mine, theirs, theirUnis]=await Promise.all([ fetchEntriesFull(currentUserId), fetchEntriesFull(friend.friendId), fetchPublicUniverses(friend.friendId) ]);
+      await refreshSubs();
+      hint.hidden=true; renderCompare(friend, mine, theirs, theirUnis);
     }
-    function renderCompare(friend, mine, theirs){
+    function renderCompare(friend, mine, theirs, theirUnis){
       const body=$("cmp-body");
       const keyE=e=>e.media.tmdb_id+"_"+e.media.type;
       const mineMap={}, theirMap={};
@@ -2394,6 +2531,23 @@
       // honouring this friend's own avatar, accent, bio, genres and visibility toggles.
       renderProfileShowcase(body, {profile:friend, username:friend.username, entries:theirs, self:false,
         onClose:()=>{ if(compareFriend) openCompare(compareFriend); }});
+
+      if(theirUnis && theirUnis.length){
+        const lab=document.createElement("div"); lab.className="cmp-sub"; lab.textContent=friend.username+"'s watch orders"; body.appendChild(lab);
+        theirUnis.forEach(row=>{
+          const count=Array.isArray(row.items)?row.items.length:0;
+          const el=document.createElement("div"); el.className="cmp-row uni-share-row";
+          el.innerHTML=`<div class="uni-mini" style="background:${esc(row.accent||"#e0685f")}"></div>
+            <div class="cr-body"><div class="cr-t">${esc(row.name)}</div><div class="cr-p">${count} title${count===1?"":"s"}${row.tagline?" · "+esc(row.tagline):""}</div></div>
+            <button class="uni-subbtn${subscribedIds.has(row.id)?" on":""}" data-uid="${row.id}">${subscribedIds.has(row.id)?"Subscribed":"Subscribe"}</button>`;
+          const btn=el.querySelector(".uni-subbtn");
+          btn.onclick=async(ev)=>{ ev.stopPropagation();
+            if(subscribedIds.has(row.id)){ await unsubscribeUniverse(row.id); btn.classList.remove("on"); btn.textContent="Subscribe"; }
+            else { await subscribeUniverse(row.id); btn.classList.add("on"); btn.textContent="Subscribed"; } };
+          el.onclick=()=>openUniversePreview(row);
+          body.appendChild(el);
+        });
+      }
 
       if(rows.length){
         const lab=document.createElement("div"); lab.className="cmp-sub"; lab.textContent="Series in common"; body.appendChild(lab);
@@ -2437,6 +2591,23 @@
     // ================= Universes (curated watch orders) =================
     // Editorial data, kept in the app (not in the database). "Watched" state and the
     // completion % are read from the user's existing entries, so nothing new is stored.
+    // The Clone Wars — chronological episode order (StarWars.com / cross-checked).
+    // A series is still one entity in the overview; this list only drives the in-order episode walkthrough.
+    const CW_CHRONO = [
+      ["S2E16","Cat and Mouse"],["S1E16","The Hidden Enemy"],
+      {note:"The Clone Wars (2008 theatrical film)"},
+      ["S3E1","Clone Cadets"],["S3E3","Supply Lines"],
+      ["S1E1","Ambush"],["S1E2","Rising Malevolence"],["S1E3","Shadow of Malevolence"],["S1E4","Destroy Malevolence"],["S1E5","Rookies"],["S1E6","Downfall of a Droid"],["S1E7","Duel of the Droids"],["S1E8","Bombad Jedi"],["S1E9","Cloak of Darkness"],["S1E10","Lair of Grievous"],["S1E11","Dooku Captured"],["S1E12","The Gungan General"],["S1E13","Jedi Crash"],["S1E14","Defenders of Peace"],["S1E15","Trespass"],["S1E17","Blue Shadow Virus"],["S1E18","Mystery of a Thousand Moons"],["S1E19","Storm Over Ryloth"],["S1E20","Innocents of Ryloth"],["S1E21","Liberty on Ryloth"],
+      ["S2E1","Holocron Heist"],["S2E2","Cargo of Doom"],["S2E3","Children of the Force"],["S2E17","Bounty Hunters"],["S2E18","The Zillo Beast"],["S2E19","The Zillo Beast Strikes Back"],["S2E4","Senate Spy"],["S2E5","Landing at Point Rain"],["S2E6","Weapons Factory"],["S2E7","Legacy of Terror"],["S2E8","Brain Invaders"],["S2E9","Grievous Intrigue"],["S2E10","The Deserter"],["S2E11","Lightsaber Lost"],["S2E12","The Mandalore Plot"],["S2E13","Voyage of Temptation"],["S2E14","Duchess of Mandalore"],["S2E20","Death Trap"],["S2E21","R2 Come Home"],["S2E22","Lethal Trackdown"],
+      ["S3E5","Corruption"],["S3E6","The Academy"],["S3E7","Assassin"],["S3E2","ARC Troopers"],["S3E4","Sphere of Influence"],["S3E8","Evil Plans"],["S1E22","Hostage Crisis"],["S3E9","Hunt for Ziro"],["S3E10","Heroes on Both Sides"],["S3E11","Pursuit of Peace"],["S2E15","Senate Murders"],["S3E12","Nightsisters"],["S3E13","Monster"],["S3E14","Witches of the Mist"],["S3E15","Overlords"],["S3E16","Altar of Mortis"],["S3E17","Ghosts of Mortis"],["S3E18","The Citadel"],["S3E19","Counterattack"],["S3E20","Citadel Rescue"],["S3E21","Padawan Lost"],["S3E22","Wookiee Hunt"],
+      ["S4E1","Water War"],["S4E2","Gungan Attack"],["S4E3","Prisoners"],["S4E4","Shadow Warrior"],["S4E5","Mercy Mission"],["S4E6","Nomad Droids"],["S4E7","Darkness on Umbara"],["S4E8","The General"],["S4E9","Plan of Dissent"],["S4E10","Carnage of Krell"],["S4E11","Kidnapped"],["S4E12","Slaves of the Republic"],["S4E13","Escape from Kadavo"],["S4E14","A Friend in Need"],["S4E15","Deception"],["S4E16","Friends and Enemies"],["S4E17","The Box"],["S4E18","Crisis on Naboo"],["S4E19","Massacre"],["S4E20","Bounty"],["S4E21","Brothers"],["S4E22","Revenge"],
+      ["S5E2","A War on Two Fronts"],["S5E3","Front Runners"],["S5E4","The Soft War"],["S5E5","Tipping Points"],["S5E6","The Gathering"],["S5E7","A Test of Strength"],["S5E8","Bound for Rescue"],["S5E9","A Necessary Bond"],["S5E10","Secret Weapons"],["S5E11","A Sunny Day in the Void"],["S5E12","Missing in Action"],["S5E13","Point of No Return"],["S5E1","Revival"],["S5E14","Eminence"],["S5E15","Shades of Reason"],["S5E16","The Lawless"],["S5E17","Sabotage"],["S5E18","The Jedi Who Knew Too Much"],["S5E19","To Catch a Jedi"],["S5E20","The Wrong Jedi"],
+      ["S6E1","The Unknown"],["S6E2","Conspiracy"],["S6E3","Fugitive"],["S6E4","Orders"],["S6E5","An Old Friend"],["S6E6","The Rise of Clovis"],["S6E7","Crisis at the Heart"],["S6E8","The Disappeared, Part I"],["S6E9","The Disappeared, Part II"],["S6E10","The Lost One"],["S6E11","Voices"],["S6E12","Destiny"],["S6E13","Sacrifice"],
+      ["S7E5","Gone with a Trace"],["S7E6","Deal No Deal"],["S7E7","Dangerous Debt"],["S7E8","Together Again"],["S7E1","The Bad Batch"],["S7E2","A Distant Echo"],["S7E3","On the Wings of Keeradaks"],["S7E4","Unfinished Business"],
+      {note:"Revenge of the Sith. The Siege of Mandalore below runs concurrently."},
+      ["S7E9","Old Friends Not Forgotten"],["S7E10","The Phantom Apprentice"],["S7E11","Shattered"],["S7E12","Victory and Death"]
+    ];
+
     const UNIVERSES = [
       {
         id: "star-wars",
@@ -2470,11 +2641,11 @@
         ],
         orders: [
           { id:"release", name:"Release", auto:"date" },
-          { id:"chrono", name:"Timeline", seq:[
+          { id:"chrono", name:"Timeline", note:"In-timeline order. The Clone Wars plays out between Attack of the Clones and Revenge of the Sith. Open it for the chronological episode order.", episodes:{ "t4194": CW_CHRONO }, seq:[
             "t114479","m1893","m1894","t4194","m1895","t105971","m348350","t92830","t83867","t60554",
             "m330459","m11","m1891","m1892","t82856","t115036","t202879","t114461","m1228710","m140607","m181808","m181812"
           ]},
-          { id:"machete", name:"Machete", note:"Films only — the cult order that skips Episode I.",
+          { id:"machete", name:"Machete", note:"Films only. The cult order that skips Episode I.",
             seq:["m11","m1891","m1894","m1895","m1892"] }
         ],
         defaultOrder: "release"
@@ -2541,7 +2712,7 @@
         ],
         orders: [
           { id:"release", name:"Release", auto:"date" },
-          { id:"chrono", name:"Timeline", note:"In-universe order (my best pass — the MCU timeline is debated, easy to tweak).", seq:[
+          { id:"chrono", name:"Timeline", note:"In-universe order (my best pass; the MCU timeline is debated, easy to tweak).", seq:[
             "m1771","m299537","m1726","m1724","m10138","m10195","m24428","m68721","m76338","m100402",
             "m118340","m283995","m99861","m102899","m271110","m497698","m284054","m315635","m284052","m284053",
             "m363088","m299536","m299534","t85271","t88396","t84958","t91363","m429617","t88329","t92749",
@@ -2573,7 +2744,7 @@
         ],
         orders: [
           { id:"release", name:"Release", auto:"date" },
-          { id:"chrono", name:"Timeline", note:"Story order — Fantastic Beasts (1920s-30s) comes before Harry Potter.", seq:[
+          { id:"chrono", name:"Timeline", note:"Story order. Fantastic Beasts (1920s-30s) comes before Harry Potter.", seq:[
             "m259316","m338952","m338953","m671","m672","m673","m674","m675","m767","m12444","m12445"
           ]}
         ],
@@ -2597,7 +2768,7 @@
         ],
         orders: [
           { id:"release", name:"Release", auto:"date" },
-          { id:"chrono", name:"Timeline", note:"Middle-earth timeline — The Rings of Power (Second Age) first.", seq:[
+          { id:"chrono", name:"Timeline", note:"Middle-earth timeline. The Rings of Power (Second Age) first.", seq:[
             "t84773","m839033","m49051","m57158","m122917","m120","m121","m122"
           ]}
         ],
@@ -2607,14 +2778,182 @@
 
     const uniCache = {};        // key -> {tmdbId,type,title,year,poster_url,backdrop,date}
     let currentUniverse = null, currentUniOrder = null, currentUniRun = null;
+    let uniExpandedGuides = new Set();
+
+    // ---- user-created universes (stored in Supabase) ----
+    let userUniverses = [];
+    let subscribedIds = new Set();
+    function allUniverses(){ return UNIVERSES.concat(userUniverses); }
+    function accentInk(hex){ const m=/^#?([0-9a-f]{6})$/i.exec(hex||""); if(!m) return "#0d0f14";
+      const n=parseInt(m[1],16), r=(n>>16)&255, g=(n>>8)&255, b=n&255; return (0.299*r+0.587*g+0.114*b)>150?"#0d0f14":"#ffffff"; }
+    function hexGlow(hex){ const m=/^#?([0-9a-f]{6})$/i.exec(hex||""); if(!m) return "rgba(224,104,95,.15)";
+      const n=parseInt(m[1],16); return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+",.16)"; }
+    function mapUserUniverse(row){
+      const items=Array.isArray(row.items)?row.items:[]; const accent=row.accent||"#e0685f";
+      return { id:"u_"+row.id, _uid:row.id, _user:true, _ownerId:row.owner_id, _rawItems:items,
+        name:row.name||"Untitled universe", tagline:row.tagline||"",
+        theme:{ accent, ink:accentInk(accent), bg:"#0b0d12", glow:hexGlow(accent) },
+        titles: items.map(it=>({t:it.t, id:it.id, label:it.label||""})),
+        orders: [ {id:"custom", name:"Watch order", seq: items.map(it=>uniKey({t:it.t,id:it.id}))}, {id:"release", name:"Release", auto:"date"} ],
+        defaultOrder:"custom", heroKey: items.length? uniKey({t:items[0].t,id:items[0].id}) : null };
+    }
+    async function refreshSubs(){
+      try{ const {data}=await client.from("universe_subs").select("universe_id"); subscribedIds=new Set((data||[]).map(r=>r.universe_id)); }catch(_){}
+    }
+    async function fetchPublicUniverses(ownerId){
+      try{ const {data}=await client.from("user_universes").select("*").eq("owner_id",ownerId).eq("is_public",true).order("created_at",{ascending:true}); return data||[]; }catch(_){ return []; }
+    }
+    async function subscribeUniverse(uid){
+      try{ const {error}=await client.from("universe_subs").insert({universe_id:uid}); if(error) throw error; subscribedIds.add(uid); showToast("Subscribed. It's on your home."); }
+      catch(e){ showToast("Error: "+(e.message||e)); }
+    }
+    async function unsubscribeUniverse(uid){
+      try{ const {error}=await client.from("universe_subs").delete().eq("universe_id",uid); if(error) throw error; subscribedIds.delete(uid); showToast("Unsubscribed"); }
+      catch(e){ showToast("Error: "+(e.message||e)); }
+    }
+    async function loadUserUniverses(){
+      userUniverses=[];
+      try{
+        const {data:owned}=await client.from("user_universes").select("*").eq("owner_id",currentUserId).order("created_at",{ascending:true});
+        const ownedMapped=(owned||[]).map(mapUserUniverse);
+        await refreshSubs();
+        const need=[...subscribedIds].filter(id=>!ownedMapped.some(u=>u._uid===id));
+        let subMapped=[];
+        if(need.length){
+          const {data:subRows}=await client.from("user_universes").select("*").in("id",need);
+          const rows=subRows||[];
+          const ownerIds=[...new Set(rows.map(r=>r.owner_id))];
+          let names={};
+          if(ownerIds.length){ try{ const {data:profs}=await client.from("profiles").select("id,username").in("id",ownerIds); (profs||[]).forEach(p=>names[p.id]=p.username); }catch(_){} }
+          subMapped=rows.map(r=>{ const m=mapUserUniverse(r); m._subscribed=true; m._ownerName=names[r.owner_id]||"a friend"; return m; });
+        }
+        userUniverses=ownedMapped.concat(subMapped);
+      }catch(_){ userUniverses=[]; }
+    }
+
+    // ---- universe builder (create / edit) ----
+    let builderState=null, ubSearchSeq=0, ubTimer=null;
+    function openBuilder(universe){
+      if(universe && universe._user){
+        builderState={ editing:universe._uid, name:universe.name, tagline:universe.tagline, accent:universe.theme.accent,
+          items:(universe._rawItems||[]).map(it=>({t:it.t,id:it.id,label:it.label||"",poster:null,year:""})) };
+      } else {
+        builderState={ editing:null, name:"", tagline:"", accent:"#e0685f", items:[] };
+      }
+      sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
+      sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true;
+      sectionCompare.hidden=true; $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-profile").hidden=true;
+      $("section-uni-builder").hidden=false; window.scrollTo(0,0);
+      $("ub-back").onclick=()=>showSection("home");
+      renderBuilder();
+      builderState.items.forEach(it=>{ if(!it.poster) fetchUniTitle({t:it.t,id:it.id}).then(rec=>{ it.poster=rec.poster_url; it.label=it.label||rec.title; it.year=rec.year;
+        if(!$("section-uni-builder").hidden) renderBuilder(); }); });
+    }
+    function renderBuilder(){
+      const b=$("ub-body"); const s=builderState; if(!s) return;
+      let h=`<h2 class="ub-h">${s.editing?"Edit universe":"Create a universe"}</h2>`;
+      h+=`<div class="ub-field"><label>Name</label><input id="ub-name" class="ub-inp" value="${esc(s.name)}" placeholder="e.g. James Bond"/></div>`;
+      h+=`<div class="ub-field"><label>Tagline</label><input id="ub-tag" class="ub-inp" value="${esc(s.tagline)}" placeholder="A short subtitle"/></div>`;
+      h+=`<div class="ub-field"><label>Accent colour</label><div class="ub-swatches">`;
+      ["#e0685f","#ffe81f","#ed1d24","#d3a625","#4f9dde","#8f5fd6","#3fbf7f","#ff8a3d"].forEach(c=>{ h+=`<button class="ub-sw${s.accent.toLowerCase()===c?" on":""}" data-c="${c}" style="background:${c}"></button>`; });
+      h+=`</div></div>`;
+      h+=`<div class="ub-field"><label>Add titles</label><input id="ub-search" class="ub-inp" placeholder="Search movies &amp; series…"/><div id="ub-results" class="ub-results"></div></div>`;
+      h+=`<div class="ub-list-lab">${s.items.length} title${s.items.length===1?"":"s"} · watch order</div><div class="ub-list">`;
+      if(!s.items.length) h+=`<div class="hint">No titles yet. Search above and tap to add.</div>`;
+      s.items.forEach((it,i)=>{
+        h+=`<div class="ub-item">
+            <div class="ur-idx">${i+1}</div>
+            ${it.poster?`<img class="ur-img" src="${it.poster}" alt=""/>`:`<div class="ur-img"></div>`}
+            <div class="ur-body"><div class="ur-t">${esc(it.label||("#"+it.id))}</div><div class="ur-m">${it.year||"—"} · ${it.t==="tv"?"Series":"Movie"}</div></div>
+            <div class="ub-move"><button class="ub-up" data-i="${i}"${i===0?" disabled":""}>▲</button><button class="ub-down" data-i="${i}"${i===s.items.length-1?" disabled":""}>▼</button></div>
+            <button class="ub-rm" data-i="${i}">✕</button>
+          </div>`;
+      });
+      h+=`</div><div class="ub-actions"><button class="ub-save" id="ub-save">${s.editing?"Save changes":"Create universe"}</button></div>`;
+      b.innerHTML=h;
+      $("ub-name").oninput=e=>{ s.name=e.target.value; };
+      $("ub-tag").oninput=e=>{ s.tagline=e.target.value; };
+      b.querySelectorAll(".ub-sw").forEach(sw=>sw.onclick=()=>{ s.accent=sw.dataset.c; renderBuilder(); });
+      const si=$("ub-search");
+      si.oninput=()=>{ clearTimeout(ubTimer); const v=si.value.trim(); if(v.length<2){ $("ub-results").innerHTML=""; return; } ubTimer=setTimeout(()=>ubSearch(v),350); };
+      b.querySelectorAll(".ub-up").forEach(x=>x.onclick=()=>{ const i=+x.dataset.i; if(i>0){ const a=s.items; const t=a[i-1]; a[i-1]=a[i]; a[i]=t; renderBuilder(); } });
+      b.querySelectorAll(".ub-down").forEach(x=>x.onclick=()=>{ const i=+x.dataset.i; const a=s.items; if(i<a.length-1){ const t=a[i+1]; a[i+1]=a[i]; a[i]=t; renderBuilder(); } });
+      b.querySelectorAll(".ub-rm").forEach(x=>x.onclick=()=>{ s.items.splice(+x.dataset.i,1); renderBuilder(); });
+      $("ub-save").onclick=saveUserUniverse;
+    }
+    async function ubSearch(query){
+      const seq=++ubSearchSeq; const box=$("ub-results"); if(!box) return; box.innerHTML=`<div class="hint">Searching…</div>`;
+      try{
+        const res=await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US&include_adult=false`);
+        const json=await res.json(); if(seq!==ubSearchSeq) return;
+        const items=(json.results||[]).filter(r=>r.media_type==="movie"||r.media_type==="tv").slice(0,12);
+        if(!items.length){ box.innerHTML=`<div class="hint">No results.</div>`; return; }
+        box.innerHTML="";
+        items.forEach(it=>{
+          const poster=it.poster_path?IMG+it.poster_path:null;
+          const el=document.createElement("div"); el.className="ub-res";
+          el.innerHTML=`${poster?`<img class="ur-img" src="${poster}" alt=""/>`:`<div class="ur-img"></div>`}<div class="ur-body"><div class="ur-t">${esc(titleOf(it))}</div><div class="ur-m">${yearOf(it)||"—"} · ${it.media_type==="tv"?"Series":"Movie"}</div></div><span class="ub-add">+</span>`;
+          el.onclick=()=>{ if(builderState.items.some(x=>x.id===it.id && x.t===it.media_type)){ showToast("Already added"); return; }
+            builderState.items.push({t:it.media_type,id:it.id,label:titleOf(it),poster,year:yearOf(it)}); renderBuilder(); };
+          box.appendChild(el);
+        });
+      }catch(e){ if(seq===ubSearchSeq) box.innerHTML=`<div class="hint">Search failed.</div>`; }
+    }
+    async function saveUserUniverse(){
+      const s=builderState; if(!s) return;
+      if(!s.name.trim()){ showToast("Give it a name"); return; }
+      if(!s.items.length){ showToast("Add at least one title"); return; }
+      const payload={ name:s.name.trim(), tagline:s.tagline.trim(), accent:s.accent,
+        items:s.items.map(it=>({t:it.t,id:it.id,label:it.label||""})) };
+      try{
+        if(s.editing){
+          payload.updated_at=new Date().toISOString();
+          const {error}=await client.from("user_universes").update(payload).eq("id",s.editing); if(error) throw error;
+          showToast("Universe updated");
+        } else {
+          payload.owner_id=currentUserId;
+          const {data,error}=await client.from("user_universes").insert(payload).select("id").single(); if(error) throw error;
+          s.editing=data.id; showToast("Universe created");
+        }
+        await loadUserUniverses();
+        const created=userUniverses.find(x=>x._uid===s.editing);
+        if(created) openUniverse(created.id); else showSection("home");
+      }catch(e){ showToast("Error: "+(e.message||e)); }
+    }
+    async function deleteUserUniverse(u){
+      if(!u||!u._user) return;
+      try{
+        const {error}=await client.from("user_universes").delete().eq("id",u._uid); if(error) throw error;
+        try{ await client.from("universe_progress").delete().eq("user_id",currentUserId).eq("universe_id",u.id); }catch(_){}
+        showToast("Universe deleted"); await loadUserUniverses(); showSection("home");
+      }catch(e){ showToast("Error: "+(e.message||e)); }
+    }
 
     function uniKey(t){ return t.t.charAt(0) + t.id; }               // {t:"movie",id:11} -> "m11"
     function uniStatusOf(rec){ const e = myEntries[keyOf(rec.tmdbId, rec.type)]; return e ? e.status : null; }
+    // ---- episode-guide helpers (a series can carry a per-order chronological episode list) ----
+    function guideEpKeys(guide){ const out=[]; (guide||[]).forEach(x=>{ if(Array.isArray(x)) out.push(x[0]); }); return out; }
+    function airedSortGuide(guide){ const eps=(guide||[]).filter(x=>Array.isArray(x));
+      return eps.slice().sort((a,b)=>{ const pa=/^S(\d+)E(\d+)$/.exec(a[0]), pb=/^S(\d+)E(\d+)$/.exec(b[0]); return (+pa[1]-+pb[1])||(+pa[2]-+pb[2]); }); }
+    function uniGuideFor(u,key){ if(!u) return null; for(const o of u.orders){ if(o.episodes && o.episodes[key]) return o.episodes[key]; } return null; }
+    function watchedEpsSetFor(tmdbId,type){ const e=myEntries[keyOf(tmdbId,type)]; return new Set((e&&e.watched_eps)||[]); }
+    // A series with an episode guide counts as "watched" (one entity) when every guided episode is ticked, or the whole title is marked watched.
+    function titleWatched(u,t){
+      const e=myEntries[keyOf(t.id,t.t)];
+      const guide=uniGuideFor(u, uniKey(t));
+      if(guide){
+        if(e && e.status==="watched") return true;
+        if(!e) return false;
+        const w=new Set(e.watched_eps||[]); const eks=guideEpKeys(guide);
+        return eks.length>0 && eks.every(k=>w.has(k));
+      }
+      return !!(e && e.status==="watched");
+    }
     // "Done" means watched overall, unless a rewatch pass is active — then it means re-seen in this pass.
     function uniDone(rec){
       const k = uniKey({t:rec.type, id:rec.tmdbId});
       if(currentUniRun) return currentUniRun.keys.has(k);
-      return uniStatusOf(rec)==="watched";
+      return titleWatched(currentUniverse, {t:rec.type, id:rec.tmdbId});
     }
     async function loadUniRun(universeId){
       try{
@@ -2624,30 +2963,101 @@
       }catch(_){}
       return null;
     }
+    async function bumpRewatch(key, delta){
+      const rec=uniCache[key]; if(!rec) return;
+      const e=myEntries[keyOf(rec.tmdbId,rec.type)]; if(!e) return;
+      const nv=Math.max(0,(e.rewatch_count||0)+delta);
+      try{ const {data}=await client.from("entries").update({rewatch_count:nv}).eq("id",e.entryId).select("rewatch_count");
+        e.rewatch_count=(data&&data.length)?data[0].rewatch_count:nv; }catch(_){}
+    }
     async function setUniRunKey(key, on){
       if(!currentUniRun) return;
+      const had=currentUniRun.keys.has(key);
       if(on) currentUniRun.keys.add(key); else currentUniRun.keys.delete(key);
       try{
         await client.from("universe_progress").update({watched_keys:[...currentUniRun.keys], updated_at:new Date().toISOString()})
           .eq("user_id",currentUserId).eq("universe_id",currentUniverse.id);
       }catch(e){ showToast("Error: "+(e.message||e)); }
+      // credit a rewatch on a title only when it is actually re-seen in this pass
+      if(on && !had) await bumpRewatch(key, +1);
+      else if(!on && had) await bumpRewatch(key, -1);
     }
     async function resetUniverse(){
       const u=currentUniverse; if(!u) return;
-      const toBump=u.titles.map(t=>myEntries[keyOf(t.id,t.t)]).filter(e=>e && e.status==="watched");
-      for(const e of toBump){
-        try{ const {data}=await client.from("entries").update({rewatch_count:(e.rewatch_count||0)+1}).eq("id",e.entryId).select("rewatch_count");
-          if(data&&data.length) e.rewatch_count=data[0].rewatch_count; }catch(_){}
-      }
       const newPass=(currentUniRun?currentUniRun.pass:0)+1;
       try{
         await client.from("universe_progress").upsert({user_id:currentUserId, universe_id:u.id, watched_keys:[], pass:newPass, updated_at:new Date().toISOString()},{onConflict:"user_id,universe_id"});
         currentUniRun={keys:new Set(), pass:newPass};
-        showToast("Rewatch started · +1 rewatch on "+toBump.length+" title"+(toBump.length===1?"":"s"));
+        showToast("Rewatch started. Tick titles as you re-watch them.");
       }catch(e){ showToast("Error: "+(e.message||e)); }
       renderUniverse();
     }
     function displayFromUni(rec){ return {tmdbId:rec.tmdbId, type:rec.type, title:rec.title, year:rec.year, poster_url:rec.poster_url}; }
+
+    // ---- episode-guide writes (tie universe episode steps into the entry's watched_eps) ----
+    function uniDisplayForKey(k){ const rec=uniCache[k]; return rec?{tmdbId:rec.tmdbId,type:rec.type,title:rec.title,year:rec.year,poster_url:rec.poster_url}:null; }
+    async function writeWatchedEps(disp, keys, allEps){
+      const ent=await ensureEntry(disp,"watching");
+      let ls=null, le=null;
+      keys.forEach(k=>{ const m=/^S(\d+)E(\d+)$/.exec(k); if(m){ const s=+m[1], e=+m[2]; if(ls===null||s>ls||(s===ls&&e>le)){ ls=s; le=e; } } });
+      const upd={ watched_eps:keys, last_season:ls, last_episode:le };
+      if(Array.isArray(allEps) && allEps.length){
+        const w=new Set(keys); const complete=allEps.every(k=>w.has(k));
+        if(complete) upd.status="watched";
+        else if(ent.status==="watched") upd.status="watching";
+        else if(!ent.status||ent.status==="watchlist") upd.status="watching";
+      } else if(!ent.status||ent.status==="watchlist"){ upd.status="watching"; }
+      const {error}=await client.from("entries").update(upd).eq("id",ent.entryId);
+      if(error){ showToast("Error: "+(error.message||error)); return false; }
+      ent.watched_eps=keys; ent.last_season=ls; ent.last_episode=le; if(upd.status) ent.status=upd.status;
+      return true;
+    }
+    // auto episode breakdown for any series (built from TMDB seasons, lazily)
+    async function ensureUniSeasons(key){
+      const rec=uniCache[key]; if(!rec || rec.type!=="tv") return null;
+      if(rec.autoGuide) return rec.autoGuide;
+      try{
+        const d=await fetchDetails("tv", rec.tmdbId);
+        const seasons=(d.seasons||[]).filter(s=>s.season_number>=1 && (s.episode_count||0)>0).map(s=>({num:s.season_number, eps:s.episode_count}));
+        const guide=[]; seasons.forEach(se=>{ guide.push({note:"Season "+se.num}); for(let n=1;n<=se.eps;n++) guide.push(["S"+se.num+"E"+n, "Episode "+n]); });
+        rec.autoGuide=guide;
+      }catch(_){ rec.autoGuide=[]; }
+      return rec.autoGuide;
+    }
+    async function uniToggleAutoEp(seriesKey, epK){
+      const disp=uniDisplayForKey(seriesKey); if(!disp) return;
+      const rec=uniCache[seriesKey]; const allEps=guideEpKeys((rec&&rec.autoGuide)||[]);
+      const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
+      const set=new Set((ent&&ent.watched_eps)||[]);
+      if(set.has(epK)) set.delete(epK); else set.add(epK);
+      if(await writeWatchedEps(disp,[...set],allEps)) renderUniverse();
+    }
+    async function uniMarkAllAuto(seriesKey){
+      const disp=uniDisplayForKey(seriesKey); if(!disp) return;
+      const rec=uniCache[seriesKey]; const allEps=guideEpKeys((rec&&rec.autoGuide)||[]);
+      const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
+      const set=new Set((ent&&ent.watched_eps)||[]);
+      const allIn=allEps.length>0 && allEps.every(k=>set.has(k));
+      if(allIn){ allEps.forEach(k=>set.delete(k)); } else { allEps.forEach(k=>set.add(k)); }
+      if(await writeWatchedEps(disp,[...set],allEps)) renderUniverse();
+    }
+    async function uniToggleGuideEp(seriesKey, epK){
+      const disp=uniDisplayForKey(seriesKey); if(!disp) return;
+      const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
+      const set=new Set((ent&&ent.watched_eps)||[]);
+      if(set.has(epK)) set.delete(epK); else set.add(epK);
+      if(await writeWatchedEps(disp,[...set])) renderUniverse();
+    }
+    async function uniMarkAllGuide(seriesKey){
+      const disp=uniDisplayForKey(seriesKey); if(!disp) return;
+      const guide=uniGuideFor(currentUniverse,seriesKey); if(!guide) return;
+      const eks=guideEpKeys(guide);
+      const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
+      const set=new Set((ent&&ent.watched_eps)||[]);
+      const allIn=eks.every(k=>set.has(k));
+      if(allIn){ eks.forEach(k=>set.delete(k)); } else { eks.forEach(k=>set.add(k)); }
+      if(await writeWatchedEps(disp,[...set])) renderUniverse();
+    }
 
     async function fetchUniTitle(t){
       const key = uniKey(t);
@@ -2668,15 +3078,15 @@
 
     function uniProgress(u){
       const total = u.titles.length;
-      const done = u.titles.filter(t=>{ const e=myEntries[keyOf(t.id, t.t)]; return e && e.status==="watched"; }).length;
+      const done = u.titles.filter(t=>titleWatched(u,t)).length;
       return { done, total, pct: total ? Math.round(done/total*100) : 0 };
     }
 
     async function loadHomeUniverses(){
       const wrap=$("home-universes-wrap"), lab=$("home-universes-lab"), box=$("home-universes");
-      if(!UNIVERSES.length){ wrap.hidden=true; lab.hidden=true; return; }
+      await loadUserUniverses();
       wrap.hidden=false; lab.hidden=false; box.innerHTML="";
-      UNIVERSES.forEach(u=>{
+      allUniverses().forEach(u=>{
         const p=uniProgress(u);
         const el=document.createElement("div"); el.className="uni-card"; el.style.background=u.theme.bg;
         el.innerHTML=`<div class="uc-bg" id="ucbg-${u.id}"></div><div class="uc-shade"></div>
@@ -2689,6 +3099,10 @@
         const heroT = u.titles.find(t=>uniKey(t)===u.heroKey) || u.titles[0];
         if(heroT) fetchUniTitle(heroT).then(rec=>{ if(rec && rec.backdrop){ const bg=$("ucbg-"+u.id); if(bg) bg.style.backgroundImage="url('"+rec.backdrop+"')"; } });
       });
+      const create=document.createElement("div"); create.className="uni-card uni-card-create";
+      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">+</div><div class="ucc-t">Create your own</div><div class="ucc-s">Build a custom watch order</div></div>`;
+      create.onclick=()=>openBuilder(null);
+      box.appendChild(create);
     }
 
     function currentUniSeq(){
@@ -2705,11 +3119,11 @@
     }
 
     async function openUniverse(id){
-      const u=UNIVERSES.find(x=>x.id===id); if(!u) return;
-      currentUniverse=u; currentUniOrder=u.defaultOrder;
+      const u=allUniverses().find(x=>x.id===id); if(!u) return;
+      currentUniverse=u; currentUniOrder=u.defaultOrder; uniExpandedGuides.clear();
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true;
-      sectionCompare.hidden=true; $("section-achievements").hidden=true;
+      sectionCompare.hidden=true; $("section-achievements").hidden=true; $("section-uni-builder").hidden=true;
       const sec=$("section-universe"); sec.hidden=false;
       sec.style.setProperty("--uaccent", u.theme.accent);
       sec.style.setProperty("--uink", u.theme.ink || "#0d0f14");
@@ -2720,6 +3134,29 @@
       currentUniRun = await loadUniRun(u.id);
       if(currentUniverse!==u) return;
       renderUniverse();
+    }
+    function openUniversePreview(row){
+      const ov=$("uni-preview-ov");
+      const items=Array.isArray(row.items)?row.items:[];
+      const subbed=subscribedIds.has(row.id);
+      const owner=(compareFriend&&compareFriend.username)||"a friend";
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="upv-close">×</button>'
+        +'<div class="modal-title">'+esc(row.name)+'</div>'
+        +'<div class="modal-sub">by '+esc(owner)+(row.tagline?' · '+esc(row.tagline):'')+' · '+items.length+' title'+(items.length===1?'':'s')+'</div>'
+        +'<div class="upv-list">'+items.map((it,i)=>'<div class="upv-item"><span class="ur-idx">'+(i+1)+'</span><img class="upv-poster" data-k="'+esc(it.t.charAt(0)+it.id)+'" alt=""/><div class="ur-body"><div class="ur-t">'+esc(it.label||("#"+it.id))+'</div><div class="ur-m">'+(it.t==="tv"?"Series":"Movie")+'</div></div></div>').join("")+'</div>'
+        +'<button class="ub-save" id="upv-sub"'+(subbed?' disabled':'')+'>'+(subbed?'Already subscribed':'Subscribe')+'</button></div>';
+      ov.hidden=false; document.body.classList.add("no-scroll");
+      const list=ov.querySelector(".upv-list");
+      items.forEach(it=>{ fetchUniTitle({t:it.t,id:it.id}).then(rec=>{ if(!rec||!rec.poster_url) return; const img=list.querySelector('.upv-poster[data-k="'+(it.t.charAt(0)+it.id)+'"]'); if(img) img.src=rec.poster_url; }); });
+      const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
+      $("upv-close").onclick=close;
+      ov.onclick=(e)=>{ if(e.target===ov) close(); };
+      const sub=$("upv-sub");
+      if(sub && !subbed) sub.onclick=async()=>{
+        await subscribeUniverse(row.id);
+        const cbtn=document.querySelector('.uni-subbtn[data-uid="'+row.id+'"]'); if(cbtn){ cbtn.classList.add("on"); cbtn.textContent="Subscribed"; }
+        close();
+      };
     }
     $("uni-back").onclick=()=>showSection("home");
 
@@ -2746,16 +3183,17 @@
       html+=`<div class="uni-orders">`+ u.orders.map(o=>
         `<button class="uni-order" data-o="${o.id}"${o.id===currentUniOrder?` style="background:var(--uaccent);color:var(--uink);border-color:transparent"`:``}>${esc(o.name)}</button>`
       ).join("") +`</div>`;
+      if(u._subscribed) html+=`<div class="uni-note">Shared by ${esc(u._ownerName||"a friend")}</div>`;
       if(order.note) html+=`<div class="uni-note">${esc(order.note)}</div>`;
 
       html+=`<div class="uni-prog-card">
           <div class="uni-prog-pct">${pct}%</div>
-          <div class="uni-prog-sub">${currentUniRun?("Rewatch · pass "+currentUniRun.pass+" — "):""}${doneCount} of ${total} watched${(order.seq && order.note)?" (this order)":""}</div>
+          <div class="uni-prog-sub">${currentUniRun?("Rewatch · pass "+currentUniRun.pass+" · "):""}${doneCount} of ${total} watched${(order.seq && order.note)?" (this order)":""}</div>
           <div class="uni-prog-bar"><div class="uni-prog-fill" style="width:${pct}%;background:var(--uaccent)"></div></div>`;
       if(nextRec){
         html+=`<div class="uni-next" data-nextkey="${uniKey({t:nextRec.type,id:nextRec.tmdbId})}">
             ${nextRec.poster_url?`<img src="${nextRec.poster_url}" alt=""/>`:`<img alt=""/>`}
-            <div><div class="un-lab">Up next — you are here</div><div class="un-t">${esc(nextRec.title)}</div></div>
+            <div><div class="un-lab">Up next (you are here)</div><div class="un-t">${esc(nextRec.title)}</div></div>
           </div>`;
       } else {
         html+=`<div class="uni-next" style="cursor:default"><div><div class="un-lab">Complete</div><div class="un-t">You've seen everything released 🎉</div></div></div>`;
@@ -2777,12 +3215,71 @@
       html+=`<div class="uni-list">`;
       recs.forEach((r,i)=>{
         const up=isUpcoming(r); const done=uniDone(r); const st=uniStatusOf(r);
+        const k=uniKey({t:r.type,id:r.tmdbId});
+        const explicitGuide = (order.episodes && order.episodes[k]) || null;
+        const anyGuide = explicitGuide || uniGuideFor(u,k);
+        // series with an episode guide: expandable episode-by-episode walkthrough
+        // (chronological order in Timeline, aired order in the other orders)
+        if(anyGuide && !currentUniRun && !up){
+          const chrono=!!explicitGuide;
+          const guideList = chrono ? explicitGuide : airedSortGuide(anyGuide);
+          const eks=guideEpKeys(guideList); const tot=eks.length;
+          const wset=watchedEpsSetFor(r.tmdbId,r.type); const dc=eks.filter(x=>wset.has(x)).length;
+          const allDone=tot>0&&dc===tot; const some=dc>0;
+          const tone= allDone?"st-done":(some?"st-progress":"st-todo");
+          const open=uniExpandedGuides.has(k);
+          html+=`<div class="uni-row guided${open?" open":""}" data-guidekey="${k}">
+              <div class="ur-idx">${i+1}</div>
+              ${r.poster_url?`<img class="ur-img" src="${r.poster_url}" alt=""/>`:`<div class="ur-img"></div>`}
+              <div class="ur-body"><div class="ur-t">${esc(r.title)}</div><div class="ur-m">Series · ${chrono?"chronological episode order":"episodes in release order"}</div></div>
+              <span class="verdict ${tone} ur-status">${dc}/${tot} eps</span>
+              <span class="ur-caret">${open?"▾":"▸"}</span>
+            </div>`;
+          html+=`<div class="uni-eps"${open?"":" hidden"} data-eps="${k}">`;
+          guideList.forEach(x=>{
+            if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=wset.has(ek);
+              html+=`<div class="ue-ep"><button class="ue-check${on?" on":""}" data-sk="${k}" data-ek="${ek}">✓</button><span class="ue-k">${esc(ek)}</span><span class="ue-t">${esc(et)}</span></div>`;
+            } else if(x&&x.note){ html+=`<div class="ue-note">${esc(x.note)}</div>`; }
+          });
+          html+=`<div class="ue-actions"><button class="ue-all" data-sk="${k}">${allDone?"Unmark all":"Mark all watched"}</button></div>`;
+          html+=`</div>`;
+          return;
+        }
+        // user universes: any series auto-breaks into episodes (lazy TMDB fetch)
+        if(u._user && r.type==="tv" && !currentUniRun && !up){
+          const open=uniExpandedGuides.has(k);
+          const ag = uniCache[k] && uniCache[k].autoGuide;
+          const wset=watchedEpsSetFor(r.tmdbId,r.type);
+          let statusHtml, allDone=false;
+          if(ag){ const eks=guideEpKeys(ag); const tot=eks.length; const dc=eks.filter(x=>wset.has(x)).length;
+            allDone=tot>0&&dc===tot;
+            statusHtml=`<span class="verdict ${allDone?"st-done":(dc>0?"st-progress":"st-todo")} ur-status">${dc}/${tot} eps</span>`;
+          } else { const st2=uniStatusOf(r); const lab2= st2==="watched"?"Watched":(st2==="watching"?"Watching":(st2==="watchlist"?"Watchlist":"Not seen"));
+            statusHtml=`<span class="verdict ${st2==="watched"?"st-done":((st2==="watching"||st2==="watchlist")?"st-progress":"st-todo")} ur-status">${esc(lab2)}</span>`; }
+          html+=`<div class="uni-row guided${open?" open":""}" data-guidekey="${k}" data-auto="1">
+              <div class="ur-idx">${i+1}</div>
+              ${r.poster_url?`<img class="ur-img" src="${r.poster_url}" alt=""/>`:`<div class="ur-img"></div>`}
+              <div class="ur-body"><div class="ur-t">${esc(r.title)}</div><div class="ur-m">Series · episode breakdown</div></div>
+              ${statusHtml}
+              <span class="ur-caret">${open?"▾":"▸"}</span>
+            </div>`;
+          if(open){
+            html+=`<div class="uni-eps" data-eps="${k}">`;
+            if(ag){
+              ag.forEach(x=>{ if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=wset.has(ek);
+                  html+=`<div class="ue-ep"><button class="ue-check${on?" on":""}" data-auto="1" data-sk="${k}" data-ek="${ek}">✓</button><span class="ue-k">${esc(ek)}</span><span class="ue-t">${esc(et)}</span></div>`;
+                } else if(x&&x.note){ html+=`<div class="ue-note">${esc(x.note)}</div>`; } });
+              html+=`<div class="ue-actions"><button class="ue-allauto" data-sk="${k}">${allDone?"Unmark all":"Mark all watched"}</button></div>`;
+            } else { html+=`<div class="ue-note">Loading episodes…</div>`; }
+            html+=`</div>`;
+          }
+          return;
+        }
         let label, tone;
         if(up){ label="Upcoming"; tone="st-todo"; }
         else if(currentUniRun){ label= done?"Re-seen":"To re-watch"; tone= done?"st-done":"st-todo"; }
         else { label= st==="watched"?"Watched":(st==="watching"?"Watching":(st==="watchlist"?"Watchlist":"Not seen"));
                tone= st==="watched"?"st-done":((st==="watching"||st==="watchlist")?"st-progress":"st-todo"); }
-        const k=uniKey({t:r.type,id:r.tmdbId});
         html+=`<div class="uni-row" data-key="${k}">
             <div class="ur-idx">${i+1}</div>
             ${r.poster_url?`<img class="ur-img" src="${r.poster_url}" alt=""/>`:`<div class="ur-img"></div>`}
@@ -2793,9 +3290,15 @@
       });
       html+=`</div>`;
       html+=`<div style="margin-top:26px">`;
-      if(currentUniRun) html+=`<div class="uni-passnote">Rewatch in progress — pass ${currentUniRun.pass}. Your overall collection still counts these as watched.</div>`;
+      if(currentUniRun) html+=`<div class="uni-passnote">Rewatch in progress (pass ${currentUniRun.pass}). Your overall collection still counts these as watched.</div>`;
       html+=`<button class="uni-reset" id="uni-reset">${currentUniRun?"Restart this rewatch":"Rewatch this universe"}</button>`;
       if(currentUniRun) html+=`<button class="uni-exit" id="uni-exit">Show my overall progress instead</button>`;
+      if(u._user && u._ownerId===currentUserId){
+        html+=`<button class="uni-edit" id="uni-edit">Edit this universe</button>`;
+        html+=`<button class="uni-exit" id="uni-del">Delete this universe</button>`;
+      } else if(u._user && u._subscribed){
+        html+=`<button class="uni-exit" id="uni-unsub">Unsubscribe from this universe</button>`;
+      }
       html+=`</div>`;
       body.innerHTML=html;
 
@@ -2805,7 +3308,24 @@
       const openFromKey=(k)=>{ const d=byKey[k]; if(d) openDetail(d, ()=>{ if(currentUniverse) renderUniverse(); }); };
       body.querySelectorAll(".uni-order").forEach(b=>b.onclick=()=>{ currentUniOrder=b.dataset.o; renderUniverse(); });
       body.querySelectorAll(".uni-node").forEach(n=>n.onclick=()=>openFromKey(n.dataset.key));
-      body.querySelectorAll(".uni-row").forEach(rw=>rw.onclick=()=>openFromKey(rw.dataset.key));
+      body.querySelectorAll(".uni-row:not(.guided)").forEach(rw=>rw.onclick=()=>openFromKey(rw.dataset.key));
+      body.querySelectorAll(".uni-row.guided").forEach(rw=>rw.onclick=async()=>{ const k=rw.dataset.guidekey;
+        const opening=!uniExpandedGuides.has(k);
+        if(opening) uniExpandedGuides.add(k); else uniExpandedGuides.delete(k);
+        const rec=uniCache[k];
+        if(opening && rw.dataset.auto && rec && !rec.autoGuide){ renderUniverse(); await ensureUniSeasons(k); }
+        renderUniverse();
+      });
+      body.querySelectorAll(".ue-check").forEach(btn=>btn.onclick=async(ev)=>{ ev.stopPropagation();
+        if(btn.dataset.auto) await uniToggleAutoEp(btn.dataset.sk, btn.dataset.ek);
+        else await uniToggleGuideEp(btn.dataset.sk, btn.dataset.ek); });
+      body.querySelectorAll(".ue-all").forEach(btn=>btn.onclick=async(ev)=>{ ev.stopPropagation(); await uniMarkAllGuide(btn.dataset.sk); });
+      body.querySelectorAll(".ue-allauto").forEach(btn=>btn.onclick=async(ev)=>{ ev.stopPropagation(); await uniMarkAllAuto(btn.dataset.sk); });
+      { const eb=body.querySelector("#uni-edit"); if(eb) eb.onclick=()=>openBuilder(currentUniverse); }
+      { let delArmed=false; const dbn=body.querySelector("#uni-del");
+        if(dbn) dbn.onclick=async()=>{ if(!delArmed){ delArmed=true; dbn.textContent="Tap again to delete"; dbn.style.color="var(--err)";
+            setTimeout(()=>{ delArmed=false; dbn.textContent="Delete this universe"; dbn.style.color=""; },2600); return; } await deleteUserUniverse(currentUniverse); }; }
+      { const ubn=body.querySelector("#uni-unsub"); if(ubn) ubn.onclick=async()=>{ await unsubscribeUniverse(currentUniverse._uid); showSection("home"); }; }
       const nx=body.querySelector(".uni-next[data-nextkey]"); if(nx) nx.onclick=()=>openFromKey(nx.dataset.nextkey);
       body.querySelectorAll(".ur-check").forEach(btn=>btn.onclick=async(ev)=>{
         ev.stopPropagation(); if(btn.disabled) return;
@@ -2827,6 +3347,210 @@
         try{ await client.from("universe_progress").delete().eq("user_id",currentUserId).eq("universe_id",currentUniverse.id); }catch(_){}
         currentUniRun=null; showToast("Back to overall progress"); renderUniverse();
       };
+    }
+
+    // ================= Ciné Club =================
+    let currentClub=null;
+    async function usernamesFor(ids){ const out={}; const uniq=[...new Set(ids)].filter(Boolean); if(!uniq.length) return out;
+      try{ const {data}=await client.from("profiles").select("id,username").in("id",uniq); (data||[]).forEach(p=>out[p.id]=p.username); }catch(_){} return out; }
+    function clubPicker(c){ const m=c.members; if(!m.length) return null; const n=m.length; const idx=(((c.club.turn_index||0)%n)+n)%n; return m[idx].user_id; }
+    function deadlineParts(d){ const today=new Date(); today.setHours(0,0,0,0); const dl=new Date(d+"T00:00:00");
+      const days=Math.round((dl-today)/86400000);
+      let left; if(days>1) left=days+" days left"; else if(days===1) left="1 day left"; else if(days===0) left="Due today"; else left="Overdue by "+(-days)+" day"+(days===-1?"":"s");
+      return { by:"Watch by "+d, left, over:days<0 }; }
+
+    async function loadSocialClubs(){
+      const box=$("social-clubs"); if(!box) return;
+      let clubs=[]; try{ const {data}=await client.from("clubs").select("*").order("created_at",{ascending:true}); clubs=data||[]; }catch(_){}
+      let h='<div class="fr-block"><h3>Your clubs</h3><div class="club-list">';
+      if(!clubs.length) h+='<div class="hint">No clubs yet. Create one or join with a code.</div>';
+      clubs.forEach(c=>{ h+=`<div class="club-list-row" data-cid="${c.id}"><div class="clr-badge">🎬</div><div class="ur-body"><div class="ur-t">${esc(c.name)}</div><div class="ur-m">Code ${esc(c.invite_code)}</div></div><span class="ur-caret">›</span></div>`; });
+      h+='</div><button class="ub-save" id="social-club-new" style="margin-top:14px">Create or join a club</button></div>';
+      box.innerHTML=h;
+      box.querySelectorAll(".club-list-row").forEach(rw=>rw.onclick=()=>openClub(rw.dataset.cid));
+      const nb=$("social-club-new"); if(nb) nb.onclick=openClubStart;
+    }
+    function setSocialTab(tab){
+      const seg=$("social-seg"); if(seg) [...seg.children].forEach(b=>b.classList.toggle("sel", b.dataset.s===tab));
+      const clubs=$("social-clubs"), fr=$("social-friends-wrap");
+      if(tab==="clubs"){ if(clubs) clubs.hidden=false; if(fr) fr.hidden=true; loadSocialClubs(); }
+      else { if(clubs) clubs.hidden=true; if(fr) fr.hidden=false; }
+    }
+    { const seg=$("social-seg"); if(seg) seg.querySelectorAll("button").forEach(b=>b.onclick=()=>setSocialTab(b.dataset.s)); }
+    function openClubStart(){
+      const ov=$("club-ov");
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="clb-close">×</button>'
+        +'<div class="modal-title">Ciné clubs</div><div class="modal-sub">Create a new club, or join one with a code.</div>'
+        +'<div class="ub-field"><label>New club name</label><input id="clb-name" class="ub-inp" placeholder="e.g. The Popcorn Trio"/></div>'
+        +'<button class="ub-save" id="clb-create">Create club</button>'
+        +'<div class="clb-or">or</div>'
+        +'<div class="ub-field"><label>Join with a code</label><input id="clb-code" class="ub-inp" placeholder="ABC123" maxlength="6" style="text-transform:uppercase"/></div>'
+        +'<button class="ub-join" id="clb-join">Join club</button></div>';
+      ov.hidden=false; document.body.classList.add("no-scroll");
+      const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
+      $("clb-close").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
+      $("clb-create").onclick=async()=>{ const name=$("clb-name").value.trim();
+        try{ const {data,error}=await client.rpc("create_club",{p_name:name}); if(error) throw error;
+          const cid=(data&&data.id)||(Array.isArray(data)&&data[0]&&data[0].id); close(); showToast("Club created"); if(cid) openClub(cid); else showSection("home"); }
+        catch(e){ showToast("Error: "+(e.message||e)); } };
+      $("clb-join").onclick=async()=>{ const code=$("clb-code").value.trim(); if(!code){ showToast("Enter a code"); return; }
+        try{ const {data,error}=await client.rpc("join_club_by_code",{p_code:code}); if(error) throw error;
+          close(); showToast("Joined!"); if(data) openClub(data); else showSection("home"); }
+        catch(e){ showToast("Couldn't join: "+(e.message||e)); } };
+    }
+    async function openClub(clubId){
+      sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
+      sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true;
+      sectionCompare.hidden=true; $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-uni-builder").hidden=true; $("section-profile").hidden=true;
+      $("section-club").hidden=false; window.scrollTo(0,0);
+      $("club-body").innerHTML=`<div class="hint">Loading…</div>`;
+      try{
+        const [cr, mr, ar, hr]=await Promise.all([
+          client.from("clubs").select("*").eq("id",clubId).maybeSingle(),
+          client.from("club_members").select("user_id,turn_order").eq("club_id",clubId).order("turn_order",{ascending:true}),
+          client.from("club_rounds").select("*").eq("club_id",clubId).eq("status","active").order("created_at",{ascending:false}).limit(1),
+          client.from("club_rounds").select("*").eq("club_id",clubId).eq("status","closed").order("closed_at",{ascending:false})
+        ]);
+        const club=cr.data; if(!club){ $("club-body").innerHTML=`<div class="hint">Club not found.</div>`; return; }
+        const members=mr.data||[]; const active=(ar.data&&ar.data[0])||null; const history=hr.data||[];
+        let watches=[], messages=[];
+        if(active){ const [wq,mq]=await Promise.all([
+            client.from("club_watches").select("*").eq("round_id",active.id),
+            client.from("club_messages").select("*").eq("round_id",active.id).order("created_at",{ascending:true}) ]);
+          watches=wq.data||[]; messages=mq.data||[]; }
+        const names=await usernamesFor(members.map(m=>m.user_id).concat(active?[active.proposer_id]:[]).concat(history.map(h=>h.proposer_id)).concat(messages.map(m=>m.user_id)));
+        currentClub={club, members, active, watches, history, names, messages};
+        renderClub();
+      }catch(e){ $("club-body").innerHTML=`<div class="hint">Error: ${esc(e.message||String(e))}</div>`; }
+    }
+    $("club-back").onclick=()=>showSection("home");
+    function renderClub(){
+      const c=currentClub; if(!c) return; const body=$("club-body"); const me=currentUserId;
+      const nm=(id)=>c.names[id]||(id===me?"You":"?"); const pickerId=clubPicker(c);
+      let h=`<div class="club-head"><div class="club-name">${esc(c.club.name)}</div>
+        <div class="club-meta">${c.members.length} member${c.members.length===1?"":"s"} · code <b class="club-code">${esc(c.club.invite_code)}</b> <button class="club-copy" id="club-copy">copy</button></div>
+        <div class="club-members">${c.members.map(m=>`<span class="club-chip${m.user_id===pickerId?" picker":""}">${esc(nm(m.user_id))}${m.user_id===pickerId?" · picks next":""}</span>`).join("")}</div></div>`;
+      if(c.active){
+        const r=c.active; const mine=c.watches.find(w=>w.user_id===me); const dl=r.deadline?deadlineParts(r.deadline):null;
+        h+=`<div class="club-round"><div class="cr-film">
+            ${r.movie_poster?`<img src="${r.movie_poster}" alt=""/>`:`<div class="cr-noimg"></div>`}
+            <div class="cr-info"><div class="cr-lab">Now watching · picked by ${esc(nm(r.proposer_id))}</div>
+              <div class="cr-title">${esc(r.movie_title||"")}${r.movie_year?` <span class="cr-year">(${esc(r.movie_year)})</span>`:""}</div>
+              ${dl?`<div class="cr-deadline"><span class="crd-by">${esc(dl.by)}</span><span class="crd-days${dl.over?" over":""}">${esc(dl.left)}</span></div>`:""}</div></div>`;
+        h+=`<div class="cr-status">`;
+        c.members.forEach(m=>{ const w=c.watches.find(x=>x.user_id===m.user_id);
+          h+=`<div class="crs-row"><span class="crs-name">${esc(nm(m.user_id))}</span>`;
+          h+= w?`<span class="crs-rate">${"★".repeat(w.rating||0)}${"☆".repeat(5-(w.rating||0))}</span>`:`<span class="crs-pending">Not seen yet</span>`;
+          h+=`</div>`; if(w&&w.review) h+=`<div class="crs-review">${esc(w.review)}</div>`; });
+        h+=`</div>`;
+        if(!mine){ h+=`<div class="cr-validate" id="cr-validate"><div class="cr-vlab">You've watched it? Give it a rating and a note to log it.</div>
+            <div class="stars cr-stars" id="cr-stars">${[1,2,3,4,5].map(v=>`<span class="star" data-v="${v}">★</span>`).join("")}</div>
+            <textarea id="cr-review" class="ub-inp cr-ta" placeholder="What did you think?"></textarea>
+            <button class="ub-save" id="cr-submit">Validate</button></div>`; }
+        h+=`<div class="club-disc"><div class="cd-lab">Discussion</div><div class="cd-list">`;
+        h+= (c.messages&&c.messages.length)? c.messages.map(m=>`<div class="cd-msg"><span class="cd-who">${esc(nm(m.user_id))}</span> <span class="cd-body">${esc(m.body)}</span></div>`).join("") : `<div class="hint">No messages yet. Start the conversation.</div>`;
+        h+=`</div><div class="cd-input"><input id="cd-text" class="ub-inp" placeholder="Say something about this film…"/><button class="cd-send" id="cd-send">Send</button></div></div>`;
+        if(me===pickerId || me===c.club.owner_id) h+=`<button class="uni-exit" id="cr-close">Close this round</button>`;
+        h+=`</div>`;
+      } else {
+        if(me===pickerId){ h+=`<div class="club-turn"><div class="ct-lab">It's your turn to pick the film</div>
+            <button class="ub-save" id="club-propose">Propose a film</button>
+            <button class="uni-exit" id="club-pass">Pass my turn</button></div>`; }
+        else { h+=`<div class="club-turn"><div class="ct-lab">Waiting for ${esc(nm(pickerId))} to pick the next film</div></div>`; }
+      }
+      if(c.history.length){
+        h+=`<div class="row-lab" style="margin-top:24px">Club history</div><div class="club-hist">`;
+        c.history.forEach(r=>{ h+=`<div class="hist-row" data-rid="${r.id}">
+            ${r.movie_poster?`<img src="${r.movie_poster}" alt=""/>`:`<div class="cr-noimg"></div>`}
+            <div class="ur-body"><div class="ur-t">${esc(r.movie_title||"")}</div><div class="ur-m">${r.movie_year||""} · picked by ${esc(nm(r.proposer_id))}</div></div>
+          </div>`; });
+        h+=`</div>`;
+      }
+      body.innerHTML=h;
+      const cp=$("club-copy"); if(cp) cp.onclick=()=>{ try{ navigator.clipboard.writeText(c.club.invite_code); showToast("Code copied"); }catch(_){ showToast(c.club.invite_code); } };
+      const prop=$("club-propose"); if(prop) prop.onclick=()=>openProposeFilm();
+      const pass=$("club-pass"); if(pass) pass.onclick=async()=>{ await advanceTurn(); showToast("Turn passed"); openClub(c.club.id); };
+      if($("cr-validate")){ let vr=0; const stars=$("cr-stars");
+        stars.querySelectorAll(".star").forEach(s=>s.onclick=()=>{ vr=parseInt(s.dataset.v,10); stars.querySelectorAll(".star").forEach(x=>x.classList.toggle("on",parseInt(x.dataset.v,10)<=vr)); });
+        $("cr-submit").onclick=async()=>{ const review=$("cr-review").value.trim(); if(!vr){ showToast("Give it a rating"); return; } if(!review){ showToast("Write a few words"); return; }
+          await validateRound(c.active, vr, review); openClub(c.club.id); }; }
+      const cb=$("cr-close"); if(cb){ let armed=false; cb.onclick=async()=>{ if(!armed){ armed=true; cb.textContent="Tap again to close the round"; setTimeout(()=>{armed=false; cb.textContent="Close this round";},2600); return; } await closeRound(c.active); openClub(c.club.id); }; }
+      const sendb=$("cd-send"); if(sendb) sendb.onclick=async()=>{ const t=$("cd-text").value; if(!(t&&t.trim())) return; if(await postClubMessage(c.active.id,t)) openClub(c.club.id); };
+      body.querySelectorAll(".hist-row").forEach(rw=>rw.onclick=()=>openRoundDetail(rw.dataset.rid));
+    }
+    async function postClubMessage(roundId, body){ body=(body||"").trim(); if(!body) return false;
+      try{ const {error}=await client.from("club_messages").insert({round_id:roundId, body}); if(error) throw error; return true; }
+      catch(e){ showToast("Error: "+(e.message||e)); return false; } }
+    async function advanceTurn(){ const c=currentClub; const next=(c.club.turn_index||0)+1;
+      try{ await client.from("clubs").update({turn_index:next}).eq("id",c.club.id); c.club.turn_index=next; }catch(e){ showToast("Error: "+(e.message||e)); } }
+    async function proposeRound(picked, days){
+      const c=currentClub; const dl=new Date(); dl.setDate(dl.getDate()+days); const dstr=dl.toISOString().slice(0,10);
+      try{ const {error}=await client.from("club_rounds").insert({club_id:c.club.id, movie_tmdb:picked.tmdb, movie_title:picked.title, movie_poster:picked.poster, movie_year:picked.year, proposer_id:currentUserId, deadline:dstr, status:"active"});
+        if(error) throw error; showToast("Film set!"); }catch(e){ showToast("Error: "+(e.message||e)); }
+    }
+    async function validateRound(round, rating, review){
+      try{
+        const {error}=await client.from("club_watches").upsert({round_id:round.id, user_id:currentUserId, rating, review, watched_at:new Date().toISOString()},{onConflict:"round_id,user_id"});
+        if(error) throw error;
+        try{ const disp={tmdbId:round.movie_tmdb, type:"movie", title:round.movie_title, year:round.movie_year, poster_url:round.movie_poster};
+          const ent=await ensureEntry(disp,"watched"); if(ent){ await client.from("entries").update({status:"watched", rating}).eq("id",ent.entryId);
+            const k=keyOf(disp.tmdbId,disp.type); if(myEntries[k]){ myEntries[k].status="watched"; myEntries[k].rating=rating; } } }catch(_){}
+        showToast("Validated");
+        const {data:ws}=await client.from("club_watches").select("user_id").eq("round_id",round.id);
+        if((ws||[]).length >= currentClub.members.length) await closeRound(round);
+      }catch(e){ showToast("Error: "+(e.message||e)); }
+    }
+    async function closeRound(round){
+      try{ await client.from("club_rounds").update({status:"closed", closed_at:new Date().toISOString()}).eq("id",round.id); await advanceTurn(); showToast("Round closed"); }
+      catch(e){ showToast("Error: "+(e.message||e)); }
+    }
+    function openProposeFilm(){
+      const ov=$("club-ov"); let picked=null; let deadDays=30; let t=null;
+      const render=()=>{
+        ov.innerHTML='<div class="modal-sheet"><button class="close" id="pf2-close">×</button>'
+          +'<div class="modal-title">Propose a film</div>'
+          +'<div class="ub-field"><label>Search a film</label><input id="pf2-search" class="ub-inp" placeholder="Search movies…"/><div id="pf2-results" class="ub-results"></div></div>'
+          +(picked?('<div class="ub-list-lab">Chosen</div><div class="ub-item">'+(picked.poster?'<img class="ur-img" src="'+picked.poster+'"/>':'<div class="ur-img"></div>')+'<div class="ur-body"><div class="ur-t">'+esc(picked.title)+'</div><div class="ur-m">'+(picked.year||"")+' · Movie</div></div></div>'):'')
+          +'<div class="ub-field"><label>Watch within</label><div class="seg" id="pf2-dead">'
+          +[["2 weeks",14],["1 month",30],["2 months",60],["3 months",90]].map(o=>'<button data-d="'+o[1]+'"'+(o[1]===deadDays?' class="sel"':'')+'>'+o[0]+'</button>').join("")
+          +'</div></div>'
+          +'<button class="ub-save" id="pf2-go"'+(picked?'':' disabled')+'>Set as this round\'s film</button></div>';
+        const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
+        $("pf2-close").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
+        const si=$("pf2-search"); if(si) si.oninput=()=>{ clearTimeout(t); const v=si.value.trim(); if(v.length<2){ $("pf2-results").innerHTML=""; return; }
+          t=setTimeout(async()=>{ const box=$("pf2-results"); box.innerHTML='<div class="hint">Searching…</div>';
+            try{ const res=await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(v)}&language=en-US&include_adult=false`);
+              const j=await res.json(); const items=(j.results||[]).slice(0,10);
+              if(!items.length){ box.innerHTML='<div class="hint">No results.</div>'; return; }
+              box.innerHTML=""; items.forEach(it=>{ const poster=it.poster_path?IMG+it.poster_path:null;
+                const el=document.createElement("div"); el.className="ub-res";
+                el.innerHTML=(poster?'<img class="ur-img" src="'+poster+'"/>':'<div class="ur-img"></div>')+'<div class="ur-body"><div class="ur-t">'+esc(it.title||"")+'</div><div class="ur-m">'+(((it.release_date||"").slice(0,4))||"—")+' · Movie</div></div><span class="ub-add">+</span>';
+                el.onclick=()=>{ picked={tmdb:it.id, title:it.title||"", year:(it.release_date||"").slice(0,4), poster}; render(); };
+                box.appendChild(el); });
+            }catch(_){ box.innerHTML='<div class="hint">Search failed.</div>'; } },350); };
+        $("pf2-dead").querySelectorAll("button").forEach(b=>b.onclick=()=>{ deadDays=parseInt(b.dataset.d,10); [...$("pf2-dead").children].forEach(x=>x.classList.toggle("sel",x===b)); });
+        const go=$("pf2-go"); if(go) go.onclick=async()=>{ if(!picked) return; await proposeRound(picked, deadDays); close(); openClub(currentClub.club.id); };
+      };
+      ov.hidden=false; document.body.classList.add("no-scroll"); render();
+    }
+    async function openRoundDetail(rid){
+      const c=currentClub; const r=c.history.find(x=>x.id===rid); if(!r) return; const ov=$("club-ov");
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="rd-close">×</button><div class="hint">Loading…</div></div>'; ov.hidden=false; document.body.classList.add("no-scroll");
+      let ws=[], msgs=[];
+      try{ const [wq,mq]=await Promise.all([ client.from("club_watches").select("*").eq("round_id",rid), client.from("club_messages").select("*").eq("round_id",rid).order("created_at",{ascending:true}) ]); ws=wq.data||[]; msgs=mq.data||[]; }catch(_){}
+      const names=Object.assign({}, c.names, await usernamesFor(ws.map(w=>w.user_id).concat(msgs.map(m=>m.user_id))));
+      const nm=(id)=>names[id]||(id===currentUserId?"You":"?"); const avg=ws.length?(ws.reduce((s,w)=>s+(w.rating||0),0)/ws.length).toFixed(1):"—";
+      let h='<div class="modal-sheet"><button class="close" id="rd-close">×</button>';
+      h+='<div class="rd-head">'+(r.movie_poster?'<img src="'+r.movie_poster+'"/>':'')+'<div><div class="modal-title">'+esc(r.movie_title||"")+'</div><div class="modal-sub">'+(r.movie_year||"")+' · picked by '+esc(nm(r.proposer_id))+' · avg '+avg+'★</div></div></div>';
+      ws.forEach(w=>{ h+='<div class="rd-review"><div class="rd-who">'+esc(nm(w.user_id))+' <span class="rd-stars">'+"★".repeat(w.rating||0)+"☆".repeat(5-(w.rating||0))+'</span></div>'+(w.review?'<div class="rd-text">'+esc(w.review)+'</div>':'')+'</div>'; });
+      if(!ws.length) h+='<div class="hint">No reviews recorded.</div>';
+      h+='<div class="club-disc"><div class="cd-lab">Discussion</div><div class="cd-list">';
+      h+= msgs.length? msgs.map(m=>'<div class="cd-msg"><span class="cd-who">'+esc(nm(m.user_id))+'</span> <span class="cd-body">'+esc(m.body)+'</span></div>').join("") : '<div class="hint">No messages yet.</div>';
+      h+='</div><div class="cd-input"><input id="rd-text" class="ub-inp" placeholder="Add to the discussion…"/><button class="cd-send" id="rd-send">Send</button></div></div>';
+      h+='</div>'; ov.innerHTML=h;
+      const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
+      $("rd-close").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
+      const sb=$("rd-send"); if(sb) sb.onclick=async()=>{ const t=$("rd-text").value; if(!(t&&t.trim())) return; if(await postClubMessage(rid,t)) openRoundDetail(rid); };
     }
 
     client.auth.getSession().then(({data})=>render(data.session));
