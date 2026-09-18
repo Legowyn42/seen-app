@@ -474,6 +474,22 @@
     .stat-mini .ur-t { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .stat-mini .ur-m { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .hot-lab { font-size: 12.5px; font-weight: 700; color: var(--muted); margin: 12px 0 4px; }
+    /* rank / XP */
+    .rankcard { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin: 14px 0; background: var(--card); border-left: 4px solid var(--rk, var(--accent)); }
+    .rankcard.rk-common { --rk: #8a93a6; }
+    .rankcard.rk-uncommon { --rk: #4f9dde; }
+    .rankcard.rk-epic { --rk: #8f5fd6; }
+    .rankcard.rk-legendary { --rk: #e8a13c; }
+    .rk-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .rk-name { font-family: var(--disp); font-weight: 800; font-size: 17px; color: var(--rk, var(--accent)); }
+    .rk-xp { font-size: 13px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+    .rk-bar { height: 8px; border-radius: 999px; background: var(--chip); overflow: hidden; margin: 9px 0 6px; }
+    .rk-fill { height: 100%; border-radius: 999px; background: var(--rk, var(--accent)); }
+    .rk-next { font-size: 12px; color: var(--muted); }
+    .xpb-lab { font-size: 12.5px; font-weight: 700; color: var(--muted); margin: 4px 2px 8px; }
+    .xpb-row { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 7px; font-size: 13.5px; }
+    .xpb-row span:last-child { color: var(--muted); font-weight: 600; }
+    #xp-breakdown { margin-bottom: 18px; }
     .upcoming-intro { color: var(--muted); font-size: 13px; margin: 2px 0 16px; }
     /* cast row in the detail sheet */
     .cast-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
@@ -1071,6 +1087,8 @@
         <div class="ach-count"><span id="badge-count">0</span><span class="ach-slash"> / 8</span></div>
         <div class="ach-lab">achievements unlocked</div>
       </div>
+      <div id="ach-rank"></div>
+      <div id="xp-breakdown"></div>
       <div class="badge-grid" id="badge-grid"></div>
     </div>
     <div id="section-universe" hidden>
@@ -1089,7 +1107,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.35</div>
+    <div class="appfoot">Seen · v3.36</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1358,6 +1376,7 @@
       if(o.self){ html+='<div class="pf-actions"><button class="pf-btn pf-primary" id="pf-edit-btn">✏️ Edit profile</button>'+
         '<button class="pf-btn" id="pf-appearance-btn">🎨 Appearance</button></div>'; }
       html+='</div>';
+      html+=rankCardHTML(entries);
       if(o.self){ html+='<div class="pf-note">This is how your profile looks to friends. Tap Edit to change your avatar, colour, bio and what\'s shown.</div>'; }
       if(showStats){ html+='<div class="pf-stats">'+
         '<div class="pf-stat"><div class="n">'+watched+'</div><div class="l">Watched</div></div>'+
@@ -1461,7 +1480,7 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.35</div></div>';
+        '<div class="sett-ver">Seen · v3.36</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -2121,6 +2140,45 @@
     }
     function badgeState(counts){ const all=BADGES.map(b=>({emoji:b.emoji,name:b.name,desc:b.desc,rarity:b.rarity,earned:b.test(counts),prog:b.prog(counts)}));
       return {all, earnedCount:all.filter(b=>b.earned).length}; }
+    // ---- XP & ranks (computed from entries, retroactive, nothing stored) ----
+    const RANKS=[
+      {name:"Newbie", min:0, tier:"common"},
+      {name:"Netflix account borrower", min:500, tier:"common"},
+      {name:"Popcorn seller", min:1500, tier:"uncommon"},
+      {name:"Trailer addict", min:3500, tier:"uncommon"},
+      {name:"Just one more episode", min:7000, tier:"epic"},
+      {name:"Couch critic", min:13000, tier:"epic"},
+      {name:"IMDb detective", min:22000, tier:"epic"},
+      {name:"Certified cinephile", min:35000, tier:"legendary"},
+      {name:"Festival regular", min:55000, tier:"legendary"},
+      {name:"The Academy", min:85000, tier:"legendary"}
+    ];
+    function xpForEntries(entries){
+      const bd={films:0,episodes:0,finishes:0,ratings:0,gems:0,rewatches:0,badges:0};
+      (entries||[]).forEach(e=>{ const m=e.media; if(!m) return;
+        if(e.rating) bd.ratings+=20;
+        if(e.is_gem) bd.gems+=50;
+        if(e.rewatch_count) bd.rewatches += (e.rewatch_count||0)*50;
+        if(m.type==="movie"){ if(e.status==="watched"){ const rt=m.runtime||0; bd.films += rt? (rt<90?60:(rt<=150?100:150)) : 100; } }
+        else if(m.type==="tv"){
+          const eps = (Array.isArray(e.watched_eps)&&e.watched_eps.length) ? e.watched_eps.length : (e.status==="watched" ? (m.total_episodes||0) : 0);
+          bd.episodes += eps*10;
+          if(e.status==="watched") bd.finishes += 150;
+        }
+      });
+      const {earnedCount}=badgeState(computeCounts(entries)); bd.badges=earnedCount*200;
+      const xp=bd.films+bd.episodes+bd.finishes+bd.ratings+bd.gems+bd.rewatches+bd.badges;
+      return {xp, bd};
+    }
+    function rankFor(xp){ let idx=0; for(let i=0;i<RANKS.length;i++){ if(xp>=RANKS[i].min) idx=i; }
+      const cur=RANKS[idx], next=RANKS[idx+1]||null;
+      const pct = next? Math.max(0,Math.min(100,Math.round((xp-cur.min)/(next.min-cur.min)*100))) : 100;
+      return {idx, cur, next, pct}; }
+    function rankCardHTML(entries){ const x=xpForEntries(entries); const r=rankFor(x.xp);
+      return '<div class="rankcard rk-'+r.cur.tier+'"><div class="rk-top"><span class="rk-name">'+esc(r.cur.name)+'</span><span class="rk-xp">'+x.xp.toLocaleString("en")+' XP</span></div>'
+        +'<div class="rk-bar"><div class="rk-fill" style="width:'+r.pct+'%"></div></div>'
+        +'<div class="rk-next">'+(r.next? (r.pct+'% to '+esc(r.next.name)) : 'Max rank reached 🏆')+'</div></div>'; }
+
     function renderBadges(counts){
       const grid=$("badge-grid"), cnt=$("badge-count"); const {all, earnedCount}=badgeState(counts);
       cnt.textContent=earnedCount; grid.innerHTML="";
@@ -2599,8 +2657,13 @@
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
       $("section-universe").hidden=true;
       $("section-achievements").hidden=false; window.scrollTo(0,0);
-      const {data}=await client.from("entries").select("status,rating,is_gem,media:media_id(type)").eq("user_id",currentUserId);
-      renderBadges(computeCounts((data||[]).filter(e=>e.media)));
+      const {data}=await client.from("entries").select("status,rating,is_gem,rewatch_count,watched_eps,media:media_id(type,runtime,total_episodes)").eq("user_id",currentUserId);
+      const entries=(data||[]).filter(e=>e.media);
+      renderBadges(computeCounts(entries));
+      $("ach-rank").innerHTML=rankCardHTML(entries);
+      const x=xpForEntries(entries);
+      const rows=[["🎬 Films",x.bd.films],["📺 Episodes",x.bd.episodes],["✅ Series finished",x.bd.finishes],["⭐ Ratings",x.bd.ratings],["💎 Gems",x.bd.gems],["↻ Rewatches",x.bd.rewatches],["🏅 Badges",x.bd.badges]].filter(r=>r[1]>0);
+      $("xp-breakdown").innerHTML = rows.length? ('<div class="xpb-lab">Where your XP comes from</div>'+rows.map(r=>'<div class="xpb-row"><span>'+r[0]+'</span><span>'+r[1].toLocaleString("en")+' XP</span></div>').join("")) : "";
     }
     $("ach-back").onclick=()=>showSection("home");
     $("home-badges-lab").onclick=openAchievements;
@@ -2632,7 +2695,7 @@
     }
     async function fetchEntriesFull(userId){
       const {data,error}=await client.from("entries")
-        .select("status,rating,is_gem,last_season,last_episode,media:media_id(tmdb_id,type,title,poster_url,year)")
+        .select("status,rating,is_gem,rewatch_count,last_season,last_episode,watched_eps,media:media_id(tmdb_id,type,title,poster_url,year,runtime,total_episodes)")
         .eq("user_id",userId);
       if(error) return [];
       return (data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
