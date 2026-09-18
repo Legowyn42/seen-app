@@ -241,8 +241,8 @@
       border-radius: 10px; color: var(--text); font-size: 16px; }
     .ep-row select:focus { outline: none; border-color: var(--accent); }
     .ep-row select:disabled { opacity: .5; }
-    .stars { display: flex; gap: 6px; }
-    .stars .star { font-size: 26px; color: #3a4150; cursor: pointer; line-height: 1; }
+    .stars { display: flex; gap: 4px; }
+    .stars .star { font-size: 22px; color: #3a4150; cursor: pointer; line-height: 1; }
     .stars .star.on { color: #ffca3a; }
     .prov-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
     .prov-label { font-size: 12px; color: var(--muted); width: 52px; flex: 0 0 auto; }
@@ -450,6 +450,30 @@
     .fc-role { display: inline-block; margin-top: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
       font-weight: 700; color: var(--accent); background: rgba(var(--accent-rgb),.14); padding: 3px 8px; border-radius: 999px; }
     .stat-desc { color: var(--muted); font-size: 13px; margin: -6px 0 12px; }
+    .stat-equiv { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+    .split-lab { font-size: 12px; color: var(--muted); font-weight: 600; margin: 2px 0 6px; }
+    .split-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; margin: 2px 0 8px; }
+    .split-m { background: var(--accent); }
+    .split-s { background: #e8a13c; }
+    .split-leg { display: flex; gap: 16px; font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+    .split-leg i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+    .split-leg .dot-m { background: var(--accent); }
+    .split-leg .dot-s { background: #e8a13c; }
+    .hbar-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+    .hbar-lab { width: 28px; font-size: 12.5px; color: var(--muted); font-weight: 700; flex: 0 0 auto; }
+    .hbar-track { flex: 1; height: 12px; background: var(--chip); border-radius: 6px; overflow: hidden; }
+    .hbar-fill { height: 100%; background: #ffca3a; border-radius: 6px; }
+    .hbar-n { width: 30px; text-align: right; font-size: 12.5px; color: var(--muted); flex: 0 0 auto; }
+    .donut-wrap { display: flex; align-items: center; gap: 16px; margin: 12px 0 4px; flex-wrap: wrap; }
+    .don-legs { display: flex; flex-direction: column; gap: 6px; }
+    .don-leg { font-size: 12.5px; color: var(--text); }
+    .don-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 7px; }
+    .stat-mini { display: flex; align-items: center; gap: 11px; padding: 7px 0; }
+    .stat-mini .ur-img { width: 40px; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; background: var(--chip); flex: 0 0 auto; }
+    .stat-mini .ur-body { flex: 1; min-width: 0; }
+    .stat-mini .ur-t { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stat-mini .ur-m { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .hot-lab { font-size: 12.5px; font-weight: 700; color: var(--muted); margin: 12px 0 4px; }
     .upcoming-intro { color: var(--muted); font-size: 13px; margin: 2px 0 16px; }
     /* cast row in the detail sheet */
     .cast-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
@@ -958,17 +982,44 @@
         <div class="stat-hero">
           <div class="stat-hero-num" id="stat-total">0</div>
           <div class="stat-hero-label">total watch time</div>
+          <div class="stat-equiv" id="stat-equiv"></div>
         </div>
+        <div id="stat-split"></div>
         <div class="stat-row"><span>Movies</span><span id="stat-movies">—</span></div>
         <div class="stat-row"><span>Series</span><span id="stat-series">—</span></div>
         <div class="stat-row"><span>Average rating</span><span id="stat-avg">—</span></div>
         <div class="stat-row"><span>Rewatches</span><span id="stat-rewatch">—</span></div>
         <div class="stat-note">Series time is an estimate based on episode runtimes.</div>
-        <div class="section-label" style="margin-top:26px">Top genres</div>
+
+        <div class="section-label" style="margin-top:26px">Your ratings</div>
+        <div id="stat-hist"></div>
+        <div class="stat-desc" id="stat-rated"></div>
+
+        <div class="section-label" style="margin-top:24px">Top genres</div>
         <div id="stat-genres"></div>
-        <div class="section-label" style="margin-top:20px">By decade</div>
+        <div id="stat-genre-donut"></div>
+
+        <div class="section-label" style="margin-top:24px">By decade</div>
         <div id="stat-decades"></div>
-        <div class="section-label" style="margin-top:20px">Familiar faces</div>
+        <div class="stat-desc" id="stat-oldnew"></div>
+
+        <div class="section-label" style="margin-top:24px">Languages</div>
+        <div id="stat-langs"></div>
+        <div class="section-label" style="margin-top:20px">Countries</div>
+        <div id="stat-countries"></div>
+
+        <div class="section-label" style="margin-top:24px">Hot takes</div>
+        <div class="stat-desc">Where your rating and the crowd disagree the most.</div>
+        <div id="stat-hot"></div>
+
+        <div class="section-label" style="margin-top:24px">Hidden gems</div>
+        <div class="stat-desc">Your highest-rated picks (9-10) that few people have seen.</div>
+        <div id="stat-gems"></div>
+
+        <div class="section-label" style="margin-top:24px">Most rewatched</div>
+        <div id="stat-rewatched"></div>
+
+        <div class="section-label" style="margin-top:24px">Familiar faces</div>
         <div class="stat-desc">The people who show up most across what you've watched.</div>
         <div id="stat-people"></div>
       </div>
@@ -1038,7 +1089,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.32</div>
+    <div class="appfoot">Seen · v3.35</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1084,9 +1135,7 @@
       <div class="sheet-section">
         <div class="sheet-label">Your rating</div>
         <div class="stars" id="stars">
-          <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span>
-          <span class="star" data-v="3">★</span><span class="star" data-v="4">★</span>
-          <span class="star" data-v="5">★</span>
+          <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span class="star" data-v="6">★</span><span class="star" data-v="7">★</span><span class="star" data-v="8">★</span><span class="star" data-v="9">★</span><span class="star" data-v="10">★</span>
         </div>
       </div>
       <div class="sheet-section" id="rewatch-section" hidden>
@@ -1412,7 +1461,7 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.32</div></div>';
+        '<div class="sett-ver">Seen · v3.35</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -2224,6 +2273,22 @@
     }
     $("home-pick-btn").onclick=()=>{ if(!homePickPool.length) return;
       const e=homePickPool[Math.floor(Math.random()*homePickPool.length)]; openDetail(displayFromMedia(e.media), loadHome); };
+    function statLangName(c){ try{ return new Intl.DisplayNames(['en'],{type:'language'}).of(c)||c; }catch(_){ return c; } }
+    function statCountryName(c){ try{ return new Intl.DisplayNames(['en'],{type:'region'}).of(c)||c; }catch(_){ return c; } }
+    function statRows(items){ return items.map(it=>'<div class="stat-mini">'+(it.poster?'<img class="ur-img" src="'+it.poster+'" alt=""/>':'<div class="ur-img"></div>')+'<div class="ur-body"><div class="ur-t">'+esc(it.title||"")+'</div><div class="ur-m">'+esc(it.sub||"")+'</div></div></div>').join(""); }
+    function renderStatHist(el,hist){ let m=1; for(let s=1;s<=10;s++) m=Math.max(m, hist[s]||0);
+      el.innerHTML=[10,9,8,7,6,5,4,3,2,1].map(s=>{ const n=hist[s]||0; const w=Math.round((n/m)*100);
+        return '<div class="hbar-row"><span class="hbar-lab">'+s+'</span><div class="hbar-track"><div class="hbar-fill" style="width:'+w+'%"></div></div><span class="hbar-n">'+n+'</span></div>'; }).join(""); }
+    function renderStatSplit(el,mv,sv){ const tot=mv+sv; if(!tot){ el.innerHTML=""; return; } const mp=Math.round(mv/tot*100);
+      el.innerHTML='<div class="split-lab">Films vs series (by title)</div>'
+        +'<div class="split-bar"><div class="split-m" style="width:'+mp+'%"></div><div class="split-s" style="width:'+(100-mp)+'%"></div></div>'
+        +'<div class="split-leg"><span><i class="dot-m"></i>Films '+mv+' ('+mp+'%)</span><span><i class="dot-s"></i>Series '+sv+' ('+(100-mp)+'%)</span></div>'; }
+    function renderStatDonut(el,counts,limit){ const entries=Object.keys(counts).map(k=>[k,counts[k]]).sort((a,b)=>b[1]-a[1]); const top=entries.slice(0,limit||6);
+      if(!top.length){ el.innerHTML=""; return; }
+      const total=entries.reduce((s,e)=>s+e[1],0)||1; const pal=["#e0685f","#e8a13c","#4f9dde","#8f5fd6","#3fbf7f","#d34fa0"]; const R=52,C=2*Math.PI*R; let off=0,segs="";
+      top.forEach((e,i)=>{ const len=e[1]/total*C; segs+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+pal[i%pal.length]+'" stroke-width="16" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 60 60)"/>'; off+=len; });
+      const leg=top.map((e,i)=>'<span class="don-leg"><i style="background:'+pal[i%pal.length]+'"></i>'+esc(e[0])+' '+Math.round(e[1]/total*100)+'%</span>').join("");
+      el.innerHTML='<div class="donut-wrap"><svg viewBox="0 0 120 120" width="118" height="118" aria-hidden="true">'+segs+'</svg><div class="don-legs">'+leg+'</div></div>'; }
     async function loadStats(){
       statsBody.hidden=true; statsHint.hidden=false; statsHint.textContent="Computing your stats...";
       const { data, error } = await client.from("entries")
@@ -2231,7 +2296,11 @@
         .eq("user_id", currentUserId);
       if(error){ statsHint.textContent="Could not load: "+error.message; return; }
       let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0, ratingSum=0, ratingN=0, rewatchTotal=0;
-      const genres={}, decades={}, people={};
+      const genres={}, decades={}, people={}, langs={}, countries={};
+      const ratingHist={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0};
+      const titleStats=[]; const rewatchList=[];
+      let oldest=null, newest=null;
+      const trackOldNew=(y,t)=>{ if(!y||y<1870) return; if(!oldest||y<oldest.year) oldest={year:y,title:t}; if(!newest||y>newest.year) newest={year:y,title:t}; };
       const addDecade=(y)=>{ if(y){ decades[(Math.floor(y/10)*10)+"s"]=(decades[(Math.floor(y/10)*10)+"s"]||0)+1; } };
       const addPeople=(d, m)=>{
         const add=(p, role)=>{ if(!p||!p.id) return;
@@ -2243,15 +2312,20 @@
         if(d.created_by) d.created_by.forEach(p=>add(p,"Creator")); };
       for(const e of (data||[])){
         const m=e.media; if(!m) continue;
-        if(e.rating){ ratingSum+=e.rating; ratingN++; }
+        if(e.rating){ ratingSum+=e.rating; ratingN++; ratingHist[e.rating]=(ratingHist[e.rating]||0)+1; }
         rewatchTotal += e.rewatch_count||0;
+        if((e.rewatch_count||0)>0) rewatchList.push({title:m.title, poster:m.poster_url, n:e.rewatch_count});
         if(m.type==="movie"){
           if(e.status!=="watched") continue;
           movieCount++;
           try{ const d=await fetchDetailsCredits("movie", m.tmdb_id);
             const rt=d.runtime||m.runtime||0; movieMin+=rt; if(d.runtime) cacheMedia(m.id,{runtime:d.runtime});
             (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d, m);
-            addDecade(m.year || (d.release_date?parseInt(d.release_date.slice(0,4),10):null));
+            const yr=m.year || (d.release_date?parseInt(d.release_date.slice(0,4),10):null);
+            addDecade(yr); trackOldNew(yr, m.title);
+            if(d.original_language) tally(langs, statLangName(d.original_language));
+            (d.production_countries||[]).slice(0,2).forEach(c=>tally(countries, c.name||statCountryName(c.iso_3166_1)));
+            if(e.rating) titleStats.push({title:m.title, poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
           }catch(_){ movieMin += m.runtime||0; addDecade(m.year); }
         } else if(m.type==="tv"){
           if(e.status!=="watched" && e.status!=="watching") continue;
@@ -2267,17 +2341,42 @@
               eps = before + le; }
             seriesMin += eps*avg;
             (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d, m);
-            addDecade(m.year || (d.first_air_date?parseInt(d.first_air_date.slice(0,4),10):null));
+            const yr=m.year || (d.first_air_date?parseInt(d.first_air_date.slice(0,4),10):null);
+            addDecade(yr); trackOldNew(yr, m.title);
+            if(d.original_language) tally(langs, statLangName(d.original_language));
+            (d.origin_country||[]).slice(0,2).forEach(c=>tally(countries, statCountryName(c)));
+            if(e.rating) titleStats.push({title:m.title, poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
           }catch(_){ addDecade(m.year); }
         }
       }
       statTotal.textContent = fmtHours(movieMin+seriesMin);
       statMovies.textContent = movieCount + (movieCount===1?" movie":" movies") + " · " + fmtHours(movieMin);
       statSeries.textContent = seriesCount + " series · " + fmtHours(seriesMin);
-      statAvg.textContent = ratingN ? ((ratingSum/ratingN).toFixed(1)+" ★ · "+ratingN+" rated") : "—";
+      statAvg.textContent = ratingN ? ((ratingSum/ratingN).toFixed(1)+" / 10 · "+ratingN+" rated") : "—";
       statRewatch.textContent = rewatchTotal>0 ? (rewatchTotal+(rewatchTotal===1?" rewatch":" rewatches")) : "0";
+      const totalMin=movieMin+seriesMin; const days=totalMin/1440; const lotr=totalMin/682;
+      const eq=[]; if(days>=1) eq.push(days.toFixed(days<10?1:0)+" days non-stop"); if(lotr>=1) eq.push("the LOTR trilogy "+Math.round(lotr)+"×");
+      $("stat-equiv").textContent = eq.length? "= "+eq.join("  ·  ") : "";
+      renderStatSplit($("stat-split"), movieCount, seriesCount);
+      renderStatHist($("stat-hist"), ratingHist);
+      $("stat-rated").textContent = (data&&data.length) ? (ratingN+" rated · "+(data.length-ratingN)+" not rated ("+Math.round(ratingN/data.length*100)+"% rated)") : "";
       renderBars($("stat-genres"), genres, 6);
+      renderStatDonut($("stat-genre-donut"), genres, 6);
       renderBars($("stat-decades"), decades, 8, true);
+      $("stat-oldnew").textContent = (oldest&&newest)? ("Oldest: "+oldest.title+" ("+oldest.year+")   ·   Newest: "+newest.title+" ("+newest.year+")") : "";
+      renderBars($("stat-langs"), langs, 6);
+      renderBars($("stat-countries"), countries, 6);
+      const scored=titleStats.filter(t=>t.vote>0).map(t=>Object.assign({},t,{diff:t.rating-t.vote}));
+      const above=scored.slice().sort((a,b)=>b.diff-a.diff).filter(t=>t.diff>0.5).slice(0,3);
+      const below=scored.slice().sort((a,b)=>a.diff-b.diff).filter(t=>t.diff<-0.5).slice(0,3);
+      const hotRow=t=>({poster:t.poster,title:t.title,sub:"You "+t.rating+"/10 · public "+t.vote.toFixed(1)+"/10"});
+      let hh=""; if(above.length){ hh+='<div class="hot-lab">You rated above the crowd</div>'+statRows(above.map(hotRow)); }
+      if(below.length){ hh+='<div class="hot-lab">The crowd liked these more</div>'+statRows(below.map(hotRow)); }
+      $("stat-hot").innerHTML = hh || '<div class="hint">Rate more titles to reveal your hot takes.</div>';
+      const gems=titleStats.filter(t=>t.rating>=9).sort((a,b)=>a.pop-b.pop).slice(0,5);
+      $("stat-gems").innerHTML = gems.length? statRows(gems.map(t=>({poster:t.poster,title:t.title,sub:(t.year||"")+" · popularity "+Math.round(t.pop)}))) : '<div class="hint">Give some 9-10 ratings to surface hidden gems.</div>';
+      const rw=rewatchList.slice().sort((a,b)=>b.n-a.n).slice(0,5); const watchedTot=movieCount+seriesCount;
+      $("stat-rewatched").innerHTML = rw.length? (statRows(rw.map(t=>({poster:t.poster,title:t.title,sub:t.n+(t.n===1?" rewatch":" rewatches")})))+'<div class="stat-desc" style="margin-top:10px">'+(watchedTot?Math.round(rewatchList.length/watchedTot*100):0)+'% of your collection has been rewatched.</div>') : '<div class="hint">No rewatches logged yet.</div>';
       renderPeople($("stat-people"), people);
       statsHint.hidden=true; statsBody.hidden=false;
     }
@@ -3477,11 +3576,11 @@
         h+=`<div class="cr-status">`;
         c.members.forEach(m=>{ const w=c.watches.find(x=>x.user_id===m.user_id);
           h+=`<div class="crs-row"><span class="crs-name">${esc(nm(m.user_id))}</span>`;
-          h+= w?`<span class="crs-rate">${"★".repeat(w.rating||0)}${"☆".repeat(5-(w.rating||0))}</span>`:`<span class="crs-pending">Not seen yet</span>`;
+          h+= w?`<span class="crs-rate">★ ${w.rating||0}/10</span>`:`<span class="crs-pending">Not seen yet</span>`;
           h+=`</div>`; if(w&&w.review) h+=`<div class="crs-review">${esc(w.review)}</div>`; });
         h+=`</div>`;
         if(!mine){ h+=`<div class="cr-validate" id="cr-validate"><div class="cr-vlab">You've watched it? Give it a rating and a note to log it.</div>
-            <div class="stars cr-stars" id="cr-stars">${[1,2,3,4,5].map(v=>`<span class="star" data-v="${v}">★</span>`).join("")}</div>
+            <div class="stars cr-stars" id="cr-stars">${[1,2,3,4,5,6,7,8,9,10].map(v=>`<span class="star" data-v="${v}">★</span>`).join("")}</div>
             <textarea id="cr-review" class="ub-inp cr-ta" placeholder="What did you think?"></textarea>
             <button class="ub-save" id="cr-submit">Validate</button></div>`; }
         h+=`<div class="club-disc"><div class="cd-lab">Discussion</div><div class="cd-list">`;
@@ -3578,8 +3677,8 @@
       const names=Object.assign({}, c.names, await usernamesFor(ws.map(w=>w.user_id).concat(msgs.map(m=>m.user_id))));
       const nm=(id)=>names[id]||(id===currentUserId?"You":"?"); const avg=ws.length?(ws.reduce((s,w)=>s+(w.rating||0),0)/ws.length).toFixed(1):"—";
       let h='<div class="modal-sheet"><button class="close" id="rd-close">×</button>';
-      h+='<div class="rd-head">'+(r.movie_poster?'<img src="'+r.movie_poster+'"/>':'')+'<div><div class="modal-title">'+esc(r.movie_title||"")+'</div><div class="modal-sub">'+(r.movie_year||"")+' · picked by '+esc(nm(r.proposer_id))+' · avg '+avg+'★</div></div></div>';
-      ws.forEach(w=>{ h+='<div class="rd-review"><div class="rd-who">'+esc(nm(w.user_id))+' <span class="rd-stars">'+"★".repeat(w.rating||0)+"☆".repeat(5-(w.rating||0))+'</span></div>'+(w.review?'<div class="rd-text">'+esc(w.review)+'</div>':'')+'</div>'; });
+      h+='<div class="rd-head">'+(r.movie_poster?'<img src="'+r.movie_poster+'"/>':'')+'<div><div class="modal-title">'+esc(r.movie_title||"")+'</div><div class="modal-sub">'+(r.movie_year||"")+' · picked by '+esc(nm(r.proposer_id))+' · avg '+avg+'/10</div></div></div>';
+      ws.forEach(w=>{ h+='<div class="rd-review"><div class="rd-who">'+esc(nm(w.user_id))+' <span class="rd-stars">★ '+(w.rating||0)+'/10</span></div>'+(w.review?'<div class="rd-text">'+esc(w.review)+'</div>':'')+'</div>'; });
       if(!ws.length) h+='<div class="hint">No reviews recorded.</div>';
       h+='<div class="club-disc"><div class="cd-lab">Discussion</div><div class="cd-list">';
       h+= msgs.length? msgs.map(m=>'<div class="cd-msg"><span class="cd-who">'+esc(nm(m.user_id))+'</span> <span class="cd-body">'+esc(m.body)+'</span></div>').join("") : '<div class="hint">No messages yet.</div>';
