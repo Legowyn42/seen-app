@@ -490,6 +490,21 @@
     .xpb-row { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 7px; font-size: 13.5px; }
     .xpb-row span:last-child { color: var(--muted); font-weight: 600; }
     #xp-breakdown { margin-bottom: 18px; }
+    .userbtn .ucol { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.15; }
+    .urank { font-size: 10px; font-weight: 700; color: var(--muted); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+    .rkt-common { color: #8a93a6; } .rkt-uncommon { color: #4f9dde; } .rkt-epic { color: #a678e2; } .rkt-legendary { color: #e8a13c; }
+    @keyframes xppop { 0%{ opacity:0; transform:translateX(-50%) translateY(10px);} 15%{ opacity:1;} 78%{ opacity:1;} 100%{ opacity:0; transform:translateX(-50%) translateY(-30px);} }
+    .xp-pop { position: fixed; left: 50%; bottom: 96px; z-index: 80; background: var(--accent); color: #fff; font-weight: 800; font-size: 15px;
+      padding: 7px 16px; border-radius: 999px; box-shadow: 0 6px 20px -6px rgba(0,0,0,.5); pointer-events: none; animation: xppop 1.5s ease forwards; }
+    .rk-ladder { display: flex; flex-direction: column; gap: 7px; }
+    .rk-rung { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--card); opacity: .5; }
+    .rk-rung.done { opacity: 1; }
+    .rk-rung.cur { opacity: 1; border-color: var(--rk, var(--accent)); box-shadow: 0 0 0 1px var(--rk, var(--accent)); }
+    .rk-rung.rkt-common { --rk:#8a93a6; } .rk-rung.rkt-uncommon { --rk:#4f9dde; } .rk-rung.rkt-epic { --rk:#a678e2; } .rk-rung.rkt-legendary { --rk:#e8a13c; }
+    .rk-rung-badge { width: 22px; text-align: center; flex: 0 0 auto; }
+    .rk-rung-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; }
+    .rk-rung.cur .rk-rung-name { color: var(--rk, var(--accent)); }
+    .rk-rung-xp { font-size: 12px; color: var(--muted); flex: 0 0 auto; }
     .upcoming-intro { color: var(--muted); font-size: 13px; margin: 2px 0 16px; }
     /* cast row in the detail sheet */
     .cast-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
@@ -915,7 +930,7 @@
         <button class="bellbtn" id="bellbtn" aria-label="Notifications">🔔<span class="bell-badge" id="bell-badge" hidden></span></button>
         <button class="userbtn" id="userbtn" aria-haspopup="true" aria-expanded="false">
           <span class="uav" id="userbtn-av">?</span>
-          <span class="uname" id="who"></span>
+          <span class="ucol"><span class="uname" id="who"></span><span class="urank" id="userbtn-rank"></span></span>
           <span class="uchev">▾</span>
         </button>
       </div>
@@ -1087,9 +1102,11 @@
         <div class="ach-count"><span id="badge-count">0</span><span class="ach-slash"> / 8</span></div>
         <div class="ach-lab">achievements unlocked</div>
       </div>
-      <div id="ach-rank"></div>
-      <div id="xp-breakdown"></div>
       <div class="badge-grid" id="badge-grid"></div>
+    </div>
+    <div id="section-rank" hidden>
+      <button class="cmp-back" id="rank-back">‹ Home</button>
+      <div id="rank-body"></div>
     </div>
     <div id="section-universe" hidden>
       <button class="cmp-back" id="uni-back">‹ Home</button>
@@ -1107,7 +1124,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.36</div>
+    <div class="appfoot">Seen · v3.37</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1276,6 +1293,7 @@
       applyMyAccent(myProfile&&myProfile.accent);
       refreshUserButton();
       await loadMyEntries();
+      if(typeof refreshRank==="function") refreshRank();
       loadFriendsCache(); refreshFriendsBadge(); showSection(landingTab());
       computeNotifs(); maybeOnboard(); }
     function render(session){ if(session&&session.user){ showApp(session); }
@@ -1337,6 +1355,7 @@
     function openMenu(){ menuOpen=true; userMenu.hidden=false; userBtn.setAttribute("aria-expanded","true"); }
     function closeMenu(){ menuOpen=false; userMenu.hidden=true; userBtn.setAttribute("aria-expanded","false"); }
     userBtn.onclick=(e)=>{ e.stopPropagation(); menuOpen?closeMenu():openMenu(); };
+    { const ur=$("userbtn-rank"); if(ur) ur.onclick=(e)=>{ e.stopPropagation(); openRank(); }; }
     document.addEventListener("click",(e)=>{ if(menuOpen && !userMenu.contains(e.target) && !userBtn.contains(e.target)) closeMenu(); });
     $("um-logout").onclick=async()=>{ closeMenu(); await client.auth.signOut(); };
     $("um-profile").onclick=()=>{ closeMenu(); openMyProfile(); };
@@ -1386,6 +1405,7 @@
       if(favs.length){ html+='<div class="pf-seclab">Favourite genres</div><div class="pf-genres">'+
         favs.map(g=>'<span class="pf-genre">'+esc(g)+'</span>').join("")+'</div>'; }
       container.innerHTML=html;
+      if(o.self){ const rc=container.querySelector(".rankcard"); if(rc){ rc.style.cursor="pointer"; rc.onclick=openRank; } }
       if(o.self){ const eb=$("pf-edit-btn"); if(eb) eb.onclick=openEditProfile;
         const ab=$("pf-appearance-btn"); if(ab) ab.onclick=openSettings; }
       const back=o.self?openMyProfile:(o.onClose||null);
@@ -1480,7 +1500,7 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.36</div></div>';
+        '<div class="sett-ver">Seen · v3.37</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -1517,6 +1537,7 @@
       $("section-universe").hidden = true;
       $("section-uni-builder").hidden = true;
       $("section-club").hidden = true;
+      $("section-rank").hidden = true;
       $("section-profile").hidden = true;
       if(name==="home") loadHome();
       if(name==="search") syncSearch();
@@ -1543,11 +1564,11 @@
 
     async function loadMyEntries(){
       const {data,error}=await client.from("entries")
-        .select("id, status, rating, last_season, last_episode, watched_eps, is_gem, rewatch_count, media:media_id ( tmdb_id, type )")
+        .select("id, status, rating, last_season, last_episode, watched_eps, is_gem, rewatch_count, media:media_id ( tmdb_id, type, runtime, total_episodes )")
         .eq("user_id", currentUserId);
       myEntries={};
       if(!error&&data) data.forEach(e=>{ if(e.media&&e.media.tmdb_id!=null)
-        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,watched_eps:e.watched_eps||[],is_gem:e.is_gem,rewatch_count:e.rewatch_count||0}; });
+        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,watched_eps:e.watched_eps||[],is_gem:e.is_gem,rewatch_count:e.rewatch_count||0,type:e.media.type,runtime:e.media.runtime||null,total_eps:e.media.total_episodes||null}; });
     }
     function gemCount(){ return Object.values(myEntries).filter(e=>e&&e.is_gem).length; }
     const GEM_MAX=6;
@@ -1568,7 +1589,10 @@
         .select("id,status,rating,last_season,last_episode,watched_eps,is_gem,rewatch_count").single();
       if(error) throw error;
       const k=keyOf(display.tmdbId,display.type);
-      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],is_gem:data.is_gem,rewatch_count:data.rewatch_count||0};
+      const prev=myEntries[k]||{};
+      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],is_gem:data.is_gem,rewatch_count:data.rewatch_count||0,type:display.type,runtime:prev.runtime||null,total_eps:prev.total_eps||null};
+      if(status==="watched" && prev.status!=="watched" && typeof gainXP==="function") gainXP(display.type==="tv"?150:100);
+      else if(typeof refreshRank==="function") refreshRank();
       return myEntries[k];
     }
     async function ensureEntry(display,statusIfNew){
@@ -1913,6 +1937,7 @@
       if(turnOn && gemCount()>=GEM_MAX){ showToast("Gem shelf full ("+GEM_MAX+" max)"); return; }
       try{ await client.from("entries").update({is_gem:turnOn}).eq("id",e.entryId);
         e.is_gem=turnOn; renderGem(); showToast(turnOn?"Added to gems 💎":"Removed from gems");
+        if(turnOn && typeof gainXP==="function") gainXP(50); else if(typeof refreshRank==="function") refreshRank();
       }catch(err){ showToast("Error: "+(err.message||err)); }
     };
     function openDetail(display,onClose){
@@ -2023,10 +2048,11 @@
       catch(err){ showToast("Error: "+(err.message||err)); } }; });
 
     stars.querySelectorAll(".star").forEach(s=>{ s.onclick=async()=>{
-      const v=parseInt(s.dataset.v,10); const e=curEntry(); const newVal=(e&&e.rating===v)?null:v;
+      const v=parseInt(s.dataset.v,10); const e=curEntry(); const prevR=e&&e.rating; const newVal=(e&&e.rating===v)?null:v;
       try{ const ent=await ensureEntry(detailDisplay,"watched");
         await client.from("entries").update({rating:newVal}).eq("id",ent.entryId);
         ent.rating=newVal; renderSheet();
+        if(newVal && !prevR && typeof gainXP==="function") gainXP(20); else if(typeof refreshRank==="function") refreshRank();
       }catch(err){ showToast("Error: "+(err.message||err)); } }; });
 
     // ---- per-episode tracking ----
@@ -2057,9 +2083,9 @@
     }
     async function toggleEpisode(s,e){
       const ent=await ensureEntry(detailDisplay,"watching");
-      const set=watchedSet(ent); const k=epKey(s,e);
+      const set=watchedSet(ent); const k=epKey(s,e); const adding=!set.has(k);
       if(set.has(k)) set.delete(k); else set.add(k);
-      if(await persistWatched(ent,set)) renderSheet();
+      if(await persistWatched(ent,set)){ renderSheet(); if(adding && typeof gainXP==="function") gainXP(10); else if(typeof refreshRank==="function") refreshRank(); }
     }
     async function toggleSeason(num){
       const se=(detailSeasons||[]).find(x=>x.num===num); if(!se) return;
@@ -2073,7 +2099,7 @@
       const ent=await ensureEntry(detailDisplay,"watching");
       const set=watchedSet(ent); const nx=nextEpisode(set); if(!nx) return;
       set.add(epKey(nx.s,nx.e));
-      if(await persistWatched(ent,set)){ renderSheet(); showToast("S"+nx.s+"E"+nx.e+" watched"); }
+      if(await persistWatched(ent,set)){ renderSheet(); showToast("S"+nx.s+"E"+nx.e+" watched"); if(typeof gainXP==="function") gainXP(10); }
     }
     function renderEpisodes(){
       const nextBox=$("ep-next"), seasonsBox=$("ep-seasons");
@@ -2178,6 +2204,44 @@
       return '<div class="rankcard rk-'+r.cur.tier+'"><div class="rk-top"><span class="rk-name">'+esc(r.cur.name)+'</span><span class="rk-xp">'+x.xp.toLocaleString("en")+' XP</span></div>'
         +'<div class="rk-bar"><div class="rk-fill" style="width:'+r.pct+'%"></div></div>'
         +'<div class="rk-next">'+(r.next? (r.pct+'% to '+esc(r.next.name)) : 'Max rank reached 🏆')+'</div></div>'; }
+    function rankCardXP(xp){ const r=rankFor(xp);
+      return '<div class="rankcard rk-'+r.cur.tier+'"><div class="rk-top"><span class="rk-name">'+esc(r.cur.name)+'</span><span class="rk-xp">'+xp.toLocaleString("en")+' XP</span></div>'
+        +'<div class="rk-bar"><div class="rk-fill" style="width:'+r.pct+'%"></div></div>'
+        +'<div class="rk-next">'+(r.next?(r.pct+'% to '+esc(r.next.name)):'Max rank reached 🏆')+'</div></div>'; }
+    function computeMyXP(){
+      const arr=Object.values(myEntries||{});
+      const bd={films:0,episodes:0,finishes:0,ratings:0,gems:0,rewatches:0,badges:0};
+      let movies=0,series=0,total=0,rated=0,gems=0;
+      arr.forEach(e=>{ if(!e) return; total++;
+        if(e.rating){ bd.ratings+=20; rated++; }
+        if(e.is_gem){ bd.gems+=50; gems++; }
+        if(e.rewatch_count) bd.rewatches += (e.rewatch_count||0)*50;
+        if(e.type==="movie"){ if(e.status==="watched"){ const rt=e.runtime||0; bd.films += rt?(rt<90?60:(rt<=150?100:150)):100; movies++; } }
+        else if(e.type==="tv"){ const eps=(e.watched_eps&&e.watched_eps.length)?e.watched_eps.length:(e.status==="watched"?(e.total_eps||0):0); bd.episodes+=eps*10; if(e.status==="watched"){ bd.finishes+=150; series++; } }
+      });
+      const {earnedCount}=badgeState({movies,series,total,rated,gems}); bd.badges=earnedCount*200;
+      const xp=bd.films+bd.episodes+bd.finishes+bd.ratings+bd.gems+bd.rewatches+bd.badges;
+      return {xp,bd};
+    }
+    function refreshRank(){ const el=$("userbtn-rank"); if(!el) return; const {xp}=computeMyXP(); const r=rankFor(xp); el.textContent=r.cur.name; el.className="urank rkt-"+r.cur.tier; }
+    function popXP(n){ if(!n) return; const el=document.createElement("div"); el.className="xp-pop"; el.textContent="+"+n+" XP"; document.body.appendChild(el); requestAnimationFrame(()=>el.classList.add("go")); setTimeout(()=>{ el.remove(); },1500); }
+    function gainXP(n){ popXP(n); refreshRank(); }
+    function openRank(){
+      sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
+      sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
+      $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-uni-builder").hidden=true; $("section-club").hidden=true; $("section-profile").hidden=true;
+      $("section-rank").hidden=false; window.scrollTo(0,0);
+      const {xp,bd}=computeMyXP(); const r=rankFor(xp);
+      let h=rankCardXP(xp);
+      h+='<div class="section-label" style="margin-top:22px">Rank ladder</div><div class="rk-ladder">';
+      RANKS.forEach((rk,i)=>{ const reached=xp>=rk.min; const isCur=(i===r.idx);
+        h+='<div class="rk-rung rkt-'+rk.tier+(isCur?' cur':'')+(reached?' done':'')+'"><span class="rk-rung-badge">'+(isCur?'▶':(reached?'✓':'🔒'))+'</span><span class="rk-rung-name">'+esc(rk.name)+'</span><span class="rk-rung-xp">'+rk.min.toLocaleString("en")+' XP</span></div>'; });
+      h+='</div>';
+      const rows=[["🎬 Films",bd.films],["📺 Episodes",bd.episodes],["✅ Series finished",bd.finishes],["⭐ Ratings",bd.ratings],["💎 Gems",bd.gems],["↻ Rewatches",bd.rewatches],["🏅 Badges",bd.badges]].filter(x=>x[1]>0);
+      h+='<div class="section-label" style="margin-top:22px">Where your XP comes from</div>';
+      h+= rows.length? rows.map(x=>'<div class="xpb-row"><span>'+x[0]+'</span><span>'+x[1].toLocaleString("en")+' XP</span></div>').join("") : '<div class="hint">Start watching to earn XP.</div>';
+      $("rank-body").innerHTML=h;
+    }
 
     function renderBadges(counts){
       const grid=$("badge-grid"), cnt=$("badge-count"); const {all, earnedCount}=badgeState(counts);
@@ -2657,14 +2721,10 @@
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
       $("section-universe").hidden=true;
       $("section-achievements").hidden=false; window.scrollTo(0,0);
-      const {data}=await client.from("entries").select("status,rating,is_gem,rewatch_count,watched_eps,media:media_id(type,runtime,total_episodes)").eq("user_id",currentUserId);
-      const entries=(data||[]).filter(e=>e.media);
-      renderBadges(computeCounts(entries));
-      $("ach-rank").innerHTML=rankCardHTML(entries);
-      const x=xpForEntries(entries);
-      const rows=[["🎬 Films",x.bd.films],["📺 Episodes",x.bd.episodes],["✅ Series finished",x.bd.finishes],["⭐ Ratings",x.bd.ratings],["💎 Gems",x.bd.gems],["↻ Rewatches",x.bd.rewatches],["🏅 Badges",x.bd.badges]].filter(r=>r[1]>0);
-      $("xp-breakdown").innerHTML = rows.length? ('<div class="xpb-lab">Where your XP comes from</div>'+rows.map(r=>'<div class="xpb-row"><span>'+r[0]+'</span><span>'+r[1].toLocaleString("en")+' XP</span></div>').join("")) : "";
+      const {data}=await client.from("entries").select("status,rating,is_gem,media:media_id(type)").eq("user_id",currentUserId);
+      renderBadges(computeCounts((data||[]).filter(e=>e.media)));
     }
+    $("rank-back").onclick=()=>showSection("home");
     $("ach-back").onclick=()=>showSection("home");
     $("home-badges-lab").onclick=openAchievements;
 
@@ -3227,9 +3287,9 @@
       const disp=uniDisplayForKey(seriesKey); if(!disp) return;
       const rec=uniCache[seriesKey]; const allEps=guideEpKeys((rec&&rec.autoGuide)||[]);
       const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
-      const set=new Set((ent&&ent.watched_eps)||[]);
+      const set=new Set((ent&&ent.watched_eps)||[]); const adding=!set.has(epK);
       if(set.has(epK)) set.delete(epK); else set.add(epK);
-      if(await writeWatchedEps(disp,[...set],allEps)) renderUniverse();
+      if(await writeWatchedEps(disp,[...set],allEps)){ renderUniverse(); if(adding && typeof gainXP==="function") gainXP(10); else if(typeof refreshRank==="function") refreshRank(); }
     }
     async function uniMarkAllAuto(seriesKey){
       const disp=uniDisplayForKey(seriesKey); if(!disp) return;
@@ -3243,9 +3303,9 @@
     async function uniToggleGuideEp(seriesKey, epK){
       const disp=uniDisplayForKey(seriesKey); if(!disp) return;
       const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
-      const set=new Set((ent&&ent.watched_eps)||[]);
+      const set=new Set((ent&&ent.watched_eps)||[]); const adding=!set.has(epK);
       if(set.has(epK)) set.delete(epK); else set.add(epK);
-      if(await writeWatchedEps(disp,[...set])) renderUniverse();
+      if(await writeWatchedEps(disp,[...set])){ renderUniverse(); if(adding && typeof gainXP==="function") gainXP(10); else if(typeof refreshRank==="function") refreshRank(); }
     }
     async function uniMarkAllGuide(seriesKey){
       const disp=uniDisplayForKey(seriesKey); if(!disp) return;
