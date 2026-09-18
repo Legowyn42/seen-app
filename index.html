@@ -491,7 +491,7 @@
     .xpb-row span:last-child { color: var(--muted); font-weight: 600; }
     #xp-breakdown { margin-bottom: 18px; }
     .userbtn .ucol { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.15; }
-    .urank { font-size: 10px; font-weight: 700; color: var(--muted); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+    .urank { font-size: 10px; font-weight: 700; color: var(--muted); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .rkt-common { color: #8a93a6; } .rkt-uncommon { color: #4f9dde; } .rkt-epic { color: #a678e2; } .rkt-legendary { color: #e8a13c; }
     @keyframes xppop { 0%{ opacity:0; transform:translateX(-50%) translateY(10px);} 15%{ opacity:1;} 78%{ opacity:1;} 100%{ opacity:0; transform:translateX(-50%) translateY(-30px);} }
     .xp-pop { position: fixed; left: 50%; bottom: 96px; z-index: 80; background: var(--accent); color: #fff; font-weight: 800; font-size: 15px;
@@ -941,6 +941,7 @@
         <div style="min-width:0"><div class="umn" id="um-name">—</div><div class="ums" id="um-user"></div></div>
       </div>
       <button class="um-item" id="um-profile"><span class="umi">👤</span>View my profile</button>
+      <button class="um-item" id="um-rank"><span class="umi">🏆</span>Your rank</button>
       <button class="um-item" id="um-edit"><span class="umi">✏️</span>Edit profile</button>
       <button class="um-item" id="um-settings"><span class="umi">⚙️</span>Settings</button>
       <div class="um-sep"></div>
@@ -1124,7 +1125,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.37</div>
+    <div class="appfoot">Seen · v3.38</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1355,10 +1356,10 @@
     function openMenu(){ menuOpen=true; userMenu.hidden=false; userBtn.setAttribute("aria-expanded","true"); }
     function closeMenu(){ menuOpen=false; userMenu.hidden=true; userBtn.setAttribute("aria-expanded","false"); }
     userBtn.onclick=(e)=>{ e.stopPropagation(); menuOpen?closeMenu():openMenu(); };
-    { const ur=$("userbtn-rank"); if(ur) ur.onclick=(e)=>{ e.stopPropagation(); openRank(); }; }
     document.addEventListener("click",(e)=>{ if(menuOpen && !userMenu.contains(e.target) && !userBtn.contains(e.target)) closeMenu(); });
     $("um-logout").onclick=async()=>{ closeMenu(); await client.auth.signOut(); };
     $("um-profile").onclick=()=>{ closeMenu(); openMyProfile(); };
+    $("um-rank").onclick=()=>{ closeMenu(); openRank(); };
     $("um-edit").onclick=()=>{ closeMenu(); openEditProfile(); };
     $("um-settings").onclick=()=>{ closeMenu(); openSettings(); };
 
@@ -1500,7 +1501,7 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.37</div></div>';
+        '<div class="sett-ver">Seen · v3.38</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
