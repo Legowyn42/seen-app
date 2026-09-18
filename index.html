@@ -766,6 +766,9 @@
     .ntf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
     .ntf-t { font-size: 14px; font-weight: 600; }
     .ntf-s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .ntf-item.seen { opacity: .62; }
+    .ntf-item.seen .ntf-dot { visibility: hidden; }
+    .ntf-sechd { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin: 16px 0 6px; }
     /* onboarding */
     .ob-steps { display: flex; flex-direction: column; gap: 14px; margin: 16px 0 20px; }
     .ob-step { display: flex; gap: 12px; align-items: flex-start; }
@@ -1125,7 +1128,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.38</div>
+    <div class="appfoot">Seen · v3.39</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1501,7 +1504,7 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.38</div></div>';
+        '<div class="sett-ver">Seen · v3.39</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -3815,33 +3818,49 @@
 
     // ================= In-app notifications =================
     let notifItems=[];
-    function updateBellBadge(){ const b=$("bell-badge"); if(!b) return; if(notifItems.length){ b.textContent=notifItems.length>9?"9+":String(notifItems.length); b.hidden=false; } else b.hidden=true; }
+    function loadNotifLog(){ try{ return JSON.parse(localStorage.getItem("seen_notif_log")||"[]"); }catch(_){ return []; } }
+    function saveNotifLog(log){ try{ localStorage.setItem("seen_notif_log", JSON.stringify((log||[]).slice(-30))); }catch(_){} }
+    function updateBellBadge(){ const b=$("bell-badge"); if(!b) return; const unseen=(notifItems||[]).filter(x=>!x.seen).length;
+      if(unseen){ b.textContent=unseen>9?"9+":String(unseen); b.hidden=false; } else b.hidden=true; }
     async function computeNotifs(){
-      const items=[];
-      try{ const {data}=await client.from("friendships").select("id").eq("addressee_id",currentUserId).eq("status","pending");
-        (data||[]).forEach(()=>items.push({text:"New friend request", sub:"Review it in Social", act:()=>{ showSection("friends"); }})); }catch(_){}
+      const cur=[];
+      try{ const {data}=await client.from("friendships").select("id,requester_id").eq("addressee_id",currentUserId).eq("status","pending");
+        const reqs=data||[]; if(reqs.length){ const profs=await fetchProfilesMap(reqs.map(r=>r.requester_id));
+          reqs.forEach(r=>{ const u=(profs[r.requester_id]&&profs[r.requester_id].username)||"Someone"; cur.push({id:"fr:"+r.id, text:"New friend request", sub:"@"+u+" wants to be friends", kind:"friends"}); }); } }catch(_){}
+      try{ const {data}=await client.from("recommendations").select("id,sender_id,media:media_id(title)").eq("recipient_id",currentUserId).eq("status","pending").order("created_at",{ascending:false});
+        const recs=data||[]; if(recs.length){ const profs=await fetchProfilesMap(recs.map(r=>r.sender_id));
+          recs.forEach(r=>{ const u=(profs[r.sender_id]&&profs[r.sender_id].username)||"A friend"; const t=(r.media&&r.media.title)||"a film"; cur.push({id:"reco:"+r.id, text:"@"+u+" suggested a film", sub:t, kind:"reco"}); }); } }catch(_){}
       try{ const {data:clubs}=await client.from("clubs").select("*");
         for(const c of (clubs||[])){
           const [mr,ar]=await Promise.all([
             client.from("club_members").select("user_id,turn_order").eq("club_id",c.id).order("turn_order",{ascending:true}),
             client.from("club_rounds").select("id").eq("club_id",c.id).eq("status","active").limit(1) ]);
           const members=mr.data||[]; const active=(ar.data&&ar.data[0])||null; const n=members.length;
-          if(!active){ if(n){ const idx=(((c.turn_index||0)%n)+n)%n; if(members[idx]&&members[idx].user_id===currentUserId) items.push({text:"It's your turn to pick a film", sub:c.name, act:()=>openClub(c.id)}); } }
+          if(!active){ if(n){ const idx=(((c.turn_index||0)%n)+n)%n; if(members[idx]&&members[idx].user_id===currentUserId) cur.push({id:"clubturn:"+c.id+":"+(c.turn_index||0), text:"Your turn to pick a film", sub:c.name, kind:"club", cid:c.id}); } }
           else { const {data:mw}=await client.from("club_watches").select("user_id").eq("round_id",active.id).eq("user_id",currentUserId).maybeSingle();
-            if(!mw) items.push({text:"A club film is waiting for your review", sub:c.name, act:()=>openClub(c.id)}); }
+            if(!mw) cur.push({id:"clubrev:"+active.id, text:"A club film needs your review", sub:c.name, kind:"club", cid:c.id}); }
         }
       }catch(_){}
-      notifItems=items; updateBellBadge(); return items;
+      let log=loadNotifLog(); const known=new Set(log.map(x=>x.id)); const now=Date.now();
+      cur.forEach(it=>{ if(!known.has(it.id)) log.push(Object.assign({ts:now, seen:false}, it)); });
+      log=log.slice(-30); saveNotifLog(log); notifItems=log; updateBellBadge(); return log;
     }
+    function notifAct(it){ if(it && it.kind==="club" && it.cid) openClub(it.cid); else showSection("friends"); }
     function openNotifs(){
-      const ov=$("notif-ov");
-      ov.innerHTML='<div class="modal-sheet"><button class="close" id="ntf-close">×</button><div class="modal-title">Notifications</div>'
-        +(notifItems.length? '<div class="ntf-list">'+notifItems.map((n,i)=>'<button class="ntf-item" data-i="'+i+'"><span class="ntf-dot"></span><div><div class="ntf-t">'+esc(n.text)+'</div><div class="ntf-s">'+esc(n.sub||"")+'</div></div></button>').join("")+'</div>' : '<div class="hint">You are all caught up.</div>')
-        +'</div>';
+      const ov=$("notif-ov"); const items=(notifItems||[]).slice().reverse();
+      const fresh=items.filter(n=>!n.seen); const old=items.filter(n=>n.seen);
+      const row=n=>'<button class="ntf-item'+(n.seen?' seen':'')+'" data-id="'+esc(n.id)+'"><span class="ntf-dot"></span><div><div class="ntf-t">'+esc(n.text)+'</div><div class="ntf-s">'+esc(n.sub||"")+'</div></div></button>';
+      let body='';
+      if(!items.length) body='<div class="hint">Nothing yet.</div>';
+      else{
+        if(fresh.length) body+='<div class="ntf-list">'+fresh.map(row).join("")+'</div>';
+        if(old.length) body+='<div class="ntf-sechd">Older</div><div class="ntf-list">'+old.map(row).join("")+'</div>';
+      }
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="ntf-close">×</button><div class="modal-title">Notifications</div>'+body+'</div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
       $("ntf-close").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
-      ov.querySelectorAll(".ntf-item").forEach(btn=>btn.onclick=()=>{ const it=notifItems[+btn.dataset.i]; close(); if(it&&it.act) it.act(); });
+      ov.querySelectorAll(".ntf-item").forEach(btn=>btn.onclick=()=>{ const it=(notifItems||[]).find(x=>x.id===btn.dataset.id); if(it){ it.seen=true; saveNotifLog(notifItems); updateBellBadge(); } close(); notifAct(it); });
     }
     { const bb=$("bellbtn"); if(bb) bb.onclick=async()=>{ await computeNotifs(); openNotifs(); }; }
 
