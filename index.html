@@ -552,6 +552,7 @@
       background: linear-gradient(150deg, rgba(var(--accent-rgb),.18), rgba(var(--accent-rgb),.04)); border: 1px solid rgba(var(--accent-rgb),.4);
       border-radius: 16px; padding: 16px; color: var(--text); margin-top: 26px; }
     .pick-btn:active { transform: scale(.99); }
+    .club-btn { margin-top: 12px; background: linear-gradient(150deg, rgba(139,92,246,.20), rgba(139,92,246,.05)); border-color: rgba(139,92,246,.42); }
     .pick-die { font-size: 34px; flex: 0 0 auto; line-height: 1; }
     .pick-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
     .pick-title { font-family: var(--disp); font-weight: 800; font-size: 19px; }
@@ -575,6 +576,9 @@
     .uni-card .uc-prog { position: relative; margin-top: 12px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.2); overflow: hidden; }
     .uni-card .uc-fill { height: 100%; border-radius: 3px; }
     .uni-card .uc-pct { position: relative; font-size: 11px; color: #eef1f6; margin-top: 6px; font-weight: 600; }
+    .uni-card .uc-badge { position: absolute; top: 12px; right: 12px; z-index: 2; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+      padding: 4px 8px; border-radius: 999px; background: rgba(139,92,246,.9); color: #fff; max-width: 62%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .uni-card .uc-badge.shared { background: rgba(74,144,217,.92); text-transform: none; letter-spacing: 0; font-weight: 600; }
 
     #section-universe .cmp-back { color: var(--muted); }
     .uni-hero { position: relative; border-radius: 18px; overflow: hidden; margin-bottom: 16px; min-height: 156px;
@@ -766,6 +770,11 @@
     .ntf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
     .ntf-t { font-size: 14px; font-weight: 600; }
     .ntf-s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .ntf-item.seen { opacity: .62; }
+    .ntf-item.seen .ntf-dot { visibility: hidden; }
+    .ntf-sechd { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin: 16px 0 6px; }
+    .ntf-readall { display: block; margin: -2px 0 12px; padding: 8px 12px; width: 100%; background: var(--chip); border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .ntf-readall:active { background: var(--line); }
     /* onboarding */
     .ob-steps { display: flex; flex-direction: column; gap: 14px; margin: 16px 0 20px; }
     .ob-step { display: flex; gap: 12px; align-items: flex-start; }
@@ -967,6 +976,10 @@
         <span class="pick-die">🎲</span>
         <span class="pick-txt"><span class="pick-title">Pick for me!</span><span class="pick-desc">Let Seen choose your next watch from your watchlist</span></span>
       </button>
+      <button class="pick-btn club-btn" id="home-club-btn">
+        <span class="pick-die">🎬</span>
+        <span class="pick-txt"><span class="pick-title">Ciné clubs</span><span class="pick-desc">Rejoins tes clubs, propose un film, note la manche</span></span>
+      </button>
       <div class="row-lab" id="home-universes-lab" hidden>Universe watch orders</div>
       <div id="home-universes-wrap" hidden><div class="uni-shelf" id="home-universes"></div></div>
       <div class="row-lab home-tap" id="home-badges-lab" hidden>Latest achievements<span class="seeall">See all ›</span></div>
@@ -1125,7 +1138,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.38</div>
+    <div class="appfoot">Seen · v3.40</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1501,7 +1514,7 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.38</div></div>';
+        '<div class="sett-ver">Seen · v3.40</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -2396,6 +2409,7 @@
     }
     $("home-pick-btn").onclick=()=>{ if(!homePickPool.length) return;
       const e=homePickPool[Math.floor(Math.random()*homePickPool.length)]; openDetail(displayFromMedia(e.media), loadHome); };
+    { const cb=$("home-club-btn"); if(cb) cb.onclick=()=>{ showSection("friends"); if(typeof setSocialTab==="function") setSocialTab("clubs"); }; }
     function statLangName(c){ try{ return new Intl.DisplayNames(['en'],{type:'language'}).of(c)||c; }catch(_){ return c; } }
     function statCountryName(c){ try{ return new Intl.DisplayNames(['en'],{type:'region'}).of(c)||c; }catch(_){ return c; } }
     function statRows(items){ return items.map(it=>'<div class="stat-mini">'+(it.poster?'<img class="ur-img" src="'+it.poster+'" alt=""/>':'<div class="ur-img"></div>')+'<div class="ur-body"><div class="ur-t">'+esc(it.title||"")+'</div><div class="ur-m">'+esc(it.sub||"")+'</div></div></div>').join(""); }
@@ -2863,8 +2877,12 @@
       ["S4E1","Water War"],["S4E2","Gungan Attack"],["S4E3","Prisoners"],["S4E4","Shadow Warrior"],["S4E5","Mercy Mission"],["S4E6","Nomad Droids"],["S4E7","Darkness on Umbara"],["S4E8","The General"],["S4E9","Plan of Dissent"],["S4E10","Carnage of Krell"],["S4E11","Kidnapped"],["S4E12","Slaves of the Republic"],["S4E13","Escape from Kadavo"],["S4E14","A Friend in Need"],["S4E15","Deception"],["S4E16","Friends and Enemies"],["S4E17","The Box"],["S4E18","Crisis on Naboo"],["S4E19","Massacre"],["S4E20","Bounty"],["S4E21","Brothers"],["S4E22","Revenge"],
       ["S5E2","A War on Two Fronts"],["S5E3","Front Runners"],["S5E4","The Soft War"],["S5E5","Tipping Points"],["S5E6","The Gathering"],["S5E7","A Test of Strength"],["S5E8","Bound for Rescue"],["S5E9","A Necessary Bond"],["S5E10","Secret Weapons"],["S5E11","A Sunny Day in the Void"],["S5E12","Missing in Action"],["S5E13","Point of No Return"],["S5E1","Revival"],["S5E14","Eminence"],["S5E15","Shades of Reason"],["S5E16","The Lawless"],["S5E17","Sabotage"],["S5E18","The Jedi Who Knew Too Much"],["S5E19","To Catch a Jedi"],["S5E20","The Wrong Jedi"],
       ["S6E1","The Unknown"],["S6E2","Conspiracy"],["S6E3","Fugitive"],["S6E4","Orders"],["S6E5","An Old Friend"],["S6E6","The Rise of Clovis"],["S6E7","Crisis at the Heart"],["S6E8","The Disappeared, Part I"],["S6E9","The Disappeared, Part II"],["S6E10","The Lost One"],["S6E11","Voices"],["S6E12","Destiny"],["S6E13","Sacrifice"],
-      ["S7E5","Gone with a Trace"],["S7E6","Deal No Deal"],["S7E7","Dangerous Debt"],["S7E8","Together Again"],["S7E1","The Bad Batch"],["S7E2","A Distant Echo"],["S7E3","On the Wings of Keeradaks"],["S7E4","Unfinished Business"],
-      {note:"Revenge of the Sith. The Siege of Mandalore below runs concurrently."},
+      ["S7E5","Gone with a Trace"],["S7E6","Deal No Deal"],["S7E7","Dangerous Debt"],["S7E8","Together Again"],["S7E1","The Bad Batch"],["S7E2","A Distant Echo"],["S7E3","On the Wings of Keeradaks"],["S7E4","Unfinished Business"]
+    ];
+    // The Siege of Mandalore (Clone Wars finale): begins alongside Revenge of the Sith and ends just after it,
+    // so in the timeline it sits after the film rather than before it.
+    const CW_SIEGE = [
+      {note:"Runs alongside Revenge of the Sith, then continues past it"},
       ["S7E9","Old Friends Not Forgotten"],["S7E10","The Phantom Apprentice"],["S7E11","Shattered"],["S7E12","Victory and Death"]
     ];
 
@@ -2901,8 +2919,8 @@
         ],
         orders: [
           { id:"release", name:"Release", auto:"date" },
-          { id:"chrono", name:"Timeline", note:"In-timeline order. The Clone Wars plays out between Attack of the Clones and Revenge of the Sith. Open it for the chronological episode order.", episodes:{ "t4194": CW_CHRONO }, seq:[
-            "t114479","m1893","m1894","t4194","m1895","t105971","m348350","t92830","t83867","t60554",
+          { id:"chrono", name:"Timeline", note:"In-timeline order. Open each series for its chronological episode walkthrough. The Clone Wars finale (the Siege of Mandalore) sits after Revenge of the Sith.", episodes:{ "t4194": CW_CHRONO, "t4194#siege": CW_SIEGE }, seq:[
+            "t114479","m1893","m1894","t4194","m1895","t4194#siege","t105971","m348350","t92830","t83867","t60554",
             "m330459","m11","m1891","m1892","t82856","t115036","t202879","t114461","m1228710","m140607","m181808","m181812"
           ]},
           { id:"machete", name:"Machete", note:"Films only. The cult order that skips Episode I.",
@@ -3197,23 +3215,52 @@
       return eps.slice().sort((a,b)=>{ const pa=/^S(\d+)E(\d+)$/.exec(a[0]), pb=/^S(\d+)E(\d+)$/.exec(b[0]); return (+pa[1]-+pb[1])||(+pa[2]-+pb[2]); }); }
     function uniGuideFor(u,key){ if(!u) return null; for(const o of u.orders){ if(o.episodes && o.episodes[key]) return o.episodes[key]; } return null; }
     function watchedEpsSetFor(tmdbId,type){ const e=myEntries[keyOf(tmdbId,type)]; return new Set((e&&e.watched_eps)||[]); }
+    // Union of guided episodes for a title across split nodes (e.g. "t4194" + "t4194#siege").
+    function guideEksForTitle(u,key){ const out=[]; const seen=new Set();
+      (u&&u.orders||[]).forEach(o=>{ if(!o.episodes) return;
+        Object.keys(o.episodes).forEach(fk=>{ if(fk===key || fk.indexOf(key+"#")===0){
+          guideEpKeys(o.episodes[fk]).forEach(ek=>{ if(!seen.has(ek)){ seen.add(ek); out.push(ek); } }); } });
+      });
+      return out; }
     // A series with an episode guide counts as "watched" (one entity) when every guided episode is ticked, or the whole title is marked watched.
     function titleWatched(u,t){
       const e=myEntries[keyOf(t.id,t.t)];
-      const guide=uniGuideFor(u, uniKey(t));
-      if(guide){
+      const eks=guideEksForTitle(u, uniKey(t));
+      if(eks.length){
         if(e && e.status==="watched") return true;
         if(!e) return false;
-        const w=new Set(e.watched_eps||[]); const eks=guideEpKeys(guide);
-        return eks.length>0 && eks.every(k=>w.has(k));
+        const w=new Set(e.watched_eps||[]);
+        return eks.every(k=>w.has(k));
       }
       return !!(e && e.status==="watched");
     }
     // "Done" means watched overall, unless a rewatch pass is active — then it means re-seen in this pass.
+    function guideForKey(k){ return uniGuideFor(currentUniverse,k) || (uniCache[k]&&uniCache[k].autoGuide) || null; }
     function uniDone(rec){
       const k = uniKey({t:rec.type, id:rec.tmdbId});
-      if(currentUniRun) return currentUniRun.keys.has(k);
+      if(currentUniRun){
+        const g=guideForKey(k);
+        if(g){ const eks=guideEpKeys(g); return eks.length>0 && eks.every(ek=>currentUniRun.keys.has(k+"|"+ek)); }
+        return currentUniRun.keys.has(k);
+      }
       return titleWatched(currentUniverse, {t:rec.type, id:rec.tmdbId});
+    }
+    async function persistRun(){
+      if(!currentUniRun||!currentUniverse) return;
+      try{ await client.from("universe_progress").update({watched_keys:[...currentUniRun.keys], updated_at:new Date().toISOString()})
+        .eq("user_id",currentUserId).eq("universe_id",currentUniverse.id); }catch(e){ showToast("Error: "+(e.message||e)); }
+    }
+    async function toggleRunEp(seriesKey, epK){
+      if(!currentUniRun) return;
+      const rk=seriesKey+"|"+epK;
+      if(currentUniRun.keys.has(rk)) currentUniRun.keys.delete(rk); else currentUniRun.keys.add(rk);
+      await persistRun(); renderUniverse();
+    }
+    async function markAllRunEps(seriesKey, eks){
+      if(!currentUniRun||!eks||!eks.length) return;
+      const allIn=eks.every(ek=>currentUniRun.keys.has(seriesKey+"|"+ek));
+      eks.forEach(ek=>{ const rk=seriesKey+"|"+ek; if(allIn) currentUniRun.keys.delete(rk); else currentUniRun.keys.add(rk); });
+      await persistRun(); renderUniverse();
     }
     async function loadUniRun(universeId){
       try{
@@ -3285,6 +3332,7 @@
       return rec.autoGuide;
     }
     async function uniToggleAutoEp(seriesKey, epK){
+      if(currentUniRun){ return toggleRunEp(seriesKey, epK); }
       const disp=uniDisplayForKey(seriesKey); if(!disp) return;
       const rec=uniCache[seriesKey]; const allEps=guideEpKeys((rec&&rec.autoGuide)||[]);
       const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
@@ -3293,6 +3341,8 @@
       if(await writeWatchedEps(disp,[...set],allEps)){ renderUniverse(); if(adding && typeof gainXP==="function") gainXP(10); else if(typeof refreshRank==="function") refreshRank(); }
     }
     async function uniMarkAllAuto(seriesKey){
+      const rec0=uniCache[seriesKey]; const eks0=guideEpKeys((rec0&&rec0.autoGuide)||[]);
+      if(currentUniRun){ return markAllRunEps(seriesKey, eks0); }
       const disp=uniDisplayForKey(seriesKey); if(!disp) return;
       const rec=uniCache[seriesKey]; const allEps=guideEpKeys((rec&&rec.autoGuide)||[]);
       const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
@@ -3302,6 +3352,7 @@
       if(await writeWatchedEps(disp,[...set],allEps)) renderUniverse();
     }
     async function uniToggleGuideEp(seriesKey, epK){
+      if(currentUniRun){ return toggleRunEp(seriesKey, epK); }
       const disp=uniDisplayForKey(seriesKey); if(!disp) return;
       const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
       const set=new Set((ent&&ent.watched_eps)||[]); const adding=!set.has(epK);
@@ -3309,9 +3360,10 @@
       if(await writeWatchedEps(disp,[...set])){ renderUniverse(); if(adding && typeof gainXP==="function") gainXP(10); else if(typeof refreshRank==="function") refreshRank(); }
     }
     async function uniMarkAllGuide(seriesKey){
-      const disp=uniDisplayForKey(seriesKey); if(!disp) return;
       const guide=uniGuideFor(currentUniverse,seriesKey); if(!guide) return;
       const eks=guideEpKeys(guide);
+      if(currentUniRun){ return markAllRunEps(seriesKey, eks); }
+      const disp=uniDisplayForKey(seriesKey); if(!disp) return;
       const ent=myEntries[keyOf(disp.tmdbId,disp.type)];
       const set=new Set((ent&&ent.watched_eps)||[]);
       const allIn=eks.every(k=>set.has(k));
@@ -3336,6 +3388,17 @@
       return uniCache[key];
     }
 
+    // Some timeline orders split one series into two nodes (key "t4194#siege").
+    // Build a cache entry for each split node, aliased to the base title's data.
+    const SPLIT_LABELS = { "t4194#siege": "The Clone Wars: Siege of Mandalore" };
+    function aliasSplitNodes(u){
+      (u.orders||[]).forEach(o=>{ if(!o.episodes) return;
+        Object.keys(o.episodes).forEach(fk=>{ if(fk.indexOf("#")<0) return;
+          const base=fk.split("#")[0]; const src=uniCache[base]; if(!src) return;
+          uniCache[fk]=Object.assign({}, src, { title: SPLIT_LABELS[fk] || src.title });
+        });
+      });
+    }
     function uniProgress(u){
       const total = u.titles.length;
       const done = u.titles.filter(t=>titleWatched(u,t)).length;
@@ -3349,7 +3412,11 @@
       allUniverses().forEach(u=>{
         const p=uniProgress(u);
         const el=document.createElement("div"); el.className="uni-card"; el.style.background=u.theme.bg;
-        el.innerHTML=`<div class="uc-bg" id="ucbg-${u.id}"></div><div class="uc-shade"></div>
+        let badge="";
+        if(u._user){ badge = (u._ownerId===currentUserId)
+          ? `<div class="uc-badge">Custom</div>`
+          : `<div class="uc-badge shared">Shared by ${esc(u._ownerName||"a friend")}</div>`; }
+        el.innerHTML=`<div class="uc-bg" id="ucbg-${u.id}"></div><div class="uc-shade"></div>${badge}
           <div class="uc-body"><div class="uc-name">${esc(u.name)}</div><div class="uc-tag">${esc(u.tagline)}</div>
             <div class="uc-prog"><div class="uc-fill" style="width:${p.pct}%;background:${u.theme.accent}"></div></div>
             <div class="uc-pct">${p.done}/${p.total} watched · ${p.pct}%</div></div>`;
@@ -3391,6 +3458,7 @@
       $("uni-body").innerHTML=`<div class="skel skel-hero"></div><div class="skel skel-line" style="width:42%"></div><div class="skel-row" style="margin-top:14px">${Array.from({length:6}).map(()=>'<div class="skel skel-poster"></div>').join("")}</div>`;
       await Promise.all(u.titles.map(fetchUniTitle));
       if(currentUniverse!==u) return;
+      aliasSplitNodes(u);
       currentUniRun = await loadUniRun(u.id);
       if(currentUniverse!==u) return;
       renderUniverse();
@@ -3480,11 +3548,14 @@
         const anyGuide = explicitGuide || uniGuideFor(u,k);
         // series with an episode guide: expandable episode-by-episode walkthrough
         // (chronological order in Timeline, aired order in the other orders)
-        if(anyGuide && !currentUniRun && !up){
+        if(anyGuide && !up){
           const chrono=!!explicitGuide;
           const guideList = chrono ? explicitGuide : airedSortGuide(anyGuide);
           const eks=guideEpKeys(guideList); const tot=eks.length;
-          const wset=watchedEpsSetFor(r.tmdbId,r.type); const dc=eks.filter(x=>wset.has(x)).length;
+          const runMode=!!currentUniRun;
+          const wset=watchedEpsSetFor(r.tmdbId,r.type);
+          const isOn = ek => runMode ? currentUniRun.keys.has(k+"|"+ek) : wset.has(ek);
+          const dc=eks.filter(x=>isOn(x)).length;
           const allDone=tot>0&&dc===tot; const some=dc>0;
           const tone= allDone?"st-done":(some?"st-progress":"st-todo");
           const open=uniExpandedGuides.has(k);
@@ -3497,21 +3568,23 @@
             </div>`;
           html+=`<div class="uni-eps"${open?"":" hidden"} data-eps="${k}">`;
           guideList.forEach(x=>{
-            if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=wset.has(ek);
+            if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=isOn(ek);
               html+=`<div class="ue-ep"><button class="ue-check${on?" on":""}" data-sk="${k}" data-ek="${ek}">✓</button><span class="ue-k">${esc(ek)}</span><span class="ue-t">${esc(et)}</span></div>`;
             } else if(x&&x.note){ html+=`<div class="ue-note">${esc(x.note)}</div>`; }
           });
-          html+=`<div class="ue-actions"><button class="ue-all" data-sk="${k}">${allDone?"Unmark all":"Mark all watched"}</button></div>`;
+          html+=`<div class="ue-actions"><button class="ue-all" data-sk="${k}">${allDone?(runMode?"Unmark all":"Unmark all"):(runMode?"Mark all re-seen":"Mark all watched")}</button></div>`;
           html+=`</div>`;
           return;
         }
         // user universes: any series auto-breaks into episodes (lazy TMDB fetch)
-        if(u._user && r.type==="tv" && !currentUniRun && !up){
+        if(u._user && r.type==="tv" && !up){
           const open=uniExpandedGuides.has(k);
           const ag = uniCache[k] && uniCache[k].autoGuide;
+          const runMode=!!currentUniRun;
           const wset=watchedEpsSetFor(r.tmdbId,r.type);
+          const isOn = ek => runMode ? currentUniRun.keys.has(k+"|"+ek) : wset.has(ek);
           let statusHtml, allDone=false;
-          if(ag){ const eks=guideEpKeys(ag); const tot=eks.length; const dc=eks.filter(x=>wset.has(x)).length;
+          if(ag){ const eks=guideEpKeys(ag); const tot=eks.length; const dc=eks.filter(x=>isOn(x)).length;
             allDone=tot>0&&dc===tot;
             statusHtml=`<span class="verdict ${allDone?"st-done":(dc>0?"st-progress":"st-todo")} ur-status">${dc}/${tot} eps</span>`;
           } else { const st2=uniStatusOf(r); const lab2= st2==="watched"?"Watched":(st2==="watching"?"Watching":(st2==="watchlist"?"Watchlist":"Not seen"));
@@ -3526,10 +3599,10 @@
           if(open){
             html+=`<div class="uni-eps" data-eps="${k}">`;
             if(ag){
-              ag.forEach(x=>{ if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=wset.has(ek);
+              ag.forEach(x=>{ if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=isOn(ek);
                   html+=`<div class="ue-ep"><button class="ue-check${on?" on":""}" data-auto="1" data-sk="${k}" data-ek="${ek}">✓</button><span class="ue-k">${esc(ek)}</span><span class="ue-t">${esc(et)}</span></div>`;
                 } else if(x&&x.note){ html+=`<div class="ue-note">${esc(x.note)}</div>`; } });
-              html+=`<div class="ue-actions"><button class="ue-allauto" data-sk="${k}">${allDone?"Unmark all":"Mark all watched"}</button></div>`;
+              html+=`<div class="ue-actions"><button class="ue-allauto" data-sk="${k}">${allDone?"Unmark all":(runMode?"Mark all re-seen":"Mark all watched")}</button></div>`;
             } else { html+=`<div class="ue-note">Loading episodes…</div>`; }
             html+=`</div>`;
           }
@@ -3815,33 +3888,52 @@
 
     // ================= In-app notifications =================
     let notifItems=[];
-    function updateBellBadge(){ const b=$("bell-badge"); if(!b) return; if(notifItems.length){ b.textContent=notifItems.length>9?"9+":String(notifItems.length); b.hidden=false; } else b.hidden=true; }
+    function loadNotifLog(){ try{ return JSON.parse(localStorage.getItem("seen_notif_log")||"[]"); }catch(_){ return []; } }
+    function saveNotifLog(log){ try{ localStorage.setItem("seen_notif_log", JSON.stringify((log||[]).slice(-30))); }catch(_){} }
+    function updateBellBadge(){ const b=$("bell-badge"); if(!b) return; const unseen=(notifItems||[]).filter(x=>!x.seen).length;
+      if(unseen){ b.textContent=unseen>9?"9+":String(unseen); b.hidden=false; } else b.hidden=true; }
     async function computeNotifs(){
-      const items=[];
-      try{ const {data}=await client.from("friendships").select("id").eq("addressee_id",currentUserId).eq("status","pending");
-        (data||[]).forEach(()=>items.push({text:"New friend request", sub:"Review it in Social", act:()=>{ showSection("friends"); }})); }catch(_){}
+      const cur=[];
+      try{ const {data}=await client.from("friendships").select("id,requester_id").eq("addressee_id",currentUserId).eq("status","pending");
+        const reqs=data||[]; if(reqs.length){ const profs=await fetchProfilesMap(reqs.map(r=>r.requester_id));
+          reqs.forEach(r=>{ const u=(profs[r.requester_id]&&profs[r.requester_id].username)||"Someone"; cur.push({id:"fr:"+r.id, text:"New friend request", sub:"@"+u+" wants to be friends", kind:"friends"}); }); } }catch(_){}
+      try{ const {data}=await client.from("recommendations").select("id,sender_id,media:media_id(title)").eq("recipient_id",currentUserId).eq("status","pending").order("created_at",{ascending:false});
+        const recs=data||[]; if(recs.length){ const profs=await fetchProfilesMap(recs.map(r=>r.sender_id));
+          recs.forEach(r=>{ const u=(profs[r.sender_id]&&profs[r.sender_id].username)||"A friend"; const t=(r.media&&r.media.title)||"a film"; cur.push({id:"reco:"+r.id, text:"@"+u+" suggested a film", sub:t, kind:"reco"}); }); } }catch(_){}
       try{ const {data:clubs}=await client.from("clubs").select("*");
         for(const c of (clubs||[])){
           const [mr,ar]=await Promise.all([
             client.from("club_members").select("user_id,turn_order").eq("club_id",c.id).order("turn_order",{ascending:true}),
             client.from("club_rounds").select("id").eq("club_id",c.id).eq("status","active").limit(1) ]);
           const members=mr.data||[]; const active=(ar.data&&ar.data[0])||null; const n=members.length;
-          if(!active){ if(n){ const idx=(((c.turn_index||0)%n)+n)%n; if(members[idx]&&members[idx].user_id===currentUserId) items.push({text:"It's your turn to pick a film", sub:c.name, act:()=>openClub(c.id)}); } }
+          if(!active){ if(n){ const idx=(((c.turn_index||0)%n)+n)%n; if(members[idx]&&members[idx].user_id===currentUserId) cur.push({id:"clubturn:"+c.id+":"+(c.turn_index||0), text:"Your turn to pick a film", sub:c.name, kind:"club", cid:c.id}); } }
           else { const {data:mw}=await client.from("club_watches").select("user_id").eq("round_id",active.id).eq("user_id",currentUserId).maybeSingle();
-            if(!mw) items.push({text:"A club film is waiting for your review", sub:c.name, act:()=>openClub(c.id)}); }
+            if(!mw) cur.push({id:"clubrev:"+active.id, text:"A club film needs your review", sub:c.name, kind:"club", cid:c.id}); }
         }
       }catch(_){}
-      notifItems=items; updateBellBadge(); return items;
+      let log=loadNotifLog(); const known=new Set(log.map(x=>x.id)); const now=Date.now();
+      cur.forEach(it=>{ if(!known.has(it.id)) log.push(Object.assign({ts:now, seen:false}, it)); });
+      log=log.slice(-30); saveNotifLog(log); notifItems=log; updateBellBadge(); return log;
     }
+    function notifAct(it){ if(it && it.kind==="club" && it.cid) openClub(it.cid); else showSection("friends"); }
     function openNotifs(){
-      const ov=$("notif-ov");
-      ov.innerHTML='<div class="modal-sheet"><button class="close" id="ntf-close">×</button><div class="modal-title">Notifications</div>'
-        +(notifItems.length? '<div class="ntf-list">'+notifItems.map((n,i)=>'<button class="ntf-item" data-i="'+i+'"><span class="ntf-dot"></span><div><div class="ntf-t">'+esc(n.text)+'</div><div class="ntf-s">'+esc(n.sub||"")+'</div></div></button>').join("")+'</div>' : '<div class="hint">You are all caught up.</div>')
-        +'</div>';
+      const ov=$("notif-ov"); const items=(notifItems||[]).slice().reverse();
+      const fresh=items.filter(n=>!n.seen); const old=items.filter(n=>n.seen);
+      const row=n=>'<button class="ntf-item'+(n.seen?' seen':'')+'" data-id="'+esc(n.id)+'"><span class="ntf-dot"></span><div><div class="ntf-t">'+esc(n.text)+'</div><div class="ntf-s">'+esc(n.sub||"")+'</div></div></button>';
+      let body='';
+      if(!items.length) body='<div class="hint">Nothing yet.</div>';
+      else{
+        if(fresh.length) body+='<div class="ntf-list">'+fresh.map(row).join("")+'</div>';
+        if(old.length) body+='<div class="ntf-sechd">Older</div><div class="ntf-list">'+old.map(row).join("")+'</div>';
+      }
+      const hasFresh=fresh.length>0;
+      const head='<div class="modal-title">Notifications</div>'+(hasFresh?'<button class="ntf-readall" id="ntf-readall">Tout marquer comme lu</button>':'');
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="ntf-close">×</button>'+head+body+'</div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
       $("ntf-close").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
-      ov.querySelectorAll(".ntf-item").forEach(btn=>btn.onclick=()=>{ const it=notifItems[+btn.dataset.i]; close(); if(it&&it.act) it.act(); });
+      { const ra=$("ntf-readall"); if(ra) ra.onclick=()=>{ (notifItems||[]).forEach(x=>x.seen=true); saveNotifLog(notifItems); updateBellBadge(); openNotifs(); }; }
+      ov.querySelectorAll(".ntf-item").forEach(btn=>btn.onclick=()=>{ const it=(notifItems||[]).find(x=>x.id===btn.dataset.id); if(it){ it.seen=true; saveNotifLog(notifItems); updateBellBadge(); } close(); notifAct(it); });
     }
     { const bb=$("bellbtn"); if(bb) bb.onclick=async()=>{ await computeNotifs(); openNotifs(); }; }
 
