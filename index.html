@@ -236,13 +236,15 @@
     .ep-chip.on { background: rgba(56,193,114,.16); border-color: var(--ok); color: var(--ok); }
     .ep-chip:active { transform: scale(.94); }
     .ep-list { display: flex; flex-direction: column; padding: 6px 13px 2px; }
-    .ep-lrow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+    .ep-lrow { display: flex; flex-direction: column; gap: 8px; padding: 11px 0; border-bottom: 1px solid var(--line); }
     .ep-lrow:last-child { border-bottom: none; }
+    .ep-lhead { display: flex; align-items: center; gap: 10px; }
     .ep-lchk { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; }
     .ep-lchk.on { background: rgba(56,193,114,.16); border-color: var(--ok); color: var(--ok); }
-    .ep-lnum { flex: 0 0 auto; width: 42px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-    .ep-lstars { display: flex; gap: 1px; margin-left: auto; }
-    .ep-lstar { font-size: 15px; line-height: 1; color: #3a4150; cursor: pointer; }
+    .ep-lnum { flex: 1; min-width: 0; font-size: 13px; color: var(--text); }
+    .ep-lrv { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: #ffca3a; font-variant-numeric: tabular-nums; }
+    .ep-lstars { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 8px; }
+    .ep-lstar { font-size: 22px; line-height: 1; color: #3a4150; cursor: pointer; }
     .ep-lstar.on { color: #ffca3a; }
     .ep-sfoot { padding: 4px 13px 12px; }
     .ep-allbtn { font-size: 12px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; padding: 4px 0; }
@@ -527,6 +529,15 @@
     .bar-row .bl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
     .bar-row .bl .bn { color: var(--text); } .bar-row .bl .bv { color: var(--muted); }
     .bar-track { height: 8px; background: var(--field); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+    .bar-row.tappable { cursor: pointer; }
+    .bar-row.tappable:active { opacity: .7; }
+    .bar-row.tappable .bv { color: var(--accent); font-weight: 600; }
+    .sl-list { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .sl-item { display: flex; align-items: center; gap: 11px; }
+    .sl-item .ur-img { width: 38px; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; background: var(--chip); flex: 0 0 auto; }
+    .sl-item .ur-body { flex: 1; min-width: 0; }
+    .sl-item .ur-t { font-size: 14px; font-weight: 600; }
+    .sl-item .ur-m { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .bar-fill { height: 100%; background: var(--accent); }
     .person-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px;
       background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 7px; font-size: 14px; }
@@ -1155,7 +1166,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.41</div>
+    <div class="appfoot">Seen · v3.42</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1339,7 +1350,8 @@
         } else { const {error}=await client.auth.signInWithPassword({email,password}); if(error) throw error; }
       }catch(e){ setMsg(e&&e.message?e.message:String(e),"err"); } finally{ submitBtn.disabled=false; } };
     // ================= Appearance: theme + accent =================
-    const THEME_KEY="seen_theme", ACCENT_KEY="seen_accent", LAND_KEY="seen_landing", MOTION_KEY="seen_reduce_motion";
+    const THEME_KEY="seen_theme", ACCENT_KEY="seen_accent", LAND_KEY="seen_landing", MOTION_KEY="seen_reduce_motion", EPTITLES_KEY="seen_ep_titles";
+    function showEpTitles(){ try{ return localStorage.getItem(EPTITLES_KEY)!=="0"; }catch(e){ return true; } }
     const ACCENTS=[
       {name:"Coral",  hex:"#ff5a5f"}, {name:"Sunset", hex:"#ff8a3d"}, {name:"Gold",   hex:"#ffb23e"},
       {name:"Lime",   hex:"#57c96b"}, {name:"Teal",   hex:"#1fb6a6"}, {name:"Sky",    hex:"#3fa9f5"},
@@ -1531,7 +1543,10 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.41</div></div>';
+        '<div class="sett-lab">Episodes</div>'+
+        '<div class="tg-row first"><div><div class="tgl">Show episode titles</div><div class="tgs">Off hides episode names to avoid spoilers</div></div>'+
+          '<label class="switch"><input type="checkbox" id="set-eptitles" '+(showEpTitles()?"checked":"")+'><span class="sl"></span></label></div>'+
+        '<div class="sett-ver">Seen · v3.42</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -1545,6 +1560,7 @@
       const ld=$("set-landing"); paintSeg(ld, landing);
       ld.querySelectorAll("button").forEach(b=>b.onclick=()=>{ try{ localStorage.setItem(LAND_KEY,b.dataset.v);}catch(e){} paintSeg(ld,b.dataset.v); showToast("Start tab set"); });
       $("set-motion").onchange=(e)=>{ try{ localStorage.setItem(MOTION_KEY, e.target.checked?"1":"0"); }catch(_){} applyMotionPref(); };
+      $("set-eptitles").onchange=(e)=>{ try{ localStorage.setItem(EPTITLES_KEY, e.target.checked?"1":"0"); }catch(_){} showToast(e.target.checked?"Episode titles on":"Episode titles hidden"); };
       $("set-close").onclick=closeSettings; ov.onclick=(e)=>{ if(e.target===ov) closeSettings(); };
     }
     function closeSettings(){ $("settings-ov").hidden=true; document.body.classList.remove("no-scroll"); }
@@ -2132,6 +2148,20 @@
       set.add(epKey(nx.s,nx.e));
       if(await persistWatched(ent,set)){ renderSheet(); showToast("S"+nx.s+"E"+nx.e+" watched"); if(typeof gainXP==="function") gainXP(10); }
     }
+    // episode name cache (fetched per season, on demand)
+    const epNamesCache={}; const epNamesFetching={};
+    function hasSeasonNames(id,season){ const m=epNamesCache[id]; return !!(m && m["S"+season+"E1"]!==undefined); }
+    function epTitleFor(id,epk){ const m=epNamesCache[id]; return m?(m[epk]||""):""; }
+    async function ensureSeasonNames(id,season){
+      const ck=id+":S"+season; if(epNamesFetching[ck]) return epNamesFetching[ck];
+      const p=(async()=>{ try{
+        const r=await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${season}?api_key=${TMDB_KEY}&language=en-US`);
+        if(!r.ok) return; const d=await r.json();
+        const map=epNamesCache[id]||(epNamesCache[id]={});
+        (d.episodes||[]).forEach(ep=>{ if(ep.episode_number!=null) map["S"+season+"E"+ep.episode_number]=ep.name||""; });
+      }catch(_){} })();
+      epNamesFetching[ck]=p; return p;
+    }
     function epRatingsOf(entry){ return (entry && entry.ep_ratings && typeof entry.ep_ratings==="object") ? entry.ep_ratings : {}; }
     async function setEpRating(s,e,v){
       const ent=await ensureEntry(detailDisplay,"watching");
@@ -2178,15 +2208,21 @@
         wrap.appendChild(head);
         if(open){
           const ent=curEntry(); const ratings=epRatingsOf(ent);
+          const wantTitles=showEpTitles(); const dispId=detailDisplay.tmdbId;
+          if(wantTitles && !hasSeasonNames(dispId,se.num)){ ensureSeasonNames(dispId,se.num).then(()=>{ if(expandedSeasons.has(se.num)) renderEpisodes(); }); }
           const body=document.createElement("div"); body.className="ep-list";
           for(let n=1;n<=se.eps;n++){ const nn=n; const k=epKey(se.num,nn); const on=set.has(k); const rv=ratings[k]||0;
+            const title=wantTitles?epTitleFor(dispId,k):"";
             const row=document.createElement("div"); row.className="ep-lrow"+(on?" on":"");
+            const head=document.createElement("div"); head.className="ep-lhead";
             const chk=document.createElement("button"); chk.className="ep-lchk"+(on?" on":""); chk.textContent=on?"✓":nn; chk.title=on?"Watched":"Mark watched";
             chk.onclick=()=>toggleEpisode(se.num,nn);
-            const lab=document.createElement("span"); lab.className="ep-lnum"; lab.textContent="Ep "+nn;
+            const lab=document.createElement("div"); lab.className="ep-lnum"; lab.textContent="Ep "+nn+(title?" · "+title:"");
+            head.appendChild(chk); head.appendChild(lab);
+            if(rv){ const rvb=document.createElement("span"); rvb.className="ep-lrv"; rvb.textContent=rv+"/10"; head.appendChild(rvb); }
             const st=document.createElement("div"); st.className="ep-lstars";
             for(let v=1;v<=10;v++){ const sp=document.createElement("span"); sp.className="ep-lstar"+(v<=rv?" on":""); sp.textContent="★"; sp.onclick=()=>setEpRating(se.num,nn,v); st.appendChild(sp); }
-            row.appendChild(chk); row.appendChild(lab); row.appendChild(st); body.appendChild(row);
+            row.appendChild(head); row.appendChild(st); body.appendChild(row);
           }
           const foot=document.createElement("div"); foot.className="ep-sfoot";
           const allBtn=document.createElement("button"); allBtn.className="ep-allbtn";
@@ -2331,7 +2367,7 @@
       if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
     }
     function tally(map, key){ if(!key) return; map[key]=(map[key]||0)+1; }
-    function renderBars(el, counts, limit, chrono){
+    function renderBars(el, counts, limit, chrono, onName){
       let arr=Object.keys(counts).map(k=>[k,counts[k]]);
       if(chrono) arr.sort((a,b)=>parseInt(a[0],10)-parseInt(b[0],10));
       else arr.sort((a,b)=>b[1]-a[1]);
@@ -2339,10 +2375,21 @@
       el.innerHTML="";
       if(!arr.length){ el.innerHTML=`<div class="stat-empty">Not enough data yet.</div>`; return; }
       const max=Math.max.apply(null, arr.map(x=>x[1]).concat(1));
-      arr.forEach(([name,val])=>{ const row=document.createElement("div"); row.className="bar-row";
-        row.innerHTML=`<div class="bl"><span class="bn">${esc(name)}</span><span class="bv">${val}</span></div>
+      arr.forEach(([name,val])=>{ const row=document.createElement("div"); row.className="bar-row"+(onName?" tappable":"");
+        row.innerHTML=`<div class="bl"><span class="bn">${esc(name)}</span><span class="bv">${val}${onName?' ›':''}</span></div>
           <div class="bar-track"><div class="bar-fill" style="width:${Math.round(val/max*100)}%"></div></div>`;
+        if(onName) row.onclick=()=>onName(name);
         el.appendChild(row); });
+    }
+    function openStatList(title, items){
+      let ov=document.getElementById("stat-list-ov");
+      if(!ov){ ov=document.createElement("div"); ov.id="stat-list-ov"; ov.className="modal-ov"; document.body.appendChild(ov); }
+      const rows=(items||[]).slice().sort((a,b)=>(b.year||0)-(a.year||0)).map(it=>
+        `<div class="sl-item">${it.poster?`<img class="ur-img" src="${esc(it.poster)}" alt=""/>`:`<div class="ur-img"></div>`}<div class="ur-body"><div class="ur-t">${esc(it.title||"")}</div><div class="ur-m">${it.year||"—"}</div></div></div>`).join("");
+      ov.innerHTML=`<div class="modal-sheet"><button class="close" id="sl-close">×</button><div class="modal-title">${esc(title)}</div><div class="modal-sub">${(items||[]).length} title${(items||[]).length===1?"":"s"} you have watched</div><div class="sl-list">${rows||'<div class="hint">Nothing here.</div>'}</div></div>`;
+      ov.hidden=false; document.body.classList.add("no-scroll");
+      const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
+      document.getElementById("sl-close").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
     }
     function roleLabel(roles){ const r=Object.keys(roles||{}); if(!r.length) return "";
       if(r.includes("Actor") && (r.includes("Director")||r.includes("Creator"))) return "Actor · Director";
@@ -2479,6 +2526,8 @@
       if(error){ statsHint.textContent="Could not load: "+error.message; return; }
       let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0, ratingSum=0, ratingN=0, rewatchTotal=0;
       const genres={}, decades={}, people={}, langs={}, countries={};
+      const genreTitles={};
+      const addGenre=(name,m,yr)=>{ if(!name) return; tally(genres,name); (genreTitles[name]||(genreTitles[name]=[])).push({title:m.title,poster:m.poster_url,year:yr}); };
       const ratingHist={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0};
       const titleStats=[]; const rewatchList=[];
       let oldest=null, newest=null;
@@ -2502,8 +2551,9 @@
           movieCount++;
           try{ const d=await fetchDetailsCredits("movie", m.tmdb_id);
             const rt=d.runtime||m.runtime||0; movieMin+=rt; if(d.runtime) cacheMedia(m.id,{runtime:d.runtime});
-            (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d, m);
+            addPeople(d, m);
             const yr=m.year || (d.release_date?parseInt(d.release_date.slice(0,4),10):null);
+            (d.genres||[]).forEach(g=>addGenre(g.name,m,yr));
             addDecade(yr); trackOldNew(yr, m.title);
             if(d.original_language) tally(langs, statLangName(d.original_language));
             (d.production_countries||[]).slice(0,2).forEach(c=>tally(countries, c.name||statCountryName(c.iso_3166_1)));
@@ -2522,8 +2572,9 @@
               for(const sea of (d.seasons||[])){ if(sea.season_number>=1 && sea.season_number<ls) before += (sea.episode_count||0); }
               eps = before + le; }
             seriesMin += eps*avg;
-            (d.genres||[]).forEach(g=>tally(genres,g.name)); addPeople(d, m);
+            addPeople(d, m);
             const yr=m.year || (d.first_air_date?parseInt(d.first_air_date.slice(0,4),10):null);
+            (d.genres||[]).forEach(g=>addGenre(g.name,m,yr));
             addDecade(yr); trackOldNew(yr, m.title);
             if(d.original_language) tally(langs, statLangName(d.original_language));
             (d.origin_country||[]).slice(0,2).forEach(c=>tally(countries, statCountryName(c)));
@@ -2542,7 +2593,7 @@
       renderStatSplit($("stat-split"), movieCount, seriesCount);
       renderStatHist($("stat-hist"), ratingHist);
       $("stat-rated").textContent = (data&&data.length) ? (ratingN+" rated · "+(data.length-ratingN)+" not rated ("+Math.round(ratingN/data.length*100)+"% rated)") : "";
-      renderBars($("stat-genres"), genres, 6);
+      renderBars($("stat-genres"), genres, 6, false, (name)=>openStatList(name, genreTitles[name]||[]));
       renderStatDonut($("stat-genre-donut"), genres, 6);
       renderBars($("stat-decades"), decades, 8, true);
       $("stat-oldnew").textContent = (oldest&&newest)? ("Oldest: "+oldest.title+" ("+oldest.year+")   ·   Newest: "+newest.title+" ("+newest.year+")") : "";
@@ -3675,6 +3726,7 @@
           const allDone=tot>0&&dc===tot; const some=dc>0;
           const tone= allDone?"st-done":(some?"st-progress":"st-todo");
           const open=uniExpandedGuides.has(k);
+          const wantTitles=showEpTitles();
           html+=`<div class="uni-row guided${open?" open":""}" data-guidekey="${k}">
               <div class="ur-idx">${i+1}</div>
               ${r.poster_url?`<img class="ur-img" src="${r.poster_url}" alt=""/>`:`<div class="ur-img"></div>`}
@@ -3685,15 +3737,15 @@
           html+=`<div class="uni-eps"${open?"":" hidden"} data-eps="${k}">`;
           guideList.forEach(x=>{
             if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=isOn(ek);
-              html+=`<div class="ue-ep"><button class="ue-check${on?" on":""}" data-sk="${k}" data-ek="${ek}">✓</button><span class="ue-k">${esc(ek)}</span><span class="ue-t">${esc(et)}</span></div>`;
+              html+=`<div class="ue-ep"><button class="ue-check${on?" on":""}" data-sk="${k}" data-ek="${ek}">✓</button><span class="ue-k">${esc(ek)}</span><span class="ue-t">${wantTitles?esc(et):""}</span></div>`;
             } else if(x&&x.note){ html+=`<div class="ue-note">${esc(x.note)}</div>`; }
           });
           html+=`<div class="ue-actions"><button class="ue-all" data-sk="${k}">${allDone?(runMode?"Unmark all":"Unmark all"):(runMode?"Mark all re-seen":"Mark all watched")}</button></div>`;
           html+=`</div>`;
           return;
         }
-        // user universes: any series auto-breaks into episodes (lazy TMDB fetch)
-        if(u._user && r.type==="tv" && !up){
+        // any series without an explicit guide auto-breaks into episodes (lazy TMDB fetch)
+        if(r.type==="tv" && !up){
           const open=uniExpandedGuides.has(k);
           const ag = uniCache[k] && uniCache[k].autoGuide;
           const runMode=!!currentUniRun;
@@ -3713,10 +3765,13 @@
               <span class="ur-caret">${open?"▾":"▸"}</span>
             </div>`;
           if(open){
+            const wantTitles=showEpTitles();
+            if(ag && wantTitles){ const need=new Set(); guideEpKeys(ag).forEach(ekk=>{ const mm=/^S(\d+)E/.exec(ekk); if(mm && !hasSeasonNames(r.tmdbId,+mm[1])) need.add(+mm[1]); });
+              if(need.size){ Promise.all([...need].map(sn=>ensureSeasonNames(r.tmdbId,sn))).then(()=>{ if(uniExpandedGuides.has(k)) renderUniverse(); }); } }
             html+=`<div class="uni-eps" data-eps="${k}">`;
             if(ag){
-              ag.forEach(x=>{ if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=isOn(ek);
-                  html+=`<div class="ue-ep"><button class="ue-check${on?" on":""}" data-auto="1" data-sk="${k}" data-ek="${ek}">✓</button><span class="ue-k">${esc(ek)}</span><span class="ue-t">${esc(et)}</span></div>`;
+              ag.forEach(x=>{ if(Array.isArray(x)){ const ek=x[0], et=x[1]; const on=isOn(ek); const nm=wantTitles?(epTitleFor(r.tmdbId,ek)||et):"";
+                  html+=`<div class="ue-ep"><button class="ue-check${on?" on":""}" data-auto="1" data-sk="${k}" data-ek="${ek}">✓</button><span class="ue-k">${esc(ek)}</span><span class="ue-t">${esc(nm)}</span></div>`;
                 } else if(x&&x.note){ html+=`<div class="ue-note">${esc(x.note)}</div>`; } });
               html+=`<div class="ue-actions"><button class="ue-allauto" data-sk="${k}">${allDone?"Unmark all":(runMode?"Mark all re-seen":"Mark all watched")}</button></div>`;
             } else { html+=`<div class="ue-note">Loading episodes…</div>`; }
