@@ -235,6 +235,15 @@
       background: var(--field); color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
     .ep-chip.on { background: rgba(56,193,114,.16); border-color: var(--ok); color: var(--ok); }
     .ep-chip:active { transform: scale(.94); }
+    .ep-list { display: flex; flex-direction: column; padding: 6px 13px 2px; }
+    .ep-lrow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+    .ep-lrow:last-child { border-bottom: none; }
+    .ep-lchk { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; }
+    .ep-lchk.on { background: rgba(56,193,114,.16); border-color: var(--ok); color: var(--ok); }
+    .ep-lnum { flex: 0 0 auto; width: 42px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .ep-lstars { display: flex; gap: 1px; margin-left: auto; }
+    .ep-lstar { font-size: 15px; line-height: 1; color: #3a4150; cursor: pointer; }
+    .ep-lstar.on { color: #ffca3a; }
     .ep-sfoot { padding: 4px 13px 12px; }
     .ep-allbtn { font-size: 12px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; padding: 4px 0; }
     .ep-row select { width: 100%; padding: 12px 14px; background: var(--field); border: 1px solid var(--line);
@@ -680,6 +689,14 @@
     .ub-up, .ub-down { width: 26px; height: 18px; border-radius: 5px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 9px; cursor: pointer; padding: 0; }
     .ub-up:disabled, .ub-down:disabled { opacity: .3; cursor: default; }
     .ub-rm { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; }
+    .ub-eps { flex: 0 0 auto; padding: 5px 9px; border-radius: 7px; border: 1px solid rgba(139,92,246,.5); background: rgba(139,92,246,.12); color: #a98be6; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .ub-item-ep { background: var(--field); border-style: dashed; }
+    .ubep-season { margin-bottom: 14px; }
+    .ubep-shead { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .ubep-all { padding: 4px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--chip); color: var(--muted); font-size: 11px; font-weight: 600; cursor: pointer; }
+    .ubep-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ubep-chip { width: 38px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .ubep-chip.on { background: rgba(139,92,246,.18); border-color: #8b5cf6; color: #a98be6; }
     .ub-actions { margin-top: 22px; }
     .ub-save { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
     /* shared universes (subscribe) */
@@ -1138,7 +1155,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.40</div>
+    <div class="appfoot">Seen · v3.41</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1514,7 +1531,7 @@
         '<div class="sett-lab">Motion</div>'+
         '<div class="tg-row first"><div><div class="tgl">Reduce motion</div><div class="tgs">Calmer animations across the app</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-motion" '+(reduce?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.40</div></div>';
+        '<div class="sett-ver">Seen · v3.41</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -1578,11 +1595,11 @@
 
     async function loadMyEntries(){
       const {data,error}=await client.from("entries")
-        .select("id, status, rating, last_season, last_episode, watched_eps, is_gem, rewatch_count, media:media_id ( tmdb_id, type, runtime, total_episodes )")
+        .select("id, status, rating, last_season, last_episode, watched_eps, ep_ratings, is_gem, rewatch_count, media:media_id ( tmdb_id, type, runtime, total_episodes )")
         .eq("user_id", currentUserId);
       myEntries={};
       if(!error&&data) data.forEach(e=>{ if(e.media&&e.media.tmdb_id!=null)
-        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,watched_eps:e.watched_eps||[],is_gem:e.is_gem,rewatch_count:e.rewatch_count||0,type:e.media.type,runtime:e.media.runtime||null,total_eps:e.media.total_episodes||null}; });
+        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,watched_eps:e.watched_eps||[],ep_ratings:e.ep_ratings||{},is_gem:e.is_gem,rewatch_count:e.rewatch_count||0,type:e.media.type,runtime:e.media.runtime||null,total_eps:e.media.total_episodes||null}; });
     }
     function gemCount(){ return Object.values(myEntries).filter(e=>e&&e.is_gem).length; }
     const GEM_MAX=6;
@@ -1600,11 +1617,11 @@
       const mediaId=await upsertMedia(mediaFields(display));
       const {data,error}=await client.from("entries")
         .upsert({user_id:currentUserId,media_id:mediaId,status},{onConflict:"user_id,media_id"})
-        .select("id,status,rating,last_season,last_episode,watched_eps,is_gem,rewatch_count").single();
+        .select("id,status,rating,last_season,last_episode,watched_eps,ep_ratings,is_gem,rewatch_count").single();
       if(error) throw error;
       const k=keyOf(display.tmdbId,display.type);
       const prev=myEntries[k]||{};
-      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],is_gem:data.is_gem,rewatch_count:data.rewatch_count||0,type:display.type,runtime:prev.runtime||null,total_eps:prev.total_eps||null};
+      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],ep_ratings:data.ep_ratings||{},is_gem:data.is_gem,rewatch_count:data.rewatch_count||0,type:display.type,runtime:prev.runtime||null,total_eps:prev.total_eps||null};
       if(status==="watched" && prev.status!=="watched" && typeof gainXP==="function") gainXP(display.type==="tv"?150:100);
       else if(typeof refreshRank==="function") refreshRank();
       return myEntries[k];
@@ -2115,6 +2132,27 @@
       set.add(epKey(nx.s,nx.e));
       if(await persistWatched(ent,set)){ renderSheet(); showToast("S"+nx.s+"E"+nx.e+" watched"); if(typeof gainXP==="function") gainXP(10); }
     }
+    function epRatingsOf(entry){ return (entry && entry.ep_ratings && typeof entry.ep_ratings==="object") ? entry.ep_ratings : {}; }
+    async function setEpRating(s,e,v){
+      const ent=await ensureEntry(detailDisplay,"watching");
+      const k=epKey(s,e);
+      const ratings=Object.assign({}, epRatingsOf(ent));
+      const wasRated=!!ratings[k];
+      if(ratings[k]===v) delete ratings[k]; else ratings[k]=v;
+      // rating an episode marks it watched too
+      const set=watchedSet(ent); const addingWatched=!set.has(k) && ratings[k];
+      if(ratings[k]) set.add(k);
+      const keys=[]; for(const ep of allEpisodes()){ const kk=epKey(ep.s,ep.e); if(set.has(kk)) keys.push(kk); }
+      const fw=furthestWatched(set);
+      const upd={ ep_ratings:ratings, watched_eps:keys, last_season: fw?fw.s:null, last_episode: fw?fw.e:null };
+      if(!ent.status || ent.status==="watchlist") upd.status="watching";
+      const {error}=await client.from("entries").update(upd).eq("id",ent.entryId);
+      if(error){ showToast("Error: "+(error.message||error)); return; }
+      ent.ep_ratings=ratings; ent.watched_eps=keys; ent.last_season=upd.last_season; ent.last_episode=upd.last_episode;
+      if(upd.status) ent.status=upd.status;
+      renderSheet();
+      if(addingWatched && !wasRated && typeof gainXP==="function") gainXP(10); else if(typeof refreshRank==="function") refreshRank();
+    }
     function renderEpisodes(){
       const nextBox=$("ep-next"), seasonsBox=$("ep-seasons");
       if(!nextBox||!seasonsBox) return;
@@ -2139,10 +2177,17 @@
         head.onclick=()=>{ if(expandedSeasons.has(se.num)) expandedSeasons.delete(se.num); else expandedSeasons.add(se.num); renderEpisodes(); };
         wrap.appendChild(head);
         if(open){
-          const body=document.createElement("div"); body.className="ep-grid";
-          for(let n=1;n<=se.eps;n++){ const nn=n; const chip=document.createElement("button");
-            chip.className="ep-chip"+(set.has(epKey(se.num,nn))?" on":""); chip.textContent=nn; chip.title="Episode "+nn;
-            chip.onclick=()=>toggleEpisode(se.num,nn); body.appendChild(chip); }
+          const ent=curEntry(); const ratings=epRatingsOf(ent);
+          const body=document.createElement("div"); body.className="ep-list";
+          for(let n=1;n<=se.eps;n++){ const nn=n; const k=epKey(se.num,nn); const on=set.has(k); const rv=ratings[k]||0;
+            const row=document.createElement("div"); row.className="ep-lrow"+(on?" on":"");
+            const chk=document.createElement("button"); chk.className="ep-lchk"+(on?" on":""); chk.textContent=on?"✓":nn; chk.title=on?"Watched":"Mark watched";
+            chk.onclick=()=>toggleEpisode(se.num,nn);
+            const lab=document.createElement("span"); lab.className="ep-lnum"; lab.textContent="Ep "+nn;
+            const st=document.createElement("div"); st.className="ep-lstars";
+            for(let v=1;v<=10;v++){ const sp=document.createElement("span"); sp.className="ep-lstar"+(v<=rv?" on":""); sp.textContent="★"; sp.onclick=()=>setEpRating(se.num,nn,v); st.appendChild(sp); }
+            row.appendChild(chk); row.appendChild(lab); row.appendChild(st); body.appendChild(row);
+          }
           const foot=document.createElement("div"); foot.className="ep-sfoot";
           const allBtn=document.createElement("button"); allBtn.className="ep-allbtn";
           allBtn.textContent = sc===se.eps ? "Unmark whole season" : "Mark whole season";
@@ -3066,14 +3111,19 @@
       const n=parseInt(m[1],16), r=(n>>16)&255, g=(n>>8)&255, b=n&255; return (0.299*r+0.587*g+0.114*b)>150?"#0d0f14":"#ffffff"; }
     function hexGlow(hex){ const m=/^#?([0-9a-f]{6})$/i.exec(hex||""); if(!m) return "rgba(224,104,95,.15)";
       const n=parseInt(m[1],16); return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+",.16)"; }
+    function itemKey(it){ return it.ep ? ("t"+it.id+"@"+it.ep) : (it.t.charAt(0)+it.id); }
     function mapUserUniverse(row){
       const items=Array.isArray(row.items)?row.items:[]; const accent=row.accent||"#e0685f";
+      const seenT=new Set(); const titles=[];
+      items.forEach(it=>{ const bk=it.t.charAt(0)+it.id; if(!seenT.has(bk)){ seenT.add(bk); titles.push({t:it.t,id:it.id,label:it.label||""}); } });
+      const steps={};
+      items.forEach(it=>{ if(it.ep) steps[itemKey(it)]={t:it.t,id:it.id,ep:it.ep,label:it.label||""}; });
       return { id:"u_"+row.id, _uid:row.id, _user:true, _ownerId:row.owner_id, _rawItems:items,
         name:row.name||"Untitled universe", tagline:row.tagline||"",
         theme:{ accent, ink:accentInk(accent), bg:"#0b0d12", glow:hexGlow(accent) },
-        titles: items.map(it=>({t:it.t, id:it.id, label:it.label||""})),
-        orders: [ {id:"custom", name:"Watch order", seq: items.map(it=>uniKey({t:it.t,id:it.id}))}, {id:"release", name:"Release", auto:"date"} ],
-        defaultOrder:"custom", heroKey: items.length? uniKey({t:items[0].t,id:items[0].id}) : null };
+        titles: titles,
+        orders: [ {id:"custom", name:"Watch order", seq: items.map(itemKey), steps }, {id:"release", name:"Release", auto:"date"} ],
+        defaultOrder:"custom", heroKey: titles.length? (titles[0].t.charAt(0)+titles[0].id) : null };
     }
     async function refreshSubs(){
       try{ const {data}=await client.from("universe_subs").select("universe_id"); subscribedIds=new Set((data||[]).map(r=>r.universe_id)); }catch(_){}
@@ -3114,7 +3164,7 @@
     function openBuilder(universe){
       if(universe && universe._user){
         builderState={ editing:universe._uid, name:universe.name, tagline:universe.tagline, accent:universe.theme.accent,
-          items:(universe._rawItems||[]).map(it=>({t:it.t,id:it.id,label:it.label||"",poster:null,year:""})) };
+          items:(universe._rawItems||[]).map(it=>({t:it.t,id:it.id,label:it.label||"",poster:null,year:"",ep:it.ep||null})) };
       } else {
         builderState={ editing:null, name:"", tagline:"", accent:"#e0685f", items:[] };
       }
@@ -3139,10 +3189,13 @@
       h+=`<div class="ub-list-lab">${s.items.length} title${s.items.length===1?"":"s"} · watch order</div><div class="ub-list">`;
       if(!s.items.length) h+=`<div class="hint">No titles yet. Search above and tap to add.</div>`;
       s.items.forEach((it,i)=>{
-        h+=`<div class="ub-item">
+        const meta = it.ep ? ("Episode · "+esc(it.ep)) : ((it.year||"—")+" · "+(it.t==="tv"?"Series":"Movie"));
+        const epBtn = (it.t==="tv" && !it.ep) ? `<button class="ub-eps" data-i="${i}" title="Add episodes one by one">Épisodes</button>` : "";
+        h+=`<div class="ub-item${it.ep?" ub-item-ep":""}">
             <div class="ur-idx">${i+1}</div>
             ${it.poster?`<img class="ur-img" src="${it.poster}" alt=""/>`:`<div class="ur-img"></div>`}
-            <div class="ur-body"><div class="ur-t">${esc(it.label||("#"+it.id))}</div><div class="ur-m">${it.year||"—"} · ${it.t==="tv"?"Series":"Movie"}</div></div>
+            <div class="ur-body"><div class="ur-t">${esc(it.label||("#"+it.id))}</div><div class="ur-m">${meta}</div></div>
+            ${epBtn}
             <div class="ub-move"><button class="ub-up" data-i="${i}"${i===0?" disabled":""}>▲</button><button class="ub-down" data-i="${i}"${i===s.items.length-1?" disabled":""}>▼</button></div>
             <button class="ub-rm" data-i="${i}">✕</button>
           </div>`;
@@ -3157,7 +3210,35 @@
       b.querySelectorAll(".ub-up").forEach(x=>x.onclick=()=>{ const i=+x.dataset.i; if(i>0){ const a=s.items; const t=a[i-1]; a[i-1]=a[i]; a[i]=t; renderBuilder(); } });
       b.querySelectorAll(".ub-down").forEach(x=>x.onclick=()=>{ const i=+x.dataset.i; const a=s.items; if(i<a.length-1){ const t=a[i+1]; a[i+1]=a[i]; a[i]=t; renderBuilder(); } });
       b.querySelectorAll(".ub-rm").forEach(x=>x.onclick=()=>{ s.items.splice(+x.dataset.i,1); renderBuilder(); });
+      b.querySelectorAll(".ub-eps").forEach(x=>x.onclick=()=>ubOpenEpisodes(+x.dataset.i));
       $("ub-save").onclick=saveUserUniverse;
+    }
+    async function ubOpenEpisodes(i){
+      const it=builderState.items[i]; if(!it||it.t!=="tv") return;
+      let ov=document.getElementById("ub-ep-ov");
+      if(!ov){ ov=document.createElement("div"); ov.id="ub-ep-ov"; ov.className="modal-ov"; document.body.appendChild(ov); }
+      ov.innerHTML=`<div class="modal-sheet"><button class="close" id="ubep-close">×</button><div class="modal-title">${esc(it.label||"Episodes")}</div><div class="modal-sub">Tape un épisode pour l'ajouter comme étape du parcours. Tu peux retirer la série entière ensuite si tu ne veux que des épisodes.</div><div id="ubep-body"><div class="hint">Chargement…</div></div></div>`;
+      ov.hidden=false; document.body.classList.add("no-scroll");
+      const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); renderBuilder(); };
+      document.getElementById("ubep-close").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
+      let d; try{ d=await fetchDetails("tv", it.id); }catch(_){ const bb=document.getElementById("ubep-body"); if(bb) bb.innerHTML=`<div class="hint">Impossible de charger les épisodes.</div>`; return; }
+      const seasons=(d.seasons||[]).filter(se=>se.season_number>=1 && (se.episode_count||0)>0).map(se=>({num:se.season_number,eps:se.episode_count}));
+      const has=(ep)=>builderState.items.some(x=>x.id===it.id && x.t==="tv" && x.ep===ep);
+      const add=(ep)=>{ if(!has(ep)) builderState.items.push({t:"tv",id:it.id,label:it.label||("#"+it.id),poster:it.poster,year:it.year,ep}); };
+      const remove=(ep)=>{ const idx=builderState.items.findIndex(x=>x.id===it.id && x.t==="tv" && x.ep===ep); if(idx>=0) builderState.items.splice(idx,1); };
+      function renderPicker(){
+        const body=document.getElementById("ubep-body"); if(!body) return;
+        let h="";
+        seasons.forEach(se=>{
+          h+=`<div class="ubep-season"><div class="ubep-shead"><span>Season ${se.num}</span><button class="ubep-all" data-s="${se.num}">Ajouter la saison</button></div><div class="ubep-grid">`;
+          for(let n=1;n<=se.eps;n++){ const ep="S"+se.num+"E"+n; h+=`<button class="ubep-chip${has(ep)?" on":""}" data-ep="${ep}">${n}</button>`; }
+          h+=`</div></div>`;
+        });
+        body.innerHTML=h||`<div class="hint">Pas d'épisodes.</div>`;
+        body.querySelectorAll(".ubep-chip").forEach(c=>c.onclick=()=>{ const ep=c.dataset.ep; if(has(ep)) remove(ep); else add(ep); renderPicker(); });
+        body.querySelectorAll(".ubep-all").forEach(b=>b.onclick=()=>{ const sn=+b.dataset.s; const se=seasons.find(x=>x.num===sn); if(!se) return; const allIn=(()=>{ for(let n=1;n<=se.eps;n++){ if(!has("S"+sn+"E"+n)) return false; } return true; })(); for(let n=1;n<=se.eps;n++){ const ep="S"+sn+"E"+n; if(allIn) remove(ep); else add(ep); } renderPicker(); });
+      }
+      renderPicker();
     }
     async function ubSearch(query){
       const seq=++ubSearchSeq; const box=$("ub-results"); if(!box) return; box.innerHTML=`<div class="hint">Searching…</div>`;
@@ -3182,7 +3263,7 @@
       if(!s.name.trim()){ showToast("Give it a name"); return; }
       if(!s.items.length){ showToast("Add at least one title"); return; }
       const payload={ name:s.name.trim(), tagline:s.tagline.trim(), accent:s.accent,
-        items:s.items.map(it=>({t:it.t,id:it.id,label:it.label||""})) };
+        items:s.items.map(it=>{ const o={t:it.t,id:it.id,label:it.label||""}; if(it.ep) o.ep=it.ep; return o; }) };
       try{
         if(s.editing){
           payload.updated_at=new Date().toISOString();
@@ -3238,12 +3319,27 @@
     function guideForKey(k){ return uniGuideFor(currentUniverse,k) || (uniCache[k]&&uniCache[k].autoGuide) || null; }
     function uniDone(rec){
       const k = uniKey({t:rec.type, id:rec.tmdbId});
+      if(rec._ep){
+        if(currentUniRun) return currentUniRun.keys.has(rec._stepKey||(k+"@"+rec._ep));
+        return watchedEpsSetFor(rec.tmdbId,rec.type).has(rec._ep);
+      }
       if(currentUniRun){
         const g=guideForKey(k);
         if(g){ const eks=guideEpKeys(g); return eks.length>0 && eks.every(ek=>currentUniRun.keys.has(k+"|"+ek)); }
         return currentUniRun.keys.has(k);
       }
       return titleWatched(currentUniverse, {t:rec.type, id:rec.tmdbId});
+    }
+    async function toggleEpStep(rec){
+      if(!rec||!rec._ep) return;
+      if(currentUniRun){ const sk=rec._stepKey||(uniKey({t:rec.type,id:rec.tmdbId})+"@"+rec._ep);
+        if(currentUniRun.keys.has(sk)) currentUniRun.keys.delete(sk); else currentUniRun.keys.add(sk);
+        await persistRun(); renderUniverse(); return; }
+      const disp={tmdbId:rec.tmdbId,type:rec.type,title:rec.title,year:rec.year,poster_url:rec.poster_url};
+      const ent=myEntries[keyOf(rec.tmdbId,rec.type)];
+      const set=new Set((ent&&ent.watched_eps)||[]); const adding=!set.has(rec._ep);
+      if(set.has(rec._ep)) set.delete(rec._ep); else set.add(rec._ep);
+      if(await writeWatchedEps(disp,[...set])){ renderUniverse(); if(adding && typeof gainXP==="function") gainXP(10); else if(typeof refreshRank==="function") refreshRank(); }
     }
     async function persistRun(){
       if(!currentUniRun||!currentUniverse) return;
@@ -3399,6 +3495,14 @@
         });
       });
     }
+    // Custom orders can insert single episodes as steps (key like "t4194@S1E1").
+    function buildStepNodes(u){
+      (u.orders||[]).forEach(o=>{ if(!o.steps) return;
+        Object.keys(o.steps).forEach(sk=>{ const st=o.steps[sk]; const base=uniCache[uniKey({t:st.t,id:st.id})]; if(!base) return;
+          uniCache[sk]=Object.assign({}, base, { _ep: st.ep, _stepKey: sk, title: (base.title||st.label||"")+" · "+st.ep });
+        });
+      });
+    }
     function uniProgress(u){
       const total = u.titles.length;
       const done = u.titles.filter(t=>titleWatched(u,t)).length;
@@ -3458,7 +3562,7 @@
       $("uni-body").innerHTML=`<div class="skel skel-hero"></div><div class="skel skel-line" style="width:42%"></div><div class="skel-row" style="margin-top:14px">${Array.from({length:6}).map(()=>'<div class="skel skel-poster"></div>').join("")}</div>`;
       await Promise.all(u.titles.map(fetchUniTitle));
       if(currentUniverse!==u) return;
-      aliasSplitNodes(u);
+      aliasSplitNodes(u); buildStepNodes(u);
       currentUniRun = await loadUniRun(u.id);
       if(currentUniverse!==u) return;
       renderUniverse();
@@ -3492,7 +3596,8 @@
       const u=currentUniverse; if(!u) return;
       const body=$("uni-body");
       const { order, keys } = currentUniSeq();
-      const recs = keys.map(k=>uniCache[k]).filter(Boolean);
+      const pairs = keys.map(k=>({k, r:uniCache[k]})).filter(x=>x.r);
+      const recs = pairs.map(x=>x.r);
       const today=new Date(); today.setHours(0,0,0,0);
       const isUpcoming=(rec)=>{ if(!rec.date) return false; return new Date(rec.date+"T00:00:00") > today; };
       const released=recs.filter(r=>!isUpcoming(r));
@@ -3529,21 +3634,32 @@
       html+=`</div>`;
 
       html+=`<div class="uni-frieze-scroll"><div class="uni-frieze"><div class="uni-baseline"></div>`;
-      recs.forEach((r,i)=>{
+      pairs.forEach(({k,r},i)=>{
         const up=isUpcoming(r); const done=uniDone(r); const st=uniStatusOf(r);
         const cls= up?"upcoming":(done?"done":((!currentUniRun && st==="watching")?"watching todo":"todo"));
-        const isNext= nextRec && r.tmdbId===nextRec.tmdbId && r.type===nextRec.type;
+        const isNext= nextRec===r;
         const badge= done?"✓":(up?"·":(i+1));
-        html+=`<div class="uni-node ${cls}${isNext?" next":""}" data-key="${uniKey({t:r.type,id:r.tmdbId})}" title="${esc(r.title)}">
+        html+=`<div class="uni-node ${cls}${isNext?" next":""}" data-key="${k}" title="${esc(r.title)}">
             ${r.poster_url?`<img class="un-poster" src="${r.poster_url}" alt=""/>`:`<div class="un-poster"></div>`}
             <div class="un-badge">${badge}</div></div>`;
       });
       html+=`</div></div>`;
 
       html+=`<div class="uni-list">`;
-      recs.forEach((r,i)=>{
+      pairs.forEach(({k,r},i)=>{
         const up=isUpcoming(r); const done=uniDone(r); const st=uniStatusOf(r);
-        const k=uniKey({t:r.type,id:r.tmdbId});
+        // episode-step node (a single episode inserted into a custom order)
+        if(r._ep){
+          const runMode=!!currentUniRun;
+          const on = runMode ? currentUniRun.keys.has(k) : watchedEpsSetFor(r.tmdbId,r.type).has(r._ep);
+          html+=`<div class="uni-row" data-epstep="${k}" data-sk="${uniKey({t:r.type,id:r.tmdbId})}" data-ek="${esc(r._ep)}">
+              <div class="ur-idx">${i+1}</div>
+              ${r.poster_url?`<img class="ur-img" src="${r.poster_url}" alt=""/>`:`<div class="ur-img"></div>`}
+              <div class="ur-body"><div class="ur-t">${esc(r.title)}</div><div class="ur-m">Episode · ${esc(r._ep)}</div></div>
+              <button class="ur-check${on?" on":""}" data-epstep="${k}" title="${currentUniRun?"Mark re-seen":"Mark watched"}">✓</button>
+            </div>`;
+          return;
+        }
         const explicitGuide = (order.episodes && order.episodes[k]) || null;
         const anyGuide = explicitGuide || uniGuideFor(u,k);
         // series with an episode guide: expandable episode-by-episode walkthrough
@@ -3660,7 +3776,7 @@
             setTimeout(()=>{ delArmed=false; dbn.textContent="Delete this universe"; dbn.style.color=""; },2600); return; } await deleteUserUniverse(currentUniverse); }; }
       { const ubn=body.querySelector("#uni-unsub"); if(ubn) ubn.onclick=async()=>{ await unsubscribeUniverse(currentUniverse._uid); showSection("home"); }; }
       const nx=body.querySelector(".uni-next[data-nextkey]"); if(nx) nx.onclick=()=>openFromKey(nx.dataset.nextkey);
-      body.querySelectorAll(".ur-check").forEach(btn=>btn.onclick=async(ev)=>{
+      body.querySelectorAll(".ur-check:not([data-epstep])").forEach(btn=>btn.onclick=async(ev)=>{
         ev.stopPropagation(); if(btn.disabled) return;
         const k=btn.dataset.key; const d=byKey[k]; if(!d) return;
         if(currentUniRun){ await setUniRunKey(k, !currentUniRun.keys.has(k)); renderUniverse(); return; }
@@ -3669,6 +3785,9 @@
         try{ await setStatusByDisplay(d,"watched"); showToast("Marked as watched"); renderUniverse(); }
         catch(e){ showToast("Error: "+(e.message||e)); }
       });
+      body.querySelectorAll(".ur-check[data-epstep]").forEach(btn=>btn.onclick=async(ev)=>{
+        ev.stopPropagation(); const rec=uniCache[btn.dataset.epstep]; await toggleEpStep(rec); });
+      body.querySelectorAll(".uni-row[data-epstep]").forEach(rw=>rw.onclick=(ev)=>{ if(ev.target.closest(".ur-check")) return; const rec=uniCache[rw.dataset.epstep]; const d=rec&&displayFromUni(rec); if(d) openDetail(d, ()=>{ if(currentUniverse) renderUniverse(); }); });
       let resetArmed=false; const rb=body.querySelector("#uni-reset");
       if(rb) rb.onclick=async()=>{
         if(!resetArmed){ resetArmed=true; rb.textContent="Tap again to confirm"; rb.classList.add("armed");
