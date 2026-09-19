@@ -53,7 +53,7 @@
     :root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after {
       animation-duration: .001ms !important; animation-iteration-count: 1 !important;
       transition-duration: .001ms !important; }
-    .logo, .topbar .brand, .stat-hero-num, .sheet-title, .ch-name, .greet, .home-big,
+    .logo, .topbar .brand, .stat-hero-num, .sheet-title, .ch-name, .greet, .home-big { font-family: var(--disp); letter-spacing: -.01em; }
 
     #auth-view { max-width: 380px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 40px) 20px 40px; }
     .brandmark { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 8px 0 24px; }
@@ -787,7 +787,14 @@
     .skel-hero { height: 150px; border-radius: 16px; margin-bottom: 16px; }
     .skel-line { height: 13px; border-radius: 6px; margin: 9px 0; }
     /* notifications bell */
-    .topbar .right { display: flex; align-items: center; }
+    .topbar .right { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
+    /* la barre du haut ne doit jamais deborder : le bouton profil se retrecit
+       et le rang passe en points de suspension plutot que de pousser hors ecran */
+    .topbar .brand { flex: 0 0 auto; }
+    .userbtn { min-width: 0; max-width: 100%; }
+    .userbtn .ucol { min-width: 0; flex: 1 1 auto; }
+    .userbtn .uname, .userbtn .urank { max-width: 100%; }
+    .userbtn .uchev { flex: 0 0 auto; }
     .bellbtn { position: relative; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 17px; cursor: pointer; margin-right: 8px; }
     .bell-badge { position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
     .bell-badge[hidden] { display: none; }
@@ -1179,7 +1186,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.46</div>
+    <div class="appfoot">Seen · v3.47</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1611,7 +1618,7 @@
         '<div class="sett-lab danger-lab">Zone danger</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Réinitialiser ma collection</div><div class="dgs">Efface tous tes films et séries, tes notes, ta progression par épisode, tes pépites et tes rewatchs. Action définitive.</div></div>'+
           '<button class="danger-btn" id="set-reset">Réinitialiser…</button></div>'+
-        '<div class="sett-ver">Seen · v3.46</div></div>';
+        '<div class="sett-ver">Seen · v3.47</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       { const lg=$("set-lang"); if(lg){ paintSeg(lg, LANG);
