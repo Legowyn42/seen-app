@@ -112,6 +112,14 @@
     "Progress": "Progression",
     "Your rating": "Ta note",
     "Rewatches": "Revisionnages",
+    "Cinema": "Cinéma",
+    "Seen at the cinema": "Vu au cinéma",
+    "Mark as seen at the cinema": "Marquer comme vu au cinéma",
+    "Counted in your time at the cinema.": "Compté dans ton temps passé au cinéma.",
+    "Big screen only. It adds up in your stats.": "Grand écran uniquement. Ça compte dans tes stats.",
+    "Marked as seen at the cinema 🍿": "Marqué comme vu au cinéma 🍿",
+    "Cinema mark removed": "Marque cinéma retirée",
+    "Time at the cinema": "Temps passé au cinéma",
     "Gem": "Pépite",
     "Mark as a gem": "Marquer comme pépite",
     "One of your gems": "Une de tes pépites",
@@ -492,6 +500,8 @@
   var PATTERNS_FR = [
     /* Les motifs les plus precis d'abord : le premier qui correspond gagne. */
     [/^Results for "(.*)"$/, "Résultats pour « $1 »"],
+    [/^With (.+)$/, "Avec $1"],
+    [/^Directed by (.+)$/, "Réalisé par $1"],
     [/^(\d+)% to (.+)$/, "$1 % jusqu'à $2"],
     [/^Films (\d+) \((\d+)%\)$/, "Films $1 ($2 %)"],
     [/^Series (\d+) \((\d+)%\)$/, "Séries $1 ($2 %)"],
