@@ -1179,7 +1179,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.44</div>
+    <div class="appfoot">Seen · v3.45</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1408,7 +1408,10 @@
     }
     const userMenu=$("user-menu"), userBtn=$("userbtn");
     let menuOpen=false;
-    function openMenu(){ menuOpen=true; userMenu.hidden=false; userBtn.setAttribute("aria-expanded","true"); }
+    function openMenu(){ menuOpen=true; userMenu.hidden=false; userBtn.setAttribute("aria-expanded","true");
+      const r=userBtn.getBoundingClientRect();
+      userMenu.style.top=(r.bottom+8)+"px";
+      userMenu.style.right=Math.max(8,(window.innerWidth-r.right))+"px"; }
     function closeMenu(){ menuOpen=false; userMenu.hidden=true; userBtn.setAttribute("aria-expanded","false"); }
     userBtn.onclick=(e)=>{ e.stopPropagation(); menuOpen?closeMenu():openMenu(); };
     document.addEventListener("click",(e)=>{ if(menuOpen && !userMenu.contains(e.target) && !userBtn.contains(e.target)) closeMenu(); });
@@ -1562,7 +1565,7 @@
         '<div class="sett-lab danger-lab">Zone danger</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Réinitialiser ma collection</div><div class="dgs">Efface tous tes films et séries, tes notes, ta progression par épisode, tes pépites et tes rewatchs. Action définitive.</div></div>'+
           '<button class="danger-btn" id="set-reset">Réinitialiser…</button></div>'+
-        '<div class="sett-ver">Seen · v3.44</div></div>';
+        '<div class="sett-ver">Seen · v3.45</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
