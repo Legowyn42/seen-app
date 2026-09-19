@@ -918,6 +918,21 @@
     .sett-lab { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; margin: 22px 0 10px; }
     .sett-lab.first { margin-top: 2px; }
     .sett-ver { text-align: center; color: var(--faint); font-size: 12px; margin-top: 20px; }
+    .danger-lab { color: var(--err); }
+    .danger-box { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid rgba(224,80,80,.4); background: rgba(224,80,80,.07); border-radius: 12px; }
+    .danger-box .danger-txt { flex: 1; min-width: 0; }
+    .danger-box .dgl { font-size: 14px; font-weight: 700; }
+    .danger-box .dgs { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .danger-btn { flex: 0 0 auto; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--err); background: transparent; color: var(--err); font-size: 13px; font-weight: 700; cursor: pointer; }
+    .danger-btn:active { background: rgba(224,80,80,.12); }
+    .reset-warn { font-size: 14px; margin-bottom: 10px; }
+    .reset-list { margin: 0 0 12px; padding-left: 20px; color: var(--muted); font-size: 13px; }
+    .reset-list li { margin-bottom: 4px; }
+    .reset-keep { font-size: 13px; color: var(--muted); background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; }
+    .reset-warn2 { font-size: 13.5px; margin-bottom: 10px; }
+    .danger-btn-final { display: block; width: 100%; margin-top: 14px; padding: 14px; background: var(--err); color: #fff; border-color: transparent; }
+    .danger-btn-final:disabled { opacity: .4; cursor: default; }
+    .reset-cancel { display: block; width: 100%; margin-top: 8px; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; }
   </style>
   <script>
     /* Applique le theme + l'accent en cache AVANT le rendu, pour eviter le flash. */
@@ -1164,7 +1179,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.43</div>
+    <div class="appfoot">Seen · v3.44</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1544,7 +1559,10 @@
         '<div class="sett-lab">Episodes</div>'+
         '<div class="tg-row first"><div><div class="tgl">Show episode titles</div><div class="tgs">Off hides episode names to avoid spoilers</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-eptitles" '+(showEpTitles()?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.43</div></div>';
+        '<div class="sett-lab danger-lab">Zone danger</div>'+
+        '<div class="danger-box"><div class="danger-txt"><div class="dgl">Réinitialiser ma collection</div><div class="dgs">Efface tous tes films et séries, tes notes, ta progression par épisode, tes pépites et tes rewatchs. Action définitive.</div></div>'+
+          '<button class="danger-btn" id="set-reset">Réinitialiser…</button></div>'+
+        '<div class="sett-ver">Seen · v3.44</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -1559,9 +1577,40 @@
       ld.querySelectorAll("button").forEach(b=>b.onclick=()=>{ try{ localStorage.setItem(LAND_KEY,b.dataset.v);}catch(e){} paintSeg(ld,b.dataset.v); showToast("Start tab set"); });
       $("set-motion").onchange=(e)=>{ try{ localStorage.setItem(MOTION_KEY, e.target.checked?"1":"0"); }catch(_){} applyMotionPref(); };
       $("set-eptitles").onchange=(e)=>{ try{ localStorage.setItem(EPTITLES_KEY, e.target.checked?"1":"0"); }catch(_){} showToast(e.target.checked?"Episode titles on":"Episode titles hidden"); };
+      { const rb=$("set-reset"); if(rb) rb.onclick=openResetConfirm; }
       $("set-close").onclick=closeSettings; ov.onclick=(e)=>{ if(e.target===ov) closeSettings(); };
     }
     function closeSettings(){ $("settings-ov").hidden=true; document.body.classList.remove("no-scroll"); }
+    // ---- danger: reset collection (two-step, type-to-confirm) ----
+    function openResetConfirm(){
+      let ov=document.getElementById("reset-ov");
+      if(!ov){ ov=document.createElement("div"); ov.id="reset-ov"; ov.className="modal-ov"; document.body.appendChild(ov); }
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="rst-close">×</button>'+
+        '<div class="modal-title">⚠️ Réinitialiser ma collection</div>'+
+        '<div class="reset-warn">Tu es sur le point de <b>tout effacer</b>. Ça supprime définitivement :</div>'+
+        '<ul class="reset-list"><li>tous tes films et séries (watchlist, en cours, vus)</li><li>toutes tes notes, par titre et par épisode</li><li>ta progression par épisode</li><li>tes pépites et tes compteurs de rewatch</li><li>ta progression des rewatchs d\'univers</li></ul>'+
+        '<div class="reset-keep">Ce qui reste : ton profil, tes amis, tes ciné clubs, et les watch orders que tu as créés.</div>'+
+        '<div class="reset-warn2">Cette action est <b>irréversible</b>. Pour confirmer, tape <b>RESET</b> ci-dessous.</div>'+
+        '<input id="rst-input" class="ub-inp" placeholder="Tape RESET" autocapitalize="characters" autocomplete="off"/>'+
+        '<button class="danger-btn danger-btn-final" id="rst-go" disabled>Tout effacer définitivement</button>'+
+        '<button class="reset-cancel" id="rst-cancel">Annuler</button></div>';
+      ov.hidden=false; document.body.classList.add("no-scroll");
+      const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
+      $("rst-close").onclick=close; $("rst-cancel").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
+      const inp=$("rst-input"), go=$("rst-go");
+      inp.oninput=()=>{ go.disabled = inp.value.trim().toUpperCase()!=="RESET"; };
+      go.onclick=async()=>{
+        if(inp.value.trim().toUpperCase()!=="RESET") return;
+        go.disabled=true; go.textContent="Effacement…";
+        try{
+          const {error}=await client.from("entries").delete().eq("user_id",currentUserId);
+          if(error) throw error;
+          try{ await client.from("universe_progress").delete().eq("user_id",currentUserId); }catch(_){}
+          showToast("Collection réinitialisée");
+          setTimeout(()=>location.reload(), 700);
+        }catch(e){ go.disabled=false; go.textContent="Tout effacer définitivement"; showToast("Erreur : "+(e.message||e)); }
+      };
+    }
 
     // ---- nav ----
     function showSection(name){
