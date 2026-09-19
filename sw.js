@@ -1,8 +1,8 @@
 // Seen - minimal service worker. Network-first so updates always show up,
 // with a cache fallback so the app still opens offline.
-const CACHE = "seen-v38";
+const CACHE = "seen-v39";
 const ASSETS = ["./", "./index.html", "./logo.png", "./config.js", "./manifest.json",
-  "./icon-192.png", "./icon-512.png", "./icon-180.png"];
+  "./icon-192.png", "./icon-512.png", "./icon-180.png", "./i18n.js", "./search-fuzzy.js"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => {}));

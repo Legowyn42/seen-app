@@ -1179,7 +1179,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.45</div>
+    <div class="appfoot">Seen · v3.46</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1295,9 +1295,53 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="search-fuzzy.js"></script>
   <script>
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.seenClient = client;
+    applyStaticI18n();
+    try{ SeenFuzzy.enrich(TMDB_KEY, tmdbLang()); }catch(_){}
+
+    // ---- titres dans la langue choisie ----
+    // La base stocke le titre tel qu'il etait a l'ajout. On garde en plus un
+    // cache local par langue, rempli au fil des appels TMDB, pour que la
+    // collection s'affiche en francais meme pour les titres ajoutes en anglais.
+    const TKEY = "seen_title_" + LANG + "_";
+    const titleMem = {};
+    function cachedTitle(type, id){
+      const k = type + "_" + id;
+      if(titleMem[k] !== undefined) return titleMem[k];
+      let v = null; try{ v = localStorage.getItem(TKEY + k); }catch(_){}
+      titleMem[k] = v; return v;
+    }
+    function setCachedTitle(type, id, title){
+      if(!title || id == null) return;
+      const k = type + "_" + id;
+      if(titleMem[k] === title) return;
+      titleMem[k] = title; try{ localStorage.setItem(TKEY + k, title); }catch(_){}
+    }
+    function locTitle(m){
+      if(!m) return "";
+      return (m.tmdb_id != null && cachedTitle(m.type, m.tmdb_id)) || m.title || "";
+    }
+    // Va chercher les titres manquants dans la langue courante (une seule fois par titre).
+    async function ensureTitles(medias){
+      const need = [];
+      const seen = new Set();
+      (medias||[]).forEach(m=>{
+        if(!m || m.tmdb_id == null) return;
+        const k = m.type + "_" + m.tmdb_id;
+        if(seen.has(k) || cachedTitle(m.type, m.tmdb_id)) return;
+        seen.add(k); need.push(m);
+      });
+      if(!need.length) return false;
+      await mapPool(need, 8, async m=>{
+        try{ await fetchDetails(m.type, m.tmdb_id); }
+        catch(_){ setCachedTitle(m.type, m.tmdb_id, m.title||""); }
+      });
+      return true;
+    }
     const IMG = "https://image.tmdb.org/t/p/w342";
     const BOOKMARK = '<svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/></svg>';
     let currentUserId = null;
@@ -1517,11 +1561,11 @@
       [...sw.children].forEach(c=>c.classList.toggle("sel", c.dataset.hex===sel.accent.toLowerCase()));
       const bio=$("ed-bio"), bn=$("ed-bio-n"); bio.value=sel.bio; const upd=()=>bn.textContent=bio.value.length; bio.oninput=upd; upd();
       const gs=$("ed-genres");
-      GENRES.forEach(g=>{ const b=document.createElement("button"); b.textContent=g;
+      GENRES.forEach(g=>{ const b=document.createElement("button"); b.textContent=g; b.dataset.g=g;
         b.onclick=()=>{ const i=sel.fav.indexOf(g); if(i>=0) sel.fav.splice(i,1);
           else { if(sel.fav.length>=3){ showToast("Up to 3 genres"); return; } sel.fav.push(g); } paintGenres(); };
         gs.appendChild(b); });
-      function paintGenres(){ [...gs.children].forEach(b=>b.classList.toggle("sel", sel.fav.includes(b.textContent))); }
+      function paintGenres(){ [...gs.children].forEach(b=>b.classList.toggle("sel", sel.fav.includes(b.dataset.g))); }
       paintGenres();
       const vis=$("ed-vis");
       [["show_gems","Gems shelf","Your pinned gems"],["show_badges","Achievements","Badges you've unlocked"],["show_stats","Stats row","Watched / gems / badges counts"]]
@@ -1551,7 +1595,9 @@
       ov.innerHTML='<div class="modal-sheet"><button class="close" id="set-close">×</button>'+
         '<div class="modal-title">Settings</div>'+
         '<div class="modal-sub">Appearance and app preferences. Saved on this device.</div>'+
-        '<div class="sett-lab first">Theme</div>'+
+        '<div class="sett-lab first">Language</div>'+
+        '<div class="seg" id="set-lang"><button data-v="fr">🇫🇷 Français</button><button data-v="en">🇬🇧 English</button></div>'+
+        '<div class="sett-lab">Theme</div>'+
         '<div class="seg" id="set-theme"><button data-v="light">☀️ Light</button><button data-v="dark">🌙 Dark</button><button data-v="system">🖥 System</button></div>'+
         '<div class="sett-lab">Accent colour</div><div class="swatches" id="set-accent"></div>'+
         '<div class="sett-lab">Start on</div>'+
@@ -1565,9 +1611,11 @@
         '<div class="sett-lab danger-lab">Zone danger</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Réinitialiser ma collection</div><div class="dgs">Efface tous tes films et séries, tes notes, ta progression par épisode, tes pépites et tes rewatchs. Action définitive.</div></div>'+
           '<button class="danger-btn" id="set-reset">Réinitialiser…</button></div>'+
-        '<div class="sett-ver">Seen · v3.45</div></div>';
+        '<div class="sett-ver">Seen · v3.46</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
+      { const lg=$("set-lang"); if(lg){ paintSeg(lg, LANG);
+          lg.querySelectorAll("button").forEach(b=>b.onclick=()=>{ if(b.dataset.v!==LANG) setSeenLang(b.dataset.v); }); } }
       const th=$("set-theme"); paintSeg(th, theme);
       th.querySelectorAll("button").forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.v); paintSeg(th,b.dataset.v); });
       const sa=$("set-accent");
@@ -1704,7 +1752,8 @@
     }
 
     // ---- search ----
-    function displayFromItem(item){ return { tmdbId:item.id, type:item.media_type, title:titleOf(item),
+    function displayFromItem(item){ setCachedTitle(item.media_type, item.id, item.title||item.name||"");
+      return { tmdbId:item.id, type:item.media_type, title:titleOf(item),
       year:yearOf(item), poster_url:item.poster_path?IMG+item.poster_path:null }; }
 
     function searchCard(item){
@@ -1739,7 +1788,7 @@
       const seq=++searchSeq; showingTrending=false; shownQuery="";
       results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Loading trending...";
       try{
-        const res=await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=en-US`);
+        const res=await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=${tmdbLang()}`);
         const json=await res.json(); if(seq!==searchSeq) return;
         const items=(json.results||[]).filter(r=>r.media_type==="movie"||r.media_type==="tv");
         if(!items.length){ hint.textContent=""; return; }
@@ -1757,7 +1806,7 @@
       seeds.sort((a,b)=>(b.rating||0)-(a.rating||0)); seeds=seeds.slice(0,6);
       if(seeds.length<2) return null;
       const responses=await Promise.all(seeds.map(sd=>
-        fetch(`https://api.themoviedb.org/3/${sd.media.type}/${sd.media.tmdb_id}/recommendations?api_key=${TMDB_KEY}&language=en-US`)
+        fetch(`https://api.themoviedb.org/3/${sd.media.type}/${sd.media.tmdb_id}/recommendations?api_key=${TMDB_KEY}&language=${tmdbLang()}`)
           .then(r=>r.ok?r.json():null).catch(()=>null)));
       const counts={}, byKey={};
       responses.forEach((j,idx)=>{ if(!j) return; const stype=seeds[idx].media.type;
@@ -1790,18 +1839,58 @@
       });
     }
 
+    async function tmdbSearch(query){
+      const url=`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=${tmdbLang()}&include_adult=false`;
+      const res=await fetch(url); if(!res.ok) throw new Error("TMDB HTTP "+res.status);
+      const json=await res.json();
+      return (json.results||[]).filter(r=>r.media_type==="movie"||r.media_type==="tv");
+    }
+    // Recherche en cascade : la requete telle quelle, puis corrigee, puis
+    // reduite aux mots les plus distinctifs. Les resultats des replis sont
+    // reclasses par ressemblance avec ce qui a vraiment ete tape.
+    async function smartSearch(query, seqCheck){
+      let items=await tmdbSearch(query);
+      if(seqCheck && !seqCheck()) return null;
+      if(items.length) return {items, used:null};
+      let used=null;
+      const fixed=SeenFuzzy.correct(query);
+      if(fixed){
+        const r=await tmdbSearch(fixed);
+        if(seqCheck && !seqCheck()) return null;
+        if(r.length){ items=r; used=fixed; }
+      }
+      if(!items.length){
+        const tries=[];
+        SeenFuzzy.fallbacks(query).forEach(v=>{ tries.push(v); const c=SeenFuzzy.correct(v); if(c && tries.indexOf(c)<0) tries.push(c); });
+        for(const v of tries){
+          const r=await tmdbSearch(v);
+          if(seqCheck && !seqCheck()) return null;
+          if(r.length){ items=r; used=v; break; }
+        }
+      }
+      if(items.length && used){
+        items=items.map(it=>({it, sc:Math.max(
+            SeenFuzzy.sim(query, it.title||it.name||""),
+            SeenFuzzy.sim(query, it.original_title||it.original_name||""))}))
+          .sort((a,b)=> (b.sc-a.sc) || ((b.it.popularity||0)-(a.it.popularity||0)))
+          .map(x=>x.it);
+      }
+      return {items, used};
+    }
     async function runSearch(){
       const query=q.value.trim();
       if(query.length<2){ showDiscover(); return; }
       const seq=++searchSeq; showingTrending=false; shownQuery=query;
       resultsLabel.hidden=true; hint.hidden=false; hint.textContent="Searching...";
       try{
-        const url=`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US&include_adult=false`;
-        const res=await fetch(url); if(!res.ok) throw new Error("TMDB HTTP "+res.status);
-        const json=await res.json(); if(seq!==searchSeq) return;
-        const items=(json.results||[]).filter(r=>r.media_type==="movie"||r.media_type==="tv");
+        const out=await smartSearch(query, ()=>seq===searchSeq);
+        if(!out) return;
+        const items=out.items;
+        try{ SeenFuzzy.learn(items.map(it=>it.title||it.name||"")); }catch(_){}
         if(!items.length){ results.innerHTML=""; resultsLabel.hidden=true; hint.hidden=false; hint.textContent='No results for "'+query+'".'; return; }
-        hint.hidden=true; resultsLabel.hidden=false; resultsLabel.textContent="Results"; renderItems(items);
+        hint.hidden=true; resultsLabel.hidden=false;
+        resultsLabel.textContent = out.used ? ('Results for "'+out.used+'"') : "Results";
+        renderItems(items);
       }catch(e){ if(seq===searchSeq){ hint.hidden=false; hint.textContent="Search failed: "+(e&&e.message?e.message:e); } }
     }
     // Keep the search box and the shown results consistent when returning to the tab.
@@ -1826,7 +1915,7 @@
     filters.querySelectorAll(".pill").forEach(p=>{ p.onclick=()=>{ collectionFilter=p.dataset.f;
       filters.querySelectorAll(".pill").forEach(x=>x.classList.toggle("active",x===p)); loadCollection(); }; });
 
-    function displayFromMedia(m){ return { tmdbId:m.tmdb_id, type:m.type, title:m.title, year:m.year, poster_url:m.poster_url }; }
+    function displayFromMedia(m){ return { tmdbId:m.tmdb_id, type:m.type, title:locTitle(m), year:m.year, poster_url:m.poster_url }; }
 
     function collectionCard(entry){
       const m=entry.media||{}; const display=displayFromMedia(m);
@@ -1838,7 +1927,7 @@
       el.innerHTML=(m.poster_url?`<img class="cover" src="${m.poster_url}" alt="" loading="lazy" />`:`<div class="img">No image</div>`)+
         (entry.is_gem?`<span class="gemtag">💎</span>`:``)+
         (entry.rewatch_count>0?`<span class="rwtag">↻ ${entry.rewatch_count}</span>`:``)+
-        `<div class="info"><div class="t">${esc(m.title||"Untitled")}</div>
+        `<div class="info"><div class="t">${esc(locTitle(m)||"Untitled")}</div>
            <div class="m">${m.year||"—"}<span class="badge">${type}</span></div>
            <div style="margin-top:6px"><span class="status ${entry.status}">${statusLabel}${progress}</span></div></div>`;
       el.onclick=()=>openDetail(display,loadCollection);
@@ -1847,7 +1936,7 @@
     function gemShelfCard(m, onClose){
       const el=document.createElement("div"); el.className="gemcard";
       el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" loading="lazy" />`:`<img alt="" />`)+
-        `<div class="gt">${esc(m.title||"Untitled")}</div>`;
+        `<div class="gt">${esc(locTitle(m)||"Untitled")}</div>`;
       el.onclick=()=>openDetail(displayFromMedia(m), onClose||null);
       return el;
     }
@@ -1860,6 +1949,7 @@
         .order("added_at",{ascending:false});
       if(collectionFilter!=="all") query=query.eq("status",collectionFilter);
       const {data,error}=await query;
+      await ensureTitles((data||[]).map(e=>e.media));
       renderMyGems();
       collection.innerHTML="";
       if(error){ collectionHint.hidden=false; collectionHint.textContent="Could not load: "+error.message; return; }
@@ -1871,84 +1961,157 @@
       const {data}=await client.from("entries").select("media:media_id ( tmdb_id, type, title, poster_url, year )").eq("user_id", currentUserId).eq("is_gem",true);
       const rows=(data||[]).filter(e=>e.media);
       if(!rows.length){ wrap.hidden=true; return; }
+      await ensureTitles(rows.map(e=>e.media));
       wrap.hidden=false; rows.forEach(e=>box.appendChild(gemShelfCard(e.media, loadCollection)));
     }
 
     // ---- Next tab (catch up + upcoming) ----
+    // Cache court des infos de diffusion : l'onglet interroge aussi les series
+    // deja terminees, on evite donc de rappeler TMDB a chaque ouverture.
+    const NEXT_TTL = 12*3600*1000;
+    function nextCacheGet(type,id){ try{ const raw=localStorage.getItem("seen_nx_"+type+"_"+id); if(!raw) return null;
+      const o=JSON.parse(raw); if(!o||!o.ts||(Date.now()-o.ts)>NEXT_TTL) return null; return o.d; }catch(_){ return null; } }
+    function nextCacheSet(type,id,d){ try{ localStorage.setItem("seen_nx_"+type+"_"+id, JSON.stringify({ts:Date.now(),d})); }catch(_){} }
+    function reduceNext(d){
+      return { status:d.status||"", inprod:!!d.in_production,
+        release:d.release_date||null, first:d.first_air_date||null,
+        net:(d.networks&&d.networks[0])?d.networks[0].name:null,
+        seasons:(d.seasons||[]).filter(x=>x.season_number>=1&&(x.episode_count||0)>0).map(x=>({num:x.season_number,eps:x.episode_count})),
+        lea:d.last_episode_to_air?{s:d.last_episode_to_air.season_number,e:d.last_episode_to_air.episode_number,date:d.last_episode_to_air.air_date}:null,
+        nea:d.next_episode_to_air?{s:d.next_episode_to_air.season_number,e:d.next_episode_to_air.episode_number,date:d.next_episode_to_air.air_date}:null };
+    }
+    async function getNextInfo(type,id){
+      const c=nextCacheGet(type,id); if(c) return c;
+      const d=await fetchDetails(type,id); const r=reduceNext(d); nextCacheSet(type,id,r); return r;
+    }
+    // Une serie "vivante" : un episode annonce, ou TMDB la dit encore en cours.
+    function stillAiring(info){
+      if(!info) return false;
+      if(info.nea) return true;
+      const st=(info.status||"").toLowerCase();
+      return info.inprod || st==="returning series" || st==="in production" || st==="planned";
+    }
+    function airedKeys(info){
+      const out=[]; const lea=info&&info.lea; if(!lea) return out;
+      (info.seasons||[]).forEach(se=>{ for(let n=1;n<=se.eps;n++){
+        if(se.num<lea.s || (se.num===lea.s && n<=lea.e)) out.push("S"+se.num+"E"+n); } });
+      return out;
+    }
+    function watchedKeysOf(e, info){
+      if(Array.isArray(e.watched_eps) && e.watched_eps.length) return new Set(e.watched_eps);
+      const set=new Set();
+      if(e.last_season!=null){ const ls=e.last_season, le=e.last_episode||0;
+        ((info&&info.seasons)||[]).forEach(se=>{ for(let n=1;n<=se.eps;n++){ if(se.num<ls||(se.num===ls&&n<=le)) set.add("S"+se.num+"E"+n); } }); }
+      return set;
+    }
+    function nxTiming(diff){
+      if(diff==null) return "";
+      if(diff>1) return LANG==="fr" ? ("dans "+diff+" jours") : ("in "+diff+" days");
+      if(diff===1) return TR("Tomorrow");
+      if(diff===0) return TR("Today");
+      return TR("Out now");
+    }
+    // Classe une entree dans une des sections de l'onglet.
+    async function nextRowFor(e, today, DAY){
+      const m=e.media; let info;
+      try{ info=await getNextInfo(m.type, m.tmdb_id); }catch(_){ return null; }
+      const row={ media:m, behind:0, section:null, sub:"", badge:"", tone:"st-todo", sortDate:null };
+      if(m.type==="movie"){
+        const date=info.release; if(!date || e.status==="watched") return null;
+        const d=new Date(date+"T00:00:00"); const diff=Math.round((d-today)/DAY);
+        if(diff < -30) return null;
+        const timing=nxTiming(diff);
+        row.section="soon"; row.sortDate=d;
+        row.sub=TR("Movie")+" · "+prettyDate(date)+(timing?" · "+timing:"");
+        row.badge=timing||"·"; row.tone=diff<=0?"st-done":"st-progress";
+        return row;
+      }
+      const aired=airedKeys(info);
+      const wset=watchedKeysOf(e, info);
+      let behind=0, nextWatch=null;
+      const trackedByEpisode = Array.isArray(e.watched_eps) && e.watched_eps.length>0;
+      if(e.status!=="watchlist" && (e.status!=="watched" || trackedByEpisode)){
+        for(const k of aired){ if(!wset.has(k)){ behind++; if(!nextWatch) nextWatch=k; } }
+      }
+      if(behind>0){
+        row.behind=behind;
+        row.section = stillAiring(info) ? "ready-airing" : "ready-ended";
+        row.sub = LANG==="fr" ? (behind+" épisode"+(behind>1?"s":"")+" de retard · prochain "+nextWatch)
+                              : (behind+" episode"+(behind>1?"s":"")+" behind · next "+nextWatch);
+        row.badge = LANG==="fr" ? (behind+" de retard") : (behind+" behind");
+        row.tone="st-progress";
+        return row;
+      }
+      if(info.nea && info.nea.date){
+        const d=new Date(info.nea.date+"T00:00:00"); const diff=Math.round((d-today)/DAY);
+        const timing=nxTiming(diff);
+        const newSeason = info.nea.e===1 || (info.lea && info.nea.s>info.lea.s);
+        row.sortDate=d;
+        row.section = (e.status==="watched" || newSeason) ? "newseason" : "soon";
+        row.sub = (newSeason ? (TR("Season")+" "+info.nea.s) : ("S"+info.nea.s+"E"+info.nea.e))
+                  + " · " + prettyDate(info.nea.date) + (timing?" · "+timing:"");
+        row.badge = timing || info.net || "·";
+        row.tone = diff<=0?"st-done":"st-progress";
+        return row;
+      }
+      if(e.status==="watchlist" && info.first){
+        const d=new Date(info.first+"T00:00:00"); const diff=Math.round((d-today)/DAY);
+        if(diff >= -30){ const timing=nxTiming(diff);
+          row.section="soon"; row.sortDate=d;
+          row.sub=TR("Premiere")+" · "+prettyDate(info.first)+(timing?" · "+timing:"");
+          row.badge=timing||"·"; row.tone=diff<=0?"st-done":"st-progress"; return row; }
+      }
+      // serie terminee par l'utilisateur, mais une suite est annoncee
+      if(e.status==="watched" && stillAiring(info)){
+        row.section="waiting";
+        row.sub = TR(info.inprod ? "In production" : "Season announced") + " · " + TR("No date announced yet");
+        row.badge = info.net || TR("Waiting"); row.tone="st-todo";
+        return row;
+      }
+      if(e.status!=="watched" && info.lea && info.lea.date){
+        const d=new Date(info.lea.date+"T00:00:00"); const diff=Math.round((d-today)/DAY);
+        if(diff >= -30){ row.section="soon"; row.sortDate=d;
+          row.sub=TR("Latest")+" · S"+info.lea.s+"E"+info.lea.e+" · "+prettyDate(info.lea.date);
+          row.badge=info.net||"·"; row.tone="st-todo"; return row; }
+      }
+      return null;
+    }
     async function loadUpcoming(){
       const hint=$("upcoming-hint"), list=$("upcoming-list");
       list.innerHTML=""; hint.hidden=false; hint.textContent="Checking your series...";
       const {data,error}=await client.from("entries")
         .select("status,last_season,last_episode,watched_eps,media:media_id(tmdb_id,type,title,poster_url,year)")
         .eq("user_id", currentUserId)
-        .in("status",["watchlist","watching"]);
+        .in("status",["watchlist","watching","watched"]);
       if(error){ hint.textContent="Could not load: "+error.message; return; }
-      const entries=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
+      const entries=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null)
+        .filter(e=>!(e.status==="watched" && e.media.type==="movie"));
       if(!entries.length){ hint.textContent="Add films or series to your lists to see what's next."; return; }
       const today=new Date(); today.setHours(0,0,0,0); const DAY=86400000;
-      const items=await Promise.all(entries.map(async e=>{
-        const m=e.media;
-        try{
-          const d=await fetchDetails(m.type, m.tmdb_id);
-          if(m.type==="movie"){
-            const date=d.release_date||null; if(!date) return null;
-            return {media:m, behind:0, nextWatch:null, network:null,
-              upDate:new Date(date+"T00:00:00"), rawdate:date, kind:"release", next:null};
-          }
-          const grid=(d.seasons||[]).filter(s=>s.season_number>=1&&(s.episode_count||0)>0).map(s=>({num:s.season_number,eps:s.episode_count}));
-          const network=(d.networks&&d.networks[0])?d.networks[0].name:null;
-          const lea=d.last_episode_to_air;
-          const wset=new Set();
-          if(Array.isArray(e.watched_eps)&&e.watched_eps.length){ e.watched_eps.forEach(k=>wset.add(k)); }
-          else if(e.last_season!=null){ const ls=e.last_season, le=e.last_episode||0;
-            grid.forEach(se=>{ for(let n=1;n<=se.eps;n++){ if(se.num<ls||(se.num===ls&&n<=le)) wset.add("S"+se.num+"E"+n); } }); }
-          let behind=0, nextWatch=null;
-          if(e.status==="watching" && lea && lea.season_number){
-            for(const se of grid){ for(let n=1;n<=se.eps;n++){
-              const aired = se.num<lea.season_number || (se.num===lea.season_number && n<=lea.episode_number);
-              if(!aired) continue;
-              if(!wset.has("S"+se.num+"E"+n)){ behind++; if(!nextWatch) nextWatch={s:se.num,e:n}; }
-            } }
-          }
-          let upDate=null, rawdate=null, kind="", next=null;
-          if(d.next_episode_to_air && d.next_episode_to_air.air_date){ rawdate=d.next_episode_to_air.air_date; kind="episode"; next=d.next_episode_to_air; upDate=new Date(rawdate+"T00:00:00"); }
-          else if(e.status==="watchlist" && d.first_air_date){ rawdate=d.first_air_date; kind="premiere"; upDate=new Date(rawdate+"T00:00:00"); }
-          else if(lea && lea.air_date){ rawdate=lea.air_date; kind="last"; upDate=new Date(rawdate+"T00:00:00"); }
-          return {media:m, behind, nextWatch, network, upDate, rawdate, kind, next};
-        }catch(_){ return null; }
-      }));
-      const all=items.filter(Boolean);
-      const key=r=>r.media.tmdb_id+"_"+r.media.type;
-      const ready=all.filter(r=>r.behind>0).sort((a,b)=>b.behind-a.behind);
-      const readyKeys=new Set(ready.map(key));
-      const coming=all.filter(r=>!readyKeys.has(key(r)) && r.upDate && ((r.upDate-today)/DAY)>=-30).sort((a,b)=>a.upDate-b.upDate);
-      if(!ready.length && !coming.length){ hint.textContent="Nothing to catch up on and nothing on the horizon right now."; return; }
+      const rows=(await mapPool(entries, 8, e=>nextRowFor(e, today, DAY))).filter(Boolean);
+      await ensureTitles(rows.map(r=>r.media));
+      const byDate=(a,b)=> ((a.sortDate?a.sortDate.getTime():0) - (b.sortDate?b.sortDate.getTime():0));
+      const pick=(name)=>rows.filter(r=>r.section===name);
+      const groups=[
+        ["Ready to watch · still airing",     pick("ready-airing").sort((a,b)=>b.behind-a.behind)],
+        ["Ready to watch · finished series",  pick("ready-ended").sort((a,b)=>b.behind-a.behind)],
+        ["New season coming",                 pick("newseason").sort(byDate)],
+        ["Coming soon",                       pick("soon").sort(byDate)],
+        ["Waiting for a sequel",              pick("waiting")]
+      ].filter(g=>g[1].length);
+      if(!groups.length){ hint.textContent="Nothing to catch up on and nothing on the horizon right now."; return; }
       hint.hidden=true;
-      currentDisplays=[...ready,...coming].map(r=>displayFromMedia(r.media));
-      if(ready.length){ list.appendChild(nextHead("Ready to watch")); ready.forEach(r=>list.appendChild(upcomingRow(r, today, DAY))); }
-      if(coming.length){ list.appendChild(nextHead("Coming soon")); coming.forEach(r=>list.appendChild(upcomingRow(r, today, DAY))); }
+      currentDisplays=groups.reduce((acc,g)=>acc.concat(g[1]),[]).map(r=>displayFromMedia(r.media));
+      groups.forEach(g=>{ list.appendChild(nextHead(g[0])); g[1].forEach(r=>list.appendChild(upcomingRow(r))); });
     }
     function nextHead(txt){ const h=document.createElement("div"); h.className="up-head"; h.textContent=txt; return h; }
     function prettyDate(s){ try{ const d=new Date(s+"T00:00:00"); const p=n=>String(n).padStart(2,"0"); return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear(); }catch(_){ return s; } }
-    function upcomingRow(r, today, DAY){
+    function upcomingRow(r){
       const m=r.media;
-      let sub, badge, badgeTone;
-      if(r.behind>0 && r.nextWatch){
-        sub=r.behind+" episode"+(r.behind>1?"s":"")+" behind · next S"+r.nextWatch.s+"E"+r.nextWatch.e;
-        badge=r.behind+" behind"; badgeTone="st-progress";
-      } else {
-        const diff = r.upDate? Math.round((r.upDate-today)/DAY) : null;
-        const timing = diff==null?"" : (diff>0 ? (diff===1?"Tomorrow":("in "+diff+" days")) : (diff===0?"Today":"Out now"));
-        if(m.type==="movie") sub="Movie · "+prettyDate(r.rawdate)+(timing?" · "+timing:"");
-        else if(r.kind==="episode" && r.next) sub="Next S"+r.next.season_number+"E"+r.next.episode_number+" · "+prettyDate(r.rawdate)+(timing?" · "+timing:"");
-        else if(r.kind==="premiere") sub="Premiere · "+prettyDate(r.rawdate)+(timing?" · "+timing:"");
-        else sub="Latest · "+prettyDate(r.rawdate);
-        badge = r.network || timing || "·"; badgeTone = r.network ? "st-todo" : (diff!=null&&diff<=0?"st-done":"st-progress");
-      }
       const el=document.createElement("div"); el.className="cmp-row";
       el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
-        `<div class="cr-body"><div class="cr-t">${esc(m.title)}</div><div class="cr-p">${esc(sub)}</div></div>
-         <span class="verdict ${badgeTone}">${esc(badge)}</span>`;
+        `<div class="cr-body"><div class="cr-t">${esc(locTitle(m))}</div><div class="cr-p">${esc(r.sub)}</div></div>
+         <span class="verdict ${r.tone}">${esc(r.badge)}</span>`;
       el.onclick=()=>openDetail(displayFromMedia(m), loadUpcoming);
       return el;
     }
@@ -1957,8 +2120,9 @@
     let detailDisplay=null, detailOnClose=null, detailList=[], detailIndex=0, detailSeq=0, currentDisplays=[];
     let detailSeasons=null; // [{num, eps}] real seasons of the current series, from TMDB
     async function fetchDetails(type,id){
-      const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US`);
-      if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
+      const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=${tmdbLang()}`);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const j=await r.json(); setCachedTitle(type, id, j.title||j.name||""); return j;
     }
     async function fetchProviders(type,id){
       try{ const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${TMDB_KEY}`);
@@ -2204,7 +2368,7 @@
     async function ensureSeasonNames(id,season){
       const ck=id+":S"+season; if(epNamesFetching[ck]) return epNamesFetching[ck];
       const p=(async()=>{ try{
-        const r=await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${season}?api_key=${TMDB_KEY}&language=en-US`);
+        const r=await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${season}?api_key=${TMDB_KEY}&language=${tmdbLang()}`);
         if(!r.ok) return; const d=await r.json();
         const map=epNamesCache[id]||(epNamesCache[id]={});
         (d.episodes||[]).forEach(ep=>{ if(ep.episode_number!=null) map["S"+season+"E"+ep.episode_number]=ep.name||""; });
@@ -2286,7 +2450,7 @@
 
     sheetRemove.onclick=async()=>{ await removeByDisplay(detailDisplay); showToast("Removed"); closeDetail(); };
 
-    function fmtHours(min){ const h=Math.round((min||0)/60); return h+(h===1?" hour":" hours"); }
+    function fmtHours(min){ const h=Math.round((min||0)/60); return LANG==="fr" ? (h+" h") : (h+(h===1?" hour":" hours")); }
     async function cacheMedia(id, fields){ try{ await client.from("media").update(fields).eq("id", id); }catch(e){} }
 
     // ---- badges / achievements (computed from counts, nothing stored) ----
@@ -2345,13 +2509,13 @@
       const pct = next? Math.max(0,Math.min(100,Math.round((xp-cur.min)/(next.min-cur.min)*100))) : 100;
       return {idx, cur, next, pct}; }
     function rankCardHTML(entries){ const x=xpForEntries(entries); const r=rankFor(x.xp);
-      return '<div class="rankcard rk-'+r.cur.tier+'"><div class="rk-top"><span class="rk-name">'+esc(r.cur.name)+'</span><span class="rk-xp">'+x.xp.toLocaleString("en")+' XP</span></div>'
+      return '<div class="rankcard rk-'+r.cur.tier+'"><div class="rk-top"><span class="rk-name">'+esc(r.cur.name)+'</span><span class="rk-xp">'+x.xp.toLocaleString(numLocale())+' XP</span></div>'
         +'<div class="rk-bar"><div class="rk-fill" style="width:'+r.pct+'%"></div></div>'
-        +'<div class="rk-next">'+(r.next? (r.pct+'% to '+esc(r.next.name)) : 'Max rank reached 🏆')+'</div></div>'; }
+        +'<div class="rk-next">'+(r.next? (r.pct+'% to '+esc(TR(r.next.name))) : 'Max rank reached 🏆')+'</div></div>'; }
     function rankCardXP(xp){ const r=rankFor(xp);
-      return '<div class="rankcard rk-'+r.cur.tier+'"><div class="rk-top"><span class="rk-name">'+esc(r.cur.name)+'</span><span class="rk-xp">'+xp.toLocaleString("en")+' XP</span></div>'
+      return '<div class="rankcard rk-'+r.cur.tier+'"><div class="rk-top"><span class="rk-name">'+esc(r.cur.name)+'</span><span class="rk-xp">'+xp.toLocaleString(numLocale())+' XP</span></div>'
         +'<div class="rk-bar"><div class="rk-fill" style="width:'+r.pct+'%"></div></div>'
-        +'<div class="rk-next">'+(r.next?(r.pct+'% to '+esc(r.next.name)):'Max rank reached 🏆')+'</div></div>'; }
+        +'<div class="rk-next">'+(r.next?(r.pct+'% to '+esc(TR(r.next.name))):'Max rank reached 🏆')+'</div></div>'; }
     function computeMyXP(){
       const arr=Object.values(myEntries||{});
       const bd={films:0,episodes:0,finishes:0,ratings:0,gems:0,rewatches:0,badges:0};
@@ -2379,11 +2543,11 @@
       let h=rankCardXP(xp);
       h+='<div class="section-label" style="margin-top:22px">Rank ladder</div><div class="rk-ladder">';
       RANKS.forEach((rk,i)=>{ const reached=xp>=rk.min; const isCur=(i===r.idx);
-        h+='<div class="rk-rung rkt-'+rk.tier+(isCur?' cur':'')+(reached?' done':'')+'"><span class="rk-rung-badge">'+(isCur?'▶':(reached?'✓':'🔒'))+'</span><span class="rk-rung-name">'+esc(rk.name)+'</span><span class="rk-rung-xp">'+rk.min.toLocaleString("en")+' XP</span></div>'; });
+        h+='<div class="rk-rung rkt-'+rk.tier+(isCur?' cur':'')+(reached?' done':'')+'"><span class="rk-rung-badge">'+(isCur?'▶':(reached?'✓':'🔒'))+'</span><span class="rk-rung-name">'+esc(rk.name)+'</span><span class="rk-rung-xp">'+rk.min.toLocaleString(numLocale())+' XP</span></div>'; });
       h+='</div>';
       const rows=[["🎬 Films",bd.films],["📺 Episodes",bd.episodes],["✅ Series finished",bd.finishes],["⭐ Ratings",bd.ratings],["💎 Gems",bd.gems],["↻ Rewatches",bd.rewatches],["🏅 Badges",bd.badges]].filter(x=>x[1]>0);
       h+='<div class="section-label" style="margin-top:22px">Where your XP comes from</div>';
-      h+= rows.length? rows.map(x=>'<div class="xpb-row"><span>'+x[0]+'</span><span>'+x[1].toLocaleString("en")+' XP</span></div>').join("") : '<div class="hint">Start watching to earn XP.</div>';
+      h+= rows.length? rows.map(x=>'<div class="xpb-row"><span>'+x[0]+'</span><span>'+x[1].toLocaleString(numLocale())+' XP</span></div>').join("") : '<div class="hint">Start watching to earn XP.</div>';
       $("rank-body").innerHTML=h;
     }
 
@@ -2392,7 +2556,7 @@
       cnt.textContent=earnedCount; grid.innerHTML="";
       all.forEach(b=>{ const el=document.createElement("div"); el.className="badge-item "+b.rarity+" "+(b.earned?"earned":"locked");
         el.innerHTML=`<span class="bi-emoji">${b.emoji}</span><div style="flex:1;min-width:0"><div class="bi-name">${esc(b.name)}</div>
-          <div class="bi-sub">${b.earned?"Unlocked":esc(b.desc)+" ("+b.prog+")"}</div></div>
+          <div class="bi-sub">${b.earned?"Unlocked":esc(TR(b.desc))+" ("+b.prog+")"}</div></div>
           <span class="rar rar-${b.rarity}">${b.rarity}</span>`;
         el.onclick=()=>openBadge(b); grid.appendChild(el); });
     }
@@ -2402,7 +2566,8 @@
       $("bm-emoji").className="bm-emoji "+b.rarity;
       $("bm-name").textContent=b.name;
       const rar=$("bm-rar"); rar.textContent=b.rarity; rar.className="rar rar-"+b.rarity;
-      $("bm-desc").textContent = b.earned ? ("Unlocked: "+b.desc.charAt(0).toLowerCase()+b.desc.slice(1)+".") : ("How to unlock: "+b.desc.charAt(0).toLowerCase()+b.desc.slice(1)+".");
+      const _d=TR(b.desc); const _dl=_d.charAt(0).toLowerCase()+_d.slice(1)+".";
+      $("bm-desc").textContent = (b.earned ? "Unlocked: " : "How to unlock: ")+_dl;
       $("bm-status").textContent = b.earned ? "Unlocked ✓" : ("Progress: "+b.prog);
       $("bm-status").className = "bm-status "+(b.earned?"done":"");
       $("badge-overlay").hidden=false; document.body.classList.add("no-scroll");
@@ -2412,8 +2577,9 @@
     $("badge-overlay").onclick=(e)=>{ if(e.target===$("badge-overlay")) closeBadge(); };
 
     async function fetchDetailsCredits(type,id){
-      const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US&append_to_response=credits`);
-      if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
+      const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=${tmdbLang()}&append_to_response=credits`);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const j=await r.json(); setCachedTitle(type, id, j.title||j.name||""); return j;
     }
     // ---- stats detail cache (localStorage, per title) ----
     const STAT_TD_TTL = 45*24*3600*1000; // 45 days
@@ -2480,14 +2646,14 @@
     }
     async function openPerson(p, extraExclude){
       $("person-overlay").hidden=false; document.body.classList.add("no-scroll");
-      $("pm-name").textContent=p.name; $("pm-role").textContent=(roleLabel(p.roles)||"Actor")+(p.count>0?(" · seen in "+p.count+" of your titles"):""); $("pm-photo").style.display="none";
+      $("pm-name").textContent=p.name; $("pm-role").textContent=TR(roleLabel(p.roles)||"Actor")+(p.count>0?(" · seen in "+p.count+" of your titles"):""); $("pm-photo").style.display="none";
       $("pm-hint").hidden=false; $("pm-also-wrap").hidden=true;
       const oursBox=$("pm-ours"); oursBox.innerHTML="";
       (p.ours||[]).forEach(o=>{ const el=document.createElement("div"); el.className="gemcard";
         el.innerHTML=(o.poster?`<img src="${o.poster}" alt="" loading="lazy"/>`:`<img alt=""/>`)+`<div class="gt">${esc(o.title)}</div>`; oursBox.appendChild(el); });
       $("pm-ours-wrap").hidden = !(p.ours&&p.ours.length);
       try{
-        const d=await fetch(`https://api.themoviedb.org/3/person/${p.id}?api_key=${TMDB_KEY}&language=en-US&append_to_response=combined_credits`).then(r=>r.ok?r.json():null);
+        const d=await fetch(`https://api.themoviedb.org/3/person/${p.id}?api_key=${TMDB_KEY}&language=${tmdbLang()}&append_to_response=combined_credits`).then(r=>r.ok?r.json():null);
         $("pm-hint").hidden=true;
         if(!d) return;
         if(d.profile_path){ $("pm-photo").src="https://image.tmdb.org/t/p/w185"+d.profile_path; $("pm-photo").style.display=""; }
@@ -2520,11 +2686,12 @@
     async function loadHome(){
       const h=new Date().getHours();
       const part = h<5?"Good night":h<12?"Good morning":h<18?"Good afternoon":"Good evening";
-      $("home-greet").textContent = part + (myUsername ? ", "+myUsername : "");
+      $("home-greet").textContent = TR(part) + (myUsername ? ", "+myUsername : "");
       const {data}=await client.from("entries")
         .select("status,rating,is_gem,last_season,last_episode,media:media_id(id,tmdb_id,type,title,poster_url,year,runtime,avg_episode_runtime,total_episodes)")
         .eq("user_id",currentUserId);
       const rows=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
+      await ensureTitles(rows.map(e=>e.media));
       const counts=computeCounts(rows);
       const inprog=rows.filter(e=>e.status==="watching" && e.media.type==="tv").length;
       const watchlist=rows.filter(e=>e.status==="watchlist");
@@ -2577,8 +2744,8 @@
     $("home-pick-btn").onclick=()=>{ if(!homePickPool.length) return;
       const e=homePickPool[Math.floor(Math.random()*homePickPool.length)]; openDetail(displayFromMedia(e.media), loadHome); };
     { const cb=$("home-club-btn"); if(cb) cb.onclick=()=>{ showSection("friends"); if(typeof setSocialTab==="function") setSocialTab("clubs"); }; }
-    function statLangName(c){ try{ return new Intl.DisplayNames(['en'],{type:'language'}).of(c)||c; }catch(_){ return c; } }
-    function statCountryName(c){ try{ return new Intl.DisplayNames(['en'],{type:'region'}).of(c)||c; }catch(_){ return c; } }
+    function statLangName(c){ try{ return new Intl.DisplayNames([LANG],{type:'language'}).of(c)||c; }catch(_){ return c; } }
+    function statCountryName(c){ try{ return new Intl.DisplayNames([LANG],{type:'region'}).of(c)||c; }catch(_){ return c; } }
     function statRows(items){ return items.map(it=>'<div class="stat-mini">'+(it.poster?'<img class="ur-img" src="'+it.poster+'" alt=""/>':'<div class="ur-img"></div>')+'<div class="ur-body"><div class="ur-t">'+esc(it.title||"")+'</div><div class="ur-m">'+esc(it.sub||"")+'</div></div></div>').join(""); }
     function renderStatHist(el,hist){ let m=1; for(let s=1;s<=10;s++) m=Math.max(m, hist[s]||0);
       el.innerHTML=[10,9,8,7,6,5,4,3,2,1].map(s=>{ const n=hist[s]||0; const w=Math.round((n/m)*100);
@@ -2602,7 +2769,7 @@
       let movieCount=0, seriesCount=0, movieMin=0, seriesMin=0, ratingSum=0, ratingN=0, rewatchTotal=0;
       const genres={}, decades={}, people={}, langs={}, countries={};
       const genreTitles={};
-      const addGenre=(name,m,yr)=>{ if(!name) return; tally(genres,name); (genreTitles[name]||(genreTitles[name]=[])).push({title:m.title,poster:m.poster_url,year:yr}); };
+      const addGenre=(name,m,yr)=>{ if(!name) return; tally(genres,name); (genreTitles[name]||(genreTitles[name]=[])).push({title:locTitle(m),poster:m.poster_url,year:yr}); };
       const ratingHist={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0};
       const titleStats=[]; const rewatchList=[];
       let oldest=null, newest=null;
@@ -2612,7 +2779,7 @@
         const add=(p, role)=>{ if(!p||!p.id) return;
           if(!people[p.id]) people[p.id]={id:p.id,name:p.name,count:0,ours:[],roles:{},profile:null};
           const pe=people[p.id]; if(!pe.profile && p.profile_path) pe.profile=p.profile_path; if(role) pe.roles[role]=1;
-          if(m && m.title && !pe.ours.some(o=>o.title===m.title)){ pe.ours.push({title:m.title, poster:m.poster_url}); pe.count++; } };
+          const mt=locTitle(m); if(mt && !pe.ours.some(o=>o.title===mt)){ pe.ours.push({title:mt, poster:m.poster_url}); pe.count++; } };
         (d.cast||[]).forEach(p=>add(p,"Actor"));
         (d.directors||[]).forEach(p=>add(p,"Director"));
         (d.created_by||[]).forEach(p=>add(p,"Creator")); };
@@ -2620,7 +2787,7 @@
       for(const e of (data||[])){ const m=e.media; if(!m) continue;
         if(e.rating){ ratingSum+=e.rating; ratingN++; ratingHist[e.rating]=(ratingHist[e.rating]||0)+1; }
         rewatchTotal += e.rewatch_count||0;
-        if((e.rewatch_count||0)>0) rewatchList.push({title:m.title, poster:m.poster_url, n:e.rewatch_count}); }
+        if((e.rewatch_count||0)>0) rewatchList.push({title:locTitle(m), poster:m.poster_url, n:e.rewatch_count}); }
       // details needed only for watched/watching titles; fetched in parallel, cached per title
       const jobs=(data||[]).filter(e=>{ const m=e.media; if(!m) return false;
         if(m.type==="movie") return e.status==="watched";
@@ -2637,10 +2804,10 @@
           addPeople(d, m);
           const yr=m.year || (d.date?parseInt(d.date.slice(0,4),10):null);
           d.genres.forEach(g=>addGenre(g,m,yr));
-          addDecade(yr); trackOldNew(yr, m.title);
+          addDecade(yr); trackOldNew(yr, locTitle(m));
           if(d.original_language) tally(langs, statLangName(d.original_language));
           (d.countries||[]).forEach(c=>tally(countries, c));
-          if(e.rating) titleStats.push({title:m.title, poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
+          if(e.rating) titleStats.push({title:locTitle(m), poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
         } else if(m.type==="tv"){
           seriesCount++;
           if(!d){ addDecade(m.year); continue; }
@@ -2655,10 +2822,10 @@
           addPeople(d, m);
           const yr=m.year || (d.date?parseInt(d.date.slice(0,4),10):null);
           d.genres.forEach(g=>addGenre(g,m,yr));
-          addDecade(yr); trackOldNew(yr, m.title);
+          addDecade(yr); trackOldNew(yr, locTitle(m));
           if(d.original_language) tally(langs, statLangName(d.original_language));
           (d.countries||[]).forEach(c=>tally(countries, c));
-          if(e.rating) titleStats.push({title:m.title, poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
+          if(e.rating) titleStats.push({title:locTitle(m), poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
         }
       }
       statTotal.textContent = fmtHours(movieMin+seriesMin);
@@ -2667,7 +2834,7 @@
       statAvg.textContent = ratingN ? ((ratingSum/ratingN).toFixed(1)+" / 10 · "+ratingN+" rated") : "—";
       statRewatch.textContent = rewatchTotal>0 ? (rewatchTotal+(rewatchTotal===1?" rewatch":" rewatches")) : "0";
       const totalMin=movieMin+seriesMin; const days=totalMin/1440; const lotr=totalMin/682;
-      const eq=[]; if(days>=1) eq.push(days.toFixed(days<10?1:0)+" days non-stop"); if(lotr>=1) eq.push("the LOTR trilogy "+Math.round(lotr)+"×");
+      const eq=[]; if(days>=1) eq.push(days.toFixed(days<10?1:0)+(LANG==="fr"?" jours non-stop":" days non-stop")); if(lotr>=1) eq.push((LANG==="fr"?"la trilogie du Seigneur des anneaux ":"the LOTR trilogy ")+Math.round(lotr)+"×");
       $("stat-equiv").textContent = eq.length? "= "+eq.join("  ·  ") : "";
       renderStatSplit($("stat-split"), movieCount, seriesCount);
       renderStatHist($("stat-hist"), ratingHist);
@@ -2849,6 +3016,7 @@
       const rows=data||[];
       if(!rows.length){ block.hidden=true; return; }
       const profs=await fetchProfilesMap(rows.map(r=>r.sender_id));
+      await ensureTitles(rows.map(r=>r.media));
       block.hidden=false; rows.forEach(r=>box.appendChild(inboxCard(r,profs)));
     }
     function inboxCard(r, profs){
@@ -2856,7 +3024,7 @@
       const el=document.createElement("div"); el.className="rec-card";
       el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
         `<div class="rc-body">
-           <div class="rc-t">${esc(m.title||"Untitled")}</div>
+           <div class="rc-t">${esc(locTitle(m)||"Untitled")}</div>
            <div class="rc-from">from ${esc(sender)}${m.year?" · "+m.year:""}</div>
            ${r.note?`<div class="rc-note">"${esc(r.note)}"</div>`:""}
            <div class="rc-btns"></div>
@@ -2865,7 +3033,7 @@
       const add=document.createElement("button"); add.className="btn-sm ok"; add.textContent="Add to watchlist";
       const no=document.createElement("button"); no.className="btn-sm ghost"; no.textContent="Dismiss";
       add.onclick=async()=>{ add.disabled=true;
-        const display={tmdbId:m.tmdb_id, type:m.type, title:m.title, year:m.year, poster_url:m.poster_url};
+        const display={tmdbId:m.tmdb_id, type:m.type, title:locTitle(m), year:m.year, poster_url:m.poster_url};
         try{ await setStatusByDisplay(display,"watchlist");
           await client.from("recommendations").update({status:"added"}).eq("id",r.id);
           showToast("Added to watchlist"); loadFriends();
@@ -2952,6 +3120,7 @@
       const body=$("cmp-body"), hint=$("cmp-hint");
       body.innerHTML=""; hint.hidden=false; hint.textContent="Loading "+friend.username+"'s collection...";
       const [mine, theirs, theirUnis]=await Promise.all([ fetchEntriesFull(currentUserId), fetchEntriesFull(friend.friendId), fetchPublicUniverses(friend.friendId) ]);
+      await ensureTitles(mine.concat(theirs).map(e=>e.media));
       await refreshSubs();
       hint.hidden=true; renderCompare(friend, mine, theirs, theirUnis);
     }
@@ -3015,7 +3184,7 @@
       const m=r.media;
       const el=document.createElement("div"); el.className="cmp-row";
       el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
-        `<div class="cr-body"><div class="cr-t">${esc(m.title)}</div>
+        `<div class="cr-body"><div class="cr-t">${esc(locTitle(m))}</div>
            <div class="cr-p">You <b>${progLabel(r.me)}</b> · ${esc(compareFriend.username)} <b>${progLabel(r.th)}</b></div></div>
          <span class="verdict ${r.st.tone}">${esc(r.st.label)}</span>`;
       el.onclick=()=>openDetail(displayFromMedia(m), ()=>{ if(compareFriend) openCompare(compareFriend); });
@@ -3025,7 +3194,7 @@
       const m=e.media;
       const el=document.createElement("div"); el.className="cmp-row";
       el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
-        `<div class="cr-body"><div class="cr-t">${esc(m.title)}</div>
+        `<div class="cr-body"><div class="cr-t">${esc(locTitle(m))}</div>
            <div class="cr-p">${m.type==="tv"?"Series":"Movie"}${m.year?" · "+m.year:""} · not in your collection</div></div>
          <span class="fr-cta">+</span>`;
       el.onclick=()=>openDetail(displayFromMedia(m), ()=>{ if(compareFriend) openCompare(compareFriend); });
@@ -3368,9 +3537,9 @@
     async function ubSearch(query){
       const seq=++ubSearchSeq; const box=$("ub-results"); if(!box) return; box.innerHTML=`<div class="hint">Searching…</div>`;
       try{
-        const res=await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US&include_adult=false`);
-        const json=await res.json(); if(seq!==ubSearchSeq) return;
-        const items=(json.results||[]).filter(r=>r.media_type==="movie"||r.media_type==="tv").slice(0,12);
+        const out=await smartSearch(query, ()=>seq===ubSearchSeq);
+        if(!out) return;
+        const items=out.items.slice(0,12);
         if(!items.length){ box.innerHTML=`<div class="hint">No results.</div>`; return; }
         box.innerHTML="";
         items.forEach(it=>{
@@ -4100,7 +4269,7 @@
         $("pf2-close").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
         const si=$("pf2-search"); if(si) si.oninput=()=>{ clearTimeout(t); const v=si.value.trim(); if(v.length<2){ $("pf2-results").innerHTML=""; return; }
           t=setTimeout(async()=>{ const box=$("pf2-results"); box.innerHTML='<div class="hint">Searching…</div>';
-            try{ const res=await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(v)}&language=en-US&include_adult=false`);
+            try{ const res=await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(v)}&language=${tmdbLang()}&include_adult=false`);
               const j=await res.json(); const items=(j.results||[]).slice(0,10);
               if(!items.length){ box.innerHTML='<div class="hint">No results.</div>'; return; }
               box.innerHTML=""; items.forEach(it=>{ const poster=it.poster_path?IMG+it.poster_path:null;
@@ -4159,11 +4328,40 @@
             if(!mw) cur.push({id:"clubrev:"+active.id, text:"A club film needs your review", sub:c.name, kind:"club", cid:c.id}); }
         }
       }catch(_){}
+      // Nouvelles saisons / nouveaux episodes des series deja terminees.
+      // Scan limite a une fois toutes les 12 h, en tache de fond.
+      try{
+        let last=0; try{ last=parseInt(localStorage.getItem("seen_season_scan")||"0",10); }catch(_){}
+        if(Date.now()-last > 12*3600*1000){
+          try{ localStorage.setItem("seen_season_scan", String(Date.now())); }catch(_){}
+          const {data}=await client.from("entries")
+            .select("status,watched_eps,media:media_id(tmdb_id,type,title)")
+            .eq("user_id",currentUserId).eq("status","watched");
+          const tv=(data||[]).filter(e=>e.media && e.media.type==="tv" && e.media.tmdb_id!=null);
+          const infos=await mapPool(tv, 6, async e=>{ try{ return {e, i:await getNextInfo("tv", e.media.tmdb_id)}; }catch(_){ return null; } });
+          infos.filter(Boolean).forEach(o=>{
+            const e=o.e, i=o.i, name=locTitle(e.media);
+            if(i.nea && i.nea.date){
+              cur.push({ id:"season:"+e.media.tmdb_id+":"+i.nea.s+":"+i.nea.e,
+                text:(LANG==="fr"?"Nouvelle saison de ":"New season of ")+name,
+                sub:(LANG==="fr"?"Saison ":"Season ")+i.nea.s+" · "+prettyDate(i.nea.date), kind:"next" });
+              return;
+            }
+            if(Array.isArray(e.watched_eps) && e.watched_eps.length && i.lea){
+              const w=new Set(e.watched_eps);
+              const n=airedKeys(i).filter(k=>!w.has(k)).length;
+              if(n>0) cur.push({ id:"eps:"+e.media.tmdb_id+":"+i.lea.s+":"+i.lea.e,
+                text:(LANG==="fr"?"Nouveaux épisodes de ":"New episodes of ")+name,
+                sub:(LANG==="fr"?(n+" épisode"+(n>1?"s":"")+" à rattraper"):(n+" episode"+(n>1?"s":"")+" to catch up")), kind:"next" });
+            }
+          });
+        }
+      }catch(_){}
       let log=loadNotifLog(); const known=new Set(log.map(x=>x.id)); const now=Date.now();
       cur.forEach(it=>{ if(!known.has(it.id)) log.push(Object.assign({ts:now, seen:false}, it)); });
       log=log.slice(-30); saveNotifLog(log); notifItems=log; updateBellBadge(); return log;
     }
-    function notifAct(it){ if(it && it.kind==="club" && it.cid) openClub(it.cid); else showSection("friends"); }
+    function notifAct(it){ if(it && it.kind==="club" && it.cid) openClub(it.cid); else if(it && it.kind==="next") showSection("upcoming"); else showSection("friends"); }
     function openNotifs(){
       const ov=$("notif-ov"); const items=(notifItems||[]).slice().reverse();
       const fresh=items.filter(n=>!n.seen); const old=items.filter(n=>n.seen);
