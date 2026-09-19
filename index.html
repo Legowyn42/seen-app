@@ -54,7 +54,6 @@
       animation-duration: .001ms !important; animation-iteration-count: 1 !important;
       transition-duration: .001ms !important; }
     .logo, .topbar .brand, .stat-hero-num, .sheet-title, .ch-name, .greet, .home-big,
-      .badge-count-hero, .section-title { font-family: var(--disp); letter-spacing: -.01em; }
 
     #auth-view { max-width: 380px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 40px) 20px 40px; }
     .brandmark { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 8px 0 24px; }
@@ -497,7 +496,6 @@
     .rk-bar { height: 8px; border-radius: 999px; background: var(--chip); overflow: hidden; margin: 9px 0 6px; }
     .rk-fill { height: 100%; border-radius: 999px; background: var(--rk, var(--accent)); }
     .rk-next { font-size: 12px; color: var(--muted); }
-    .xpb-lab { font-size: 12.5px; font-weight: 700; color: var(--muted); margin: 4px 2px 8px; }
     .xpb-row { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 7px; font-size: 13.5px; }
     .xpb-row span:last-child { color: var(--muted); font-weight: 600; }
     #xp-breakdown { margin-bottom: 18px; }
@@ -1166,7 +1164,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.42</div>
+    <div class="appfoot">Seen · v3.43</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1546,7 +1544,7 @@
         '<div class="sett-lab">Episodes</div>'+
         '<div class="tg-row first"><div><div class="tgl">Show episode titles</div><div class="tgs">Off hides episode names to avoid spoilers</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-eptitles" '+(showEpTitles()?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-ver">Seen · v3.42</div></div>';
+        '<div class="sett-ver">Seen · v3.43</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       const th=$("set-theme"); paintSeg(th, theme);
@@ -2105,7 +2103,6 @@
     // ---- per-episode tracking ----
     let expandedSeasons=new Set();
     function epKey(s,e){ return "S"+s+"E"+e; }
-    function parseEpKey(k){ const m=/^S(\d+)E(\d+)$/.exec(k||""); return m?{s:+m[1],e:+m[2]}:null; }
     function allEpisodes(){ const out=[]; (detailSeasons||[]).forEach(se=>{ for(let n=1;n<=se.eps;n++) out.push({s:se.num,e:n}); }); return out; }
     // effective watched set: explicit watched_eps if present, else derived from the old last_season/last_episode pointer
     function watchedSet(entry){
@@ -2366,6 +2363,32 @@
       const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=en-US&append_to_response=credits`);
       if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
     }
+    // ---- stats detail cache (localStorage, per title) ----
+    const STAT_TD_TTL = 45*24*3600*1000; // 45 days
+    function tdCacheGet(type,id){ try{ const raw=localStorage.getItem("seen_td_"+type+"_"+id); if(!raw) return null;
+      const o=JSON.parse(raw); if(!o||!o.ts||(Date.now()-o.ts)>STAT_TD_TTL) return null; return o.d; }catch(_){ return null; } }
+    function tdCacheSet(type,id,d){ try{ localStorage.setItem("seen_td_"+type+"_"+id, JSON.stringify({ts:Date.now(),d})); }catch(_){} }
+    function extractStatFields(type,d){
+      const red={ genres:(d.genres||[]).map(g=>g.name).filter(Boolean),
+        original_language:d.original_language||null, vote_average:d.vote_average||0, popularity:d.popularity||0 };
+      if(type==="movie"){ red.runtime=d.runtime||0; red.date=d.release_date||"";
+        red.countries=(d.production_countries||[]).slice(0,2).map(c=>c.name||statCountryName(c.iso_3166_1)); }
+      else { red.episode_run_time=(d.episode_run_time&&d.episode_run_time[0])||0; red.number_of_episodes=d.number_of_episodes||0;
+        red.date=d.first_air_date||""; red.countries=(d.origin_country||[]).slice(0,2).map(c=>statCountryName(c));
+        red.seasons=(d.seasons||[]).map(s=>({season_number:s.season_number,episode_count:s.episode_count}));
+        red.created_by=(d.created_by||[]).map(p=>({id:p.id,name:p.name,profile_path:p.profile_path})); }
+      red.cast=(d.credits&&d.credits.cast)?d.credits.cast.slice(0,15).map(p=>({id:p.id,name:p.name,profile_path:p.profile_path})):[];
+      red.directors=(d.credits&&d.credits.crew)?d.credits.crew.filter(c=>c.job==="Director").map(p=>({id:p.id,name:p.name,profile_path:p.profile_path})):[];
+      return red;
+    }
+    async function getStatDetails(type,id){
+      const cached=tdCacheGet(type,id); if(cached) return {d:cached, fresh:false};
+      const full=await fetchDetailsCredits(type,id); const d=extractStatFields(type,full); tdCacheSet(type,id,d); return {d, fresh:true};
+    }
+    // run async fn over items with limited concurrency
+    async function mapPool(items, n, fn){ const out=new Array(items.length); let i=0;
+      async function worker(){ while(i<items.length){ const idx=i++; out[idx]=await fn(items[idx],idx); } }
+      await Promise.all(Array.from({length:Math.min(n,items.length||1)}, worker)); return out; }
     function tally(map, key){ if(!key) return; map[key]=(map[key]||0)+1; }
     function renderBars(el, counts, limit, chrono, onName){
       let arr=Object.keys(counts).map(k=>[k,counts[k]]);
@@ -2538,48 +2561,52 @@
           if(!people[p.id]) people[p.id]={id:p.id,name:p.name,count:0,ours:[],roles:{},profile:null};
           const pe=people[p.id]; if(!pe.profile && p.profile_path) pe.profile=p.profile_path; if(role) pe.roles[role]=1;
           if(m && m.title && !pe.ours.some(o=>o.title===m.title)){ pe.ours.push({title:m.title, poster:m.poster_url}); pe.count++; } };
-        if(d.credits&&d.credits.cast) d.credits.cast.slice(0,15).forEach(p=>add(p,"Actor"));
-        if(d.credits&&d.credits.crew) d.credits.crew.filter(c=>c.job==="Director").forEach(p=>add(p,"Director"));
-        if(d.created_by) d.created_by.forEach(p=>add(p,"Creator")); };
-      for(const e of (data||[])){
-        const m=e.media; if(!m) continue;
+        (d.cast||[]).forEach(p=>add(p,"Actor"));
+        (d.directors||[]).forEach(p=>add(p,"Director"));
+        (d.created_by||[]).forEach(p=>add(p,"Creator")); };
+      // rating & rewatch tallies over every entry
+      for(const e of (data||[])){ const m=e.media; if(!m) continue;
         if(e.rating){ ratingSum+=e.rating; ratingN++; ratingHist[e.rating]=(ratingHist[e.rating]||0)+1; }
         rewatchTotal += e.rewatch_count||0;
-        if((e.rewatch_count||0)>0) rewatchList.push({title:m.title, poster:m.poster_url, n:e.rewatch_count});
+        if((e.rewatch_count||0)>0) rewatchList.push({title:m.title, poster:m.poster_url, n:e.rewatch_count}); }
+      // details needed only for watched/watching titles; fetched in parallel, cached per title
+      const jobs=(data||[]).filter(e=>{ const m=e.media; if(!m) return false;
+        if(m.type==="movie") return e.status==="watched";
+        if(m.type==="tv") return e.status==="watched"||e.status==="watching";
+        return false; });
+      const details=await mapPool(jobs, 8, async e=>{ const m=e.media;
+        try{ const r=await getStatDetails(m.type, m.tmdb_id); return {e, d:r.d, fresh:r.fresh}; }
+        catch(_){ return {e, d:null, fresh:false}; } });
+      for(const {e,d,fresh} of details){ const m=e.media;
         if(m.type==="movie"){
-          if(e.status!=="watched") continue;
           movieCount++;
-          try{ const d=await fetchDetailsCredits("movie", m.tmdb_id);
-            const rt=d.runtime||m.runtime||0; movieMin+=rt; if(d.runtime) cacheMedia(m.id,{runtime:d.runtime});
-            addPeople(d, m);
-            const yr=m.year || (d.release_date?parseInt(d.release_date.slice(0,4),10):null);
-            (d.genres||[]).forEach(g=>addGenre(g.name,m,yr));
-            addDecade(yr); trackOldNew(yr, m.title);
-            if(d.original_language) tally(langs, statLangName(d.original_language));
-            (d.production_countries||[]).slice(0,2).forEach(c=>tally(countries, c.name||statCountryName(c.iso_3166_1)));
-            if(e.rating) titleStats.push({title:m.title, poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
-          }catch(_){ movieMin += m.runtime||0; addDecade(m.year); }
+          if(!d){ movieMin += m.runtime||0; addDecade(m.year); continue; }
+          const rt=d.runtime||m.runtime||0; movieMin+=rt; if(fresh && d.runtime) cacheMedia(m.id,{runtime:d.runtime});
+          addPeople(d, m);
+          const yr=m.year || (d.date?parseInt(d.date.slice(0,4),10):null);
+          d.genres.forEach(g=>addGenre(g,m,yr));
+          addDecade(yr); trackOldNew(yr, m.title);
+          if(d.original_language) tally(langs, statLangName(d.original_language));
+          (d.countries||[]).forEach(c=>tally(countries, c));
+          if(e.rating) titleStats.push({title:m.title, poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
         } else if(m.type==="tv"){
-          if(e.status!=="watched" && e.status!=="watching") continue;
           seriesCount++;
-          try{
-            const d=await fetchDetailsCredits("tv", m.tmdb_id);
-            const avg=(d.episode_run_time && d.episode_run_time[0]) || m.avg_episode_runtime || 42;
-            cacheMedia(m.id,{avg_episode_runtime:avg, total_episodes:d.number_of_episodes||null});
-            let eps=0;
-            if(e.status==="watched"){ eps=d.number_of_episodes||0; }
-            else { const ls=e.last_season||1, le=e.last_episode||0; let before=0;
-              for(const sea of (d.seasons||[])){ if(sea.season_number>=1 && sea.season_number<ls) before += (sea.episode_count||0); }
-              eps = before + le; }
-            seriesMin += eps*avg;
-            addPeople(d, m);
-            const yr=m.year || (d.first_air_date?parseInt(d.first_air_date.slice(0,4),10):null);
-            (d.genres||[]).forEach(g=>addGenre(g.name,m,yr));
-            addDecade(yr); trackOldNew(yr, m.title);
-            if(d.original_language) tally(langs, statLangName(d.original_language));
-            (d.origin_country||[]).slice(0,2).forEach(c=>tally(countries, statCountryName(c)));
-            if(e.rating) titleStats.push({title:m.title, poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
-          }catch(_){ addDecade(m.year); }
+          if(!d){ addDecade(m.year); continue; }
+          const avg=d.episode_run_time || m.avg_episode_runtime || 42;
+          if(fresh) cacheMedia(m.id,{avg_episode_runtime:avg, total_episodes:d.number_of_episodes||null});
+          let eps=0;
+          if(e.status==="watched"){ eps=d.number_of_episodes||0; }
+          else { const ls=e.last_season||1, le=e.last_episode||0; let before=0;
+            for(const sea of (d.seasons||[])){ if(sea.season_number>=1 && sea.season_number<ls) before += (sea.episode_count||0); }
+            eps = before + le; }
+          seriesMin += eps*avg;
+          addPeople(d, m);
+          const yr=m.year || (d.date?parseInt(d.date.slice(0,4),10):null);
+          d.genres.forEach(g=>addGenre(g,m,yr));
+          addDecade(yr); trackOldNew(yr, m.title);
+          if(d.original_language) tally(langs, statLangName(d.original_language));
+          (d.countries||[]).forEach(c=>tally(countries, c));
+          if(e.rating) titleStats.push({title:m.title, poster:m.poster_url, year:yr, rating:e.rating, vote:d.vote_average||0, pop:d.popularity||0});
         }
       }
       statTotal.textContent = fmtHours(movieMin+seriesMin);
@@ -2839,11 +2866,6 @@
     $("ach-back").onclick=()=>showSection("home");
     $("home-badges-lab").onclick=openAchievements;
 
-    function progRank(e){
-      if(e.status==="watched") return Number.MAX_SAFE_INTEGER;
-      if(e.status==="watching"){ return (e.last_season||1)*1000 + (e.last_episode||0); }
-      return -1;
-    }
     function progLabel(e){
       if(!e) return "—";
       if(e.status==="watched") return "Finished";
