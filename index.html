@@ -1224,7 +1224,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.49</div>
+    <div class="appfoot">Seen · v3.50</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1446,11 +1446,9 @@
       if(typeof refreshRank==="function") refreshRank();
       loadFriendsCache(); refreshFriendsBadge(); showSection(landingTab());
       computeNotifs(); maybeOnboard();
-      // Les succes se recalculent en tache de fond, au plus une fois par heure.
-      let lastAch=0; try{ lastAch=parseInt(localStorage.getItem("seen_ach_at")||"0",10); }catch(_){}
-      const fullAch = (Date.now()-lastAch) > 3600000;
-      if(fullAch){ try{ localStorage.setItem("seen_ach_at", String(Date.now())); }catch(_){} }
-      refreshAchievements({fetchFacts:fullAch}).then(()=>{ renderHomeBadges(); }).catch(()=>{}); }
+      // Les succes se recalculent en tache de fond a chaque ouverture. Les fiches
+      // TMDB deja en base ne sont pas redemandees, donc c'est gratuit ensuite.
+      refreshAchievements({}).catch(()=>{}); }
     function render(session){ if(session&&session.user){ showApp(session); }
       else { currentUserId=null; myEntries={}; myProfile=null; friendsCache=[]; compareFriend=null; applyMyAccent(null); appView.hidden=true; authView.hidden=false; } }
 
@@ -1668,7 +1666,7 @@
         '<div class="sett-lab danger-lab">Zone danger</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Réinitialiser ma collection</div><div class="dgs">Efface tous tes films et séries, tes notes, ta progression par épisode, tes pépites et tes rewatchs. Action définitive.</div></div>'+
           '<button class="danger-btn" id="set-reset">Réinitialiser…</button></div>'+
-        '<div class="sett-ver">Seen · v3.49</div></div>';
+        '<div class="sett-ver">Seen · v3.50</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       { const lg=$("set-lang"); if(lg){ paintSeg(lg, LANG);
@@ -1807,6 +1805,7 @@
       const prev=myEntries[k]||{};
       myEntries[k]={entryId:data.id,mediaId:mediaId,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],ep_ratings:data.ep_ratings||{},is_gem:data.is_gem,seen_at_cinema:!!data.seen_at_cinema,rewatch_count:data.rewatch_count||0,type:display.type,runtime:prev.runtime||null,total_eps:prev.total_eps||null};
       if(status==="watched" && prev.status!=="watched"){ logWatch(mediaId,"watch"); if(typeof gainXP==="function") gainXP(display.type==="tv"?150:100); }
+      if(typeof achTouch==="function") achTouch();
       else if(typeof refreshRank==="function") refreshRank();
       return myEntries[k];
     }
@@ -2314,6 +2313,7 @@
         if(!data || !data.length){ showToast("Not saved. Try logging out and back in."); return; }
         e.rewatch_count=data[0].rewatch_count; renderRewatch();
         if(delta>0) logWatch(e.mediaId,"rewatch");
+        achTouch();
       }catch(err){ showToast("Error: "+(err.message||err)); }
     }
     $("rw-plus").onclick=()=>changeRewatch(1);
@@ -2333,7 +2333,7 @@
       const turnOn=!e.seen_at_cinema;
       try{ const {error}=await client.from("entries").update({seen_at_cinema:turnOn}).eq("id",e.entryId);
         if(error) throw error;
-        e.seen_at_cinema=turnOn; renderCinema();
+        e.seen_at_cinema=turnOn; renderCinema(); achTouch();
         showToast(turnOn?"Marked as seen at the cinema 🍿":"Cinema mark removed");
       }catch(err){ showToast("Error: "+(err.message||err)); }
     };
@@ -2342,7 +2342,7 @@
       const turnOn=!e.is_gem;
       if(turnOn && gemCount()>=GEM_MAX){ showToast("Gem shelf full ("+GEM_MAX+" max)"); return; }
       try{ await client.from("entries").update({is_gem:turnOn}).eq("id",e.entryId);
-        e.is_gem=turnOn; renderGem(); showToast(turnOn?"Added to gems 💎":"Removed from gems");
+        e.is_gem=turnOn; renderGem(); showToast(turnOn?"Added to gems 💎":"Removed from gems"); achTouch();
         if(turnOn && typeof gainXP==="function") gainXP(50); else if(typeof refreshRank==="function") refreshRank();
       }catch(err){ showToast("Error: "+(err.message||err)); }
     };
@@ -2484,6 +2484,7 @@
       if(error){ showToast("Error: "+(error.message||error)); return false; }
       entry.watched_eps=keys; entry.last_season=upd.last_season; entry.last_episode=upd.last_episode;
       if(upd.status) entry.status=upd.status;
+      if(typeof achTouch==="function") achTouch();
       return true;
     }
     async function toggleEpisode(s,e){
@@ -2610,7 +2611,8 @@
     // cache par titre, le calcul, et la memorisation des deblocages.
     let achResults = null;          // [{id,n,d,cat,r,e,need,have,done}]
     let achUnlocked = new Set();    // ids deja debloques en base
-    let achBusy = false, achProgress = null, achUnlockedAt = {};
+    let achInflight = null, achProgress = null, achUnlockedAt = {};
+    let achTimer = null;
 
     const FACT_JOBS = ["Director","Creator","Original Music Composer","Music","Writer","Screenplay","Story"];
     async function fetchFacts(type, tmdbId){
@@ -2724,9 +2726,13 @@
       }catch(_){}
       return app;
     }
-    async function refreshAchievements(opts){
-      if(achBusy) return achResults;
-      achBusy=true; opts=opts||{};
+    function refreshAchievements(opts){
+      // Un seul calcul a la fois : les appelants simultanes partagent le meme.
+      if(achInflight) return achInflight;
+      achInflight = runAchievements(opts||{});
+      return achInflight;
+    }
+    async function runAchievements(opts){
       try{
         const {data}=await client.from("entries")
           .select("media_id,status,rating,rewatch_count,seen_at_cinema,watched_eps,media:media_id(id,tmdb_id,type,title,facts)")
@@ -2763,7 +2769,17 @@
         achResults.forEach(a=>{ if(achUnlocked.has(a.id)){ a.done=true; if(a.have<a.need) a.have=a.need; } });
         if(typeof refreshRank==="function") refreshRank();
         return achResults;
-      } finally { achBusy=false; }
+      } finally {
+        achInflight=null;
+        // le calcul vient de finir : on rafraichit ce qui est affiche
+        try{ renderHomeBadges(); }catch(_){}
+        try{ if(!$("section-achievements").hidden) renderAchievements(); }catch(_){}
+      }
+    }
+    // Apres une action qui change la collection, on recalcule un peu plus tard.
+    function achTouch(){
+      clearTimeout(achTimer);
+      achTimer=setTimeout(()=>{ refreshAchievements({}).catch(()=>{}); }, 3500);
     }
     function achAll(){ return achResults||[]; }
     function achEarned(){ return achAll().filter(a=>a.done); }
@@ -3404,13 +3420,20 @@
         await refreshAchievements({ onProgress:(n,t)=>{ const el=$("ach-loading");
           if(el) el.textContent="Looking up "+n+" of "+t+" titles on TMDB..."; } });
       } else {
-        refreshAchievements({silent:true});
+        // on affiche tout de suite, le calcul en cours rafraichira l'ecran en arrivant
+        refreshAchievements({}).catch(()=>{});
       }
       renderAchievements();
     }
     function renderAchievements(){
       const body=$("ach-body"); if(!body) return;
       const all=achAll();
+      if(achProgress && achProgress.t){
+        const old=body.querySelector(".ach-fetching");
+        if(!old){ const n=document.createElement("div"); n.className="hint ach-fetching";
+          n.textContent="Looking up "+achProgress.n+" of "+achProgress.t+" titles on TMDB...";
+          body.insertBefore(n, body.firstChild); }
+      }
       const earned=all.filter(a=>a.done);
       $("badge-count").textContent=earned.length;
       const pct=all.length?Math.round(earned.length/all.length*100):0;
