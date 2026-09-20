@@ -399,6 +399,37 @@
 
     /* ---- Badges / hauts faits ---- */
     .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+    /* ---- ecran des succes ---- */
+    .ach-top { margin: 0 0 14px; }
+    .ach-bar { height: 8px; border-radius: 999px; background: var(--card-2); border: 1px solid var(--line); overflow: hidden; }
+    .ach-fill { height: 100%; background: var(--accent); }
+    .ach-rars { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .seg.ach-seg { margin-bottom: 16px; }
+    .ach-cat { margin-bottom: 8px; }
+    .ach-chead { display: flex; align-items: center; gap: 10px; width: 100%; padding: 13px 14px; cursor: pointer;
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; color: var(--text);
+      font-family: var(--body); font-size: 15px; text-align: left; }
+    .ach-chead.open { border-color: rgba(var(--accent-rgb), .45); }
+    .ach-cname { flex: 1; min-width: 0; font-weight: 700; }
+    .ach-cn { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .ach-list { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 14px; }
+    .ach-item { display: flex; align-items: center; gap: 12px; padding: 11px 13px; cursor: pointer;
+      background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; }
+    .ach-item.locked { opacity: .62; }
+    .ach-item.earned.uncommon { border-color: rgba(56,193,114,.5); }
+    .ach-item.earned.rare { border-color: rgba(74,144,217,.55); }
+    .ach-item.earned.epic { border-color: rgba(165,107,255,.6); }
+    .ach-item.earned.legendary { border-color: rgba(255,178,62,.7); box-shadow: 0 0 16px -6px rgba(255,178,62,.5); }
+    .ach-item .bi-emoji { font-size: 22px; flex: 0 0 auto; }
+    .ach-item .bi-name { font-size: 14px; font-weight: 700; line-height: 1.25; }
+    .ach-item .bi-sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; line-height: 1.35; }
+    .ach-item .rar { flex: 0 0 auto; align-self: flex-start; }
+    .ach-mid { flex: 1; min-width: 0; }
+    .ach-prog { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+    .ach-pbar { flex: 1; height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; }
+    .ach-pfill { height: 100%; background: var(--accent); }
+    .ach-pn { font-size: 11px; color: var(--muted); font-weight: 700; flex: 0 0 auto; }
+    .ach-pending { font-size: 11px; color: var(--faint); margin-top: 6px; font-style: italic; }
     .ach-head { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 20px; }
     .ach-count { font-family: var(--disp); font-weight: 800; font-size: 34px; line-height: 1; }
     .ach-count .ach-slash { color: var(--muted); font-size: 20px; }
@@ -412,15 +443,15 @@
     .badge-item .bi-name { font-size: 13px; font-weight: 600; }
     .badge-item .bi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
     .badge-item.earned .bi-name { color: var(--text); }
-    .badge-item.common { border-color: rgba(56,193,114,.5); }
-    .badge-item.uncommon { border-color: rgba(74,144,217,.55); }
+    .badge-item.uncommon { border-color: rgba(56,193,114,.5); }
+    .badge-item.rare { border-color: rgba(74,144,217,.55); }
     .badge-item.epic { border-color: rgba(165,107,255,.6); }
     .badge-item.legendary { border-color: rgba(255,178,62,.7); box-shadow: 0 0 16px -5px rgba(255,178,62,.55); }
     .badge-item.locked { opacity: .42; box-shadow: none; }
     .rar { font-size: 9px; text-transform: uppercase; letter-spacing: .07em; font-weight: 700; padding: 3px 7px;
       border-radius: 999px; flex: 0 0 auto; align-self: center; }
-    .rar-common { color: var(--ok); background: rgba(56,193,114,.14); }
-    .rar-uncommon { color: var(--watch); background: rgba(74,144,217,.14); }
+    .rar-uncommon { color: var(--ok); background: rgba(56,193,114,.14); }
+    .rar-rare { color: var(--watch); background: rgba(74,144,217,.14); }
     .rar-epic { color: var(--epic); background: rgba(165,107,255,.16); }
     .rar-legendary { color: var(--gold); background: rgba(255,178,62,.16); }
     /* badge + person modals */
@@ -434,7 +465,7 @@
       border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
     .bm-emoji { font-size: 50px; width: 92px; height: 92px; margin: 6px auto 14px; border-radius: 22px; border: 2px solid var(--line);
       display: flex; align-items: center; justify-content: center; background: var(--card-2); }
-    .bm-emoji.common { border-color: rgba(56,193,114,.6); } .bm-emoji.uncommon { border-color: rgba(74,144,217,.65); }
+    .bm-emoji.uncommon { border-color: rgba(56,193,114,.6); } .bm-emoji.rare { border-color: rgba(74,144,217,.65); }
     .bm-emoji.epic { border-color: rgba(165,107,255,.7); } .bm-emoji.legendary { border-color: rgba(255,178,62,.8); box-shadow: 0 0 22px -6px rgba(255,178,62,.6); }
     .bm-name { font-family: var(--disp); font-weight: 800; font-size: 22px; margin-bottom: 8px; }
     .badge-modal .rar { display: inline-block; margin-bottom: 14px; }
@@ -505,7 +536,7 @@
     #xp-breakdown { margin-bottom: 18px; }
     .userbtn .ucol { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.15; }
     .urank { font-size: 10px; font-weight: 700; color: var(--muted); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .rkt-common { color: #8a93a6; } .rkt-uncommon { color: #4f9dde; } .rkt-epic { color: #a678e2; } .rkt-legendary { color: #e8a13c; }
+    .rkt-uncommon { color: #8a93a6; } .rkt-rare { color: #4f9dde; } .rkt-epic { color: #a678e2; } .rkt-legendary { color: #e8a13c; }
     @keyframes xppop { 0%{ opacity:0; transform:translateX(-50%) translateY(10px);} 15%{ opacity:1;} 78%{ opacity:1;} 100%{ opacity:0; transform:translateX(-50%) translateY(-30px);} }
     .xp-pop { position: fixed; left: 50%; bottom: 96px; z-index: 80; background: var(--accent); color: #fff; font-weight: 800; font-size: 15px;
       padding: 7px 16px; border-radius: 999px; box-shadow: 0 6px 20px -6px rgba(0,0,0,.5); pointer-events: none; animation: xppop 1.5s ease forwards; }
@@ -513,7 +544,7 @@
     .rk-rung { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--card); opacity: .5; }
     .rk-rung.done { opacity: 1; }
     .rk-rung.cur { opacity: 1; border-color: var(--rk, var(--accent)); box-shadow: 0 0 0 1px var(--rk, var(--accent)); }
-    .rk-rung.rkt-common { --rk:#8a93a6; } .rk-rung.rkt-uncommon { --rk:#4f9dde; } .rk-rung.rkt-epic { --rk:#a678e2; } .rk-rung.rkt-legendary { --rk:#e8a13c; }
+    .rk-rung.rkt-uncommon { --rk:#8a93a6; } .rk-rung.rkt-rare { --rk:#4f9dde; } .rk-rung.rkt-epic { --rk:#a678e2; } .rk-rung.rkt-legendary { --rk:#e8a13c; }
     .rk-rung-badge { width: 22px; text-align: center; flex: 0 0 auto; }
     .rk-rung-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; }
     .rk-rung.cur .rk-rung-name { color: var(--rk, var(--accent)); }
@@ -566,8 +597,8 @@
     .hbadge { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
       font-size: 22px; background: var(--card-2); border: 2px solid var(--line); }
     .hbadge.locked { opacity: .35; }
-    .hbadge.common { border-color: rgba(56,193,114,.6); }
-    .hbadge.uncommon { border-color: rgba(74,144,217,.65); }
+    .hbadge.uncommon { border-color: rgba(56,193,114,.6); }
+    .hbadge.rare { border-color: rgba(74,144,217,.65); }
     .hbadge.epic { border-color: rgba(165,107,255,.7); }
     .hbadge.legendary { border-color: rgba(255,178,62,.8); box-shadow: 0 0 14px -5px rgba(255,178,62,.6); }
     .pick-btn { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; cursor: pointer;
@@ -1168,10 +1199,10 @@
     <div id="section-achievements" hidden>
       <button class="cmp-back" id="ach-back">‹ Home</button>
       <div class="ach-head">
-        <div class="ach-count"><span id="badge-count">0</span><span class="ach-slash"> / 8</span></div>
+        <div class="ach-count"><span id="badge-count">0</span><span class="ach-slash"> / 154</span></div>
         <div class="ach-lab">achievements unlocked</div>
       </div>
-      <div class="badge-grid" id="badge-grid"></div>
+      <div id="ach-body"></div>
     </div>
     <div id="section-rank" hidden>
       <button class="cmp-back" id="rank-back">‹ Home</button>
@@ -1193,7 +1224,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.48</div>
+    <div class="appfoot">Seen · v3.49</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1316,6 +1347,7 @@
   <script src="config.js"></script>
   <script src="i18n.js"></script>
   <script src="search-fuzzy.js"></script>
+  <script src="achievements.js"></script>
   <script>
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.seenClient = client;
@@ -1413,7 +1445,12 @@
       await loadMyEntries();
       if(typeof refreshRank==="function") refreshRank();
       loadFriendsCache(); refreshFriendsBadge(); showSection(landingTab());
-      computeNotifs(); maybeOnboard(); }
+      computeNotifs(); maybeOnboard();
+      // Les succes se recalculent en tache de fond, au plus une fois par heure.
+      let lastAch=0; try{ lastAch=parseInt(localStorage.getItem("seen_ach_at")||"0",10); }catch(_){}
+      const fullAch = (Date.now()-lastAch) > 3600000;
+      if(fullAch){ try{ localStorage.setItem("seen_ach_at", String(Date.now())); }catch(_){} }
+      refreshAchievements({fetchFacts:fullAch}).then(()=>{ renderHomeBadges(); }).catch(()=>{}); }
     function render(session){ if(session&&session.user){ showApp(session); }
       else { currentUserId=null; myEntries={}; myProfile=null; friendsCache=[]; compareFriend=null; applyMyAccent(null); appView.hidden=true; authView.hidden=false; } }
 
@@ -1505,7 +1542,8 @@
       const p=o.profile||{}, uname=o.username||p.username||"unknown", entries=o.entries||[];
       const rgb=hexToRgb(accentOf(p));
       const counts=computeCounts(entries);
-      const {earnedCount, all}=badgeState(counts);
+      const all=o.ach||achAll();
+      const earnedCount=all.filter(b=>b.done).length;
       const watched=entries.filter(e=>e.status==="watched").length;
       const gems=entries.filter(e=>e.is_gem);
       const showGems=p.show_gems!==false, showBadges=p.show_badges!==false, showStats=p.show_stats!==false;
@@ -1538,12 +1576,12 @@
         gems.forEach(e=>shelf.appendChild(gemShelfCard(e.media, back)));
         wrap.appendChild(shelf); container.appendChild(wrap);
       }
-      if(showBadges){
+      if(showBadges && all.length){
         const lab=document.createElement("div"); lab.className="pf-seclab"; lab.textContent="Achievements ("+earnedCount+"/"+all.length+")";
         container.appendChild(lab);
         const row=document.createElement("div"); row.className="pf-badges";
-        all.forEach(b=>{ const el=document.createElement("div"); el.className="hbadge "+b.rarity+(b.earned?"":" locked");
-          el.textContent=b.emoji; el.title=b.name; el.onclick=()=>openBadge(b); row.appendChild(el); });
+        all.filter(b=>b.done).slice(0,24).forEach(b=>{ const el=document.createElement("div"); el.className="hbadge "+b.r;
+          el.textContent=b.e; el.title=b.n; el.onclick=()=>openBadge(b); row.appendChild(el); });
         container.appendChild(row);
       }
       return {rows:null};
@@ -1630,7 +1668,7 @@
         '<div class="sett-lab danger-lab">Zone danger</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Réinitialiser ma collection</div><div class="dgs">Efface tous tes films et séries, tes notes, ta progression par épisode, tes pépites et tes rewatchs. Action définitive.</div></div>'+
           '<button class="danger-btn" id="set-reset">Réinitialiser…</button></div>'+
-        '<div class="sett-ver">Seen · v3.48</div></div>';
+        '<div class="sett-ver">Seen · v3.49</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       { const lg=$("set-lang"); if(lg){ paintSeg(lg, LANG);
@@ -1728,15 +1766,27 @@
 
     async function loadMyEntries(){
       const {data,error}=await client.from("entries")
-        .select("id, status, rating, last_season, last_episode, watched_eps, ep_ratings, is_gem, seen_at_cinema, rewatch_count, media:media_id ( tmdb_id, type, runtime, total_episodes )")
+        .select("id, media_id, status, rating, last_season, last_episode, watched_eps, ep_ratings, is_gem, seen_at_cinema, rewatch_count, media:media_id ( tmdb_id, type, runtime, total_episodes )")
         .eq("user_id", currentUserId);
       myEntries={};
       if(!error&&data) data.forEach(e=>{ if(e.media&&e.media.tmdb_id!=null)
-        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,watched_eps:e.watched_eps||[],ep_ratings:e.ep_ratings||{},is_gem:e.is_gem,seen_at_cinema:!!e.seen_at_cinema,rewatch_count:e.rewatch_count||0,type:e.media.type,runtime:e.media.runtime||null,total_eps:e.media.total_episodes||null}; });
+        myEntries[keyOf(e.media.tmdb_id,e.media.type)]={entryId:e.id,mediaId:e.media_id,status:e.status,rating:e.rating,last_season:e.last_season,last_episode:e.last_episode,watched_eps:e.watched_eps||[],ep_ratings:e.ep_ratings||{},is_gem:e.is_gem,seen_at_cinema:!!e.seen_at_cinema,rewatch_count:e.rewatch_count||0,type:e.media.type,runtime:e.media.runtime||null,total_eps:e.media.total_episodes||null}; });
     }
     function gemCount(){ return Object.values(myEntries).filter(e=>e&&e.is_gem).length; }
     const GEM_MAX=6;
 
+    // ---- journal de visionnage : une ligne par seance, datee en heure locale ----
+    let lastUpsertMediaId=null;
+    function todayLocal(){ const d=new Date();
+      return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+    async function logWatch(mediaId, kind, epKeys){
+      if(!mediaId) return;
+      const on=todayLocal();
+      const rows = (epKeys && epKeys.length)
+        ? epKeys.slice(0,60).map(k=>({media_id:mediaId, ep_key:k, watched_on:on, kind:"episode"}))
+        : [{media_id:mediaId, ep_key:null, watched_on:on, kind:kind||"watch"}];
+      try{ await client.from("watch_logs").insert(rows); }catch(_){}
+    }
     async function upsertMedia(fields){
       const {data,error}=await client.from("media").upsert(fields,{onConflict:"tmdb_id,type"}).select("id").single();
       if(error) throw error; return data.id;
@@ -1748,14 +1798,15 @@
 
     async function setStatusByDisplay(display,status){
       const mediaId=await upsertMedia(mediaFields(display));
+      lastUpsertMediaId=mediaId;
       const {data,error}=await client.from("entries")
         .upsert({user_id:currentUserId,media_id:mediaId,status},{onConflict:"user_id,media_id"})
         .select("id,status,rating,last_season,last_episode,watched_eps,ep_ratings,is_gem,seen_at_cinema,rewatch_count").single();
       if(error) throw error;
       const k=keyOf(display.tmdbId,display.type);
       const prev=myEntries[k]||{};
-      myEntries[k]={entryId:data.id,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],ep_ratings:data.ep_ratings||{},is_gem:data.is_gem,seen_at_cinema:!!data.seen_at_cinema,rewatch_count:data.rewatch_count||0,type:display.type,runtime:prev.runtime||null,total_eps:prev.total_eps||null};
-      if(status==="watched" && prev.status!=="watched" && typeof gainXP==="function") gainXP(display.type==="tv"?150:100);
+      myEntries[k]={entryId:data.id,mediaId:mediaId,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],ep_ratings:data.ep_ratings||{},is_gem:data.is_gem,seen_at_cinema:!!data.seen_at_cinema,rewatch_count:data.rewatch_count||0,type:display.type,runtime:prev.runtime||null,total_eps:prev.total_eps||null};
+      if(status==="watched" && prev.status!=="watched"){ logWatch(mediaId,"watch"); if(typeof gainXP==="function") gainXP(display.type==="tv"?150:100); }
       else if(typeof refreshRank==="function") refreshRank();
       return myEntries[k];
     }
@@ -2262,6 +2313,7 @@
         if(error) throw error;
         if(!data || !data.length){ showToast("Not saved. Try logging out and back in."); return; }
         e.rewatch_count=data[0].rewatch_count; renderRewatch();
+        if(delta>0) logWatch(e.mediaId,"rewatch");
       }catch(err){ showToast("Error: "+(err.message||err)); }
     }
     $("rw-plus").onclick=()=>changeRewatch(1);
@@ -2438,21 +2490,22 @@
       const ent=await ensureEntry(detailDisplay,"watching");
       const set=watchedSet(ent); const k=epKey(s,e); const adding=!set.has(k);
       if(set.has(k)) set.delete(k); else set.add(k);
-      if(await persistWatched(ent,set)){ renderSheet(); if(adding && typeof gainXP==="function") gainXP(10); else if(typeof refreshRank==="function") refreshRank(); }
+      if(await persistWatched(ent,set)){ renderSheet(); if(adding){ logWatch(ent.mediaId,null,[k]); if(typeof gainXP==="function") gainXP(10); } else if(typeof refreshRank==="function") refreshRank(); }
     }
     async function toggleSeason(num){
       const se=(detailSeasons||[]).find(x=>x.num===num); if(!se) return;
       const ent=await ensureEntry(detailDisplay,"watching");
       const set=watchedSet(ent);
       let allIn=true; for(let n=1;n<=se.eps;n++){ if(!set.has(epKey(num,n))){ allIn=false; break; } }
-      for(let n=1;n<=se.eps;n++){ const k=epKey(num,n); if(allIn) set.delete(k); else set.add(k); }
-      if(await persistWatched(ent,set)) renderSheet();
+      const added=[];
+      for(let n=1;n<=se.eps;n++){ const k=epKey(num,n); if(allIn) set.delete(k); else { if(!set.has(k)) added.push(k); set.add(k); } }
+      if(await persistWatched(ent,set)){ renderSheet(); if(added.length) logWatch(ent.mediaId,null,added); }
     }
     async function markNextWatched(){
       const ent=await ensureEntry(detailDisplay,"watching");
       const set=watchedSet(ent); const nx=nextEpisode(set); if(!nx) return;
       set.add(epKey(nx.s,nx.e));
-      if(await persistWatched(ent,set)){ renderSheet(); showToast("S"+nx.s+"E"+nx.e+" watched"); if(typeof gainXP==="function") gainXP(10); }
+      if(await persistWatched(ent,set)){ renderSheet(); showToast("S"+nx.s+"E"+nx.e+" watched"); logWatch(ent.mediaId,null,[epKey(nx.s,nx.e)]); if(typeof gainXP==="function") gainXP(10); }
     }
     // episode name cache (fetched per season, on demand)
     const epNamesCache={}; const epNamesFetching={};
@@ -2464,7 +2517,13 @@
         const r=await fetch(`https://api.themoviedb.org/3/tv/${id}/season/${season}?api_key=${TMDB_KEY}&language=${tmdbLang()}`);
         if(!r.ok) return; const d=await r.json();
         const map=epNamesCache[id]||(epNamesCache[id]={});
-        (d.episodes||[]).forEach(ep=>{ if(ep.episode_number!=null) map["S"+season+"E"+ep.episode_number]=ep.name||""; });
+        const rmap=epRatings(); let changed=false;
+        (d.episodes||[]).forEach(ep=>{ if(ep.episode_number==null) return;
+          const k="S"+season+"E"+ep.episode_number;
+          map[k]=ep.name||"";
+          if((ep.vote_count||0)>=10 && ep.vote_average!=null){ rmap[id+":"+k]=ep.vote_average; changed=true; }
+        });
+        if(changed) saveEpRatings(rmap);
       }catch(_){} })();
       epNamesFetching[ck]=p; return p;
     }
@@ -2546,17 +2605,170 @@
     function fmtHours(min){ const h=Math.round((min||0)/60); return LANG==="fr" ? (h+" h") : (h+(h===1?" hour":" hours")); }
     async function cacheMedia(id, fields){ try{ await client.from("media").update(fields).eq("id", id); }catch(e){} }
 
-    // ---- badges / achievements (computed from counts, nothing stored) ----
-    const BADGES=[
-      {id:"first",     emoji:"🎬", name:"First steps",  rarity:"common",    desc:"Add your first title", test:c=>c.total>=1,  prog:c=>Math.min(c.total,1)+"/1"},
-      {id:"cinephile", emoji:"🍿", name:"Cinephile",    rarity:"uncommon",  desc:"10 films watched",     test:c=>c.movies>=10,prog:c=>c.movies+"/10"},
-      {id:"binger",    emoji:"📺", name:"Bingewatcher", rarity:"uncommon",  desc:"5 series finished",    test:c=>c.series>=5, prog:c=>c.series+"/5"},
-      {id:"critic",    emoji:"⭐", name:"Critic",        rarity:"uncommon",  desc:"Rate 10 titles",       test:c=>c.rated>=10, prog:c=>c.rated+"/10"},
-      {id:"bigscreen", emoji:"🎞️", name:"Big screen",   rarity:"epic",      desc:"25 films watched",     test:c=>c.movies>=25,prog:c=>c.movies+"/25"},
-      {id:"marathon",  emoji:"🏃", name:"Marathoner",   rarity:"epic",      desc:"10 series finished",   test:c=>c.series>=10,prog:c=>c.series+"/10"},
-      {id:"curator",   emoji:"💎", name:"Curator",       rarity:"epic",      desc:"Pick 6 gems",          test:c=>c.gems>=6,   prog:c=>c.gems+"/6"},
-      {id:"library",   emoji:"📚", name:"Librarian",     rarity:"legendary", desc:"50 titles total",      test:c=>c.total>=50, prog:c=>c.total+"/50"},
-    ];
+    // ================= achievements =================
+    // Les 154 regles vivent dans achievements.js. Ici : la fiche TMDB mise en
+    // cache par titre, le calcul, et la memorisation des deblocages.
+    let achResults = null;          // [{id,n,d,cat,r,e,need,have,done}]
+    let achUnlocked = new Set();    // ids deja debloques en base
+    let achBusy = false, achProgress = null, achUnlockedAt = {};
+
+    const FACT_JOBS = ["Director","Creator","Original Music Composer","Music","Writer","Screenplay","Story"];
+    async function fetchFacts(type, tmdbId){
+      const extra = type==="movie" ? ",release_dates" : "";
+      const url = `https://api.themoviedb.org/3/${type}/${tmdbId}?api_key=${TMDB_KEY}&language=en-US&append_to_response=credits,keywords${extra}`;
+      const d = await fetch(url).then(r=>r.ok?r.json():null);
+      if(!d) return null;
+      const kw = type==="movie" ? (d.keywords&&d.keywords.keywords) : (d.keywords&&d.keywords.results);
+      const f = {
+        t:(d.title||d.name||""),
+        g:(d.genres||[]).map(g=>g.name),
+        k:(kw||[]).map(k=>String(k.name||"").toLowerCase()),
+        l:d.original_language||null,
+        v:d.vote_average||0, vc:d.vote_count||0,
+        d:(d.release_date||d.first_air_date||""),
+        sp:(d.spoken_languages||[]).map(x=>x.iso_639_1),
+        comp:(d.production_companies||[]).map(c=>c.id),
+        cast:((d.credits&&d.credits.cast)||[]).slice(0,25).map(x=>[x.id,x.name,x.character||""]),
+        crew:((d.credits&&d.credits.crew)||[]).filter(c=>FACT_JOBS.indexOf(c.job)>=0).slice(0,30)
+              .map(x=>[x.id,x.name,x.job,x.gender])
+      };
+      if(type==="movie"){
+        f.c=(d.production_countries||[]).map(c=>c.iso_3166_1);
+        f.rt=d.runtime||0;
+        f.co=d.belongs_to_collection?d.belongs_to_collection.id:null;
+        const rd=(d.release_dates&&d.release_dates.results)||[];
+        f.th=rd.some(r=>(r.release_dates||[]).some(x=>x.type===2||x.type===3));
+        if(f.co){ const pos=await collectionPos(f.co, d.id); if(pos){ f.cpos=pos.cpos; f.csize=pos.csize; } }
+      } else {
+        f.c=(d.origin_country||[]); f.oc=(d.origin_country||[]);
+        f.ns=d.number_of_seasons||0; f.ne=d.number_of_episodes||0;
+        f.st=d.status||""; f.ert=(d.episode_run_time&&d.episode_run_time[0])||42;
+        f.net=(d.networks||[]).map(n=>n.id);
+        f.sa=(d.seasons||[]).map(x=>parseInt((x.air_date||"").slice(0,4),10)).filter(Boolean);
+        f.le=d.last_episode_to_air?("S"+d.last_episode_to_air.season_number+"E"+d.last_episode_to_air.episode_number):null;
+      }
+      return f;
+    }
+    // Position d'un film dans sa saga, pour "One too many". Une requete par saga, mise en cache.
+    async function collectionPos(collId, movieId){
+      let arr=null;
+      try{ arr=JSON.parse(localStorage.getItem("seen_coll_"+collId)||"null"); }catch(_){}
+      if(!arr){
+        const d=await fetch(`https://api.themoviedb.org/3/collection/${collId}?api_key=${TMDB_KEY}&language=en-US`).then(r=>r.ok?r.json():null);
+        if(!d) return null;
+        arr=(d.parts||[]).filter(x=>x.release_date).sort((a,b)=>a.release_date.localeCompare(b.release_date)).map(x=>x.id);
+        try{ localStorage.setItem("seen_coll_"+collId, JSON.stringify(arr)); }catch(_){}
+      }
+      const i=arr.indexOf(movieId);
+      return i>=0 ? {cpos:i+1, csize:arr.length} : null;
+    }
+    // Complete les fiches manquantes et les partage en base (un titre = un calcul pour tout le monde).
+    async function ensureFacts(rows, onProgress){
+      const need=rows.filter(e=>e.media && !e.media.facts);
+      if(!need.length) return 0;
+      let done=0;
+      await mapPool(need, 6, async e=>{
+        try{
+          const f=await fetchFacts(e.media.type, e.media.tmdb_id);
+          if(f){ e.media.facts=f;
+            try{ await client.from("media").update({facts:f, facts_at:new Date().toISOString()}).eq("id", e.media.id); }catch(_){}
+          }
+        }catch(_){}
+        done++; if(onProgress) onProgress(done, need.length);
+      });
+      return need.length;
+    }
+    // Notes d'episodes, remplies au fil des saisons que l'utilisateur deplie.
+    const EPR_KEY="seen_ep_ratings";
+    function epRatings(){ try{ return JSON.parse(localStorage.getItem(EPR_KEY)||"{}"); }catch(_){ return {}; } }
+    function saveEpRatings(m){ try{ localStorage.setItem(EPR_KEY, JSON.stringify(m)); }catch(_){} }
+    function countPeakEpisodes(entries){
+      const m=epRatings(); let n=0;
+      entries.forEach(e=>{ if(e.type!=="tv") return;
+        (e.eps||[]).forEach(k=>{ const v=m[e.tmdb+":"+k]; if(v!=null && v>=9) n++; }); });
+      return n;
+    }
+    async function achAppData(entries){
+      const app={ watchlist:0, recosAdded:0, subsOnMine:0, roadToEndgame:false,
+                  westernCollection:false, mutualWesternReco:false, recommendedBadS1:false,
+                  peakEpisodes:countPeakEpisodes(entries) };
+      app.watchlist = entries.filter(e=>e.type==="movie" && e.status==="watchlist").length;
+      try{ const {data}=await client.from("recommendations").select("id,media_id,sender_id,status")
+             .eq("recipient_id",currentUserId);
+        const rows=data||[];
+        app.recosAdded=rows.filter(r=>r.status==="added").length;
+        const inbound=new Set(rows.map(r=>r.media_id));
+        const {data:sent}=await client.from("recommendations").select("media_id").eq("sender_id",currentUserId);
+        const byMedia={}; entries.forEach(e=>{ if(e.mediaId) byMedia[e.mediaId]=e; });
+        (sent||[]).forEach(r=>{
+          const e=byMedia[r.media_id];
+          if(e && e.f && inbound.has(r.media_id) && (e.f.g||[]).indexOf("Western")>=0) app.mutualWesternReco=true;
+          if(e && e.type==="tv" && e.f && (e.f.v||0) < 5 && (e.f.vc||0) >= 10) app.recommendedBadS1=true;
+        });
+      }catch(_){}
+      try{
+        const {data:mine}=await client.from("user_universes").select("id,name,tagline,items").eq("owner_id",currentUserId);
+        const ids=(mine||[]).map(u=>u.id);
+        if(ids.length){
+          const {data:subs}=await client.from("universe_subs").select("universe_id").in("universe_id",ids);
+          app.subsOnMine=(subs||[]).length;
+        }
+        const seen=new Set(entries.filter(e=>e.status==="watched").map(e=>e.type.charAt(0)+e.tmdb));
+        const complete=(u)=>{ const it=Array.isArray(u.items)?u.items:[];
+          return it.length>0 && it.every(x=>seen.has(String(x.t).charAt(0)+x.id)); };
+        (mine||[]).forEach(u=>{
+          const txt=((u.name||"")+" "+(u.tagline||"")).toLowerCase();
+          if(/road to endgame/.test(txt) && complete(u)) app.roadToEndgame=true;
+          if(/western/.test(txt) && complete(u)) app.westernCollection=true;
+        });
+      }catch(_){}
+      return app;
+    }
+    async function refreshAchievements(opts){
+      if(achBusy) return achResults;
+      achBusy=true; opts=opts||{};
+      try{
+        const {data}=await client.from("entries")
+          .select("media_id,status,rating,rewatch_count,seen_at_cinema,watched_eps,media:media_id(id,tmdb_id,type,title,facts)")
+          .eq("user_id", currentUserId);
+        const rows=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
+        if(opts.fetchFacts!==false){
+          await ensureFacts(rows, (n,t)=>{ achProgress={n,t}; if(opts.onProgress) opts.onProgress(n,t); });
+        }
+        achProgress=null;
+        const entries=rows.map(e=>({ tmdb:e.media.tmdb_id, type:e.media.type, title:e.media.title,
+          mediaId:e.media_id, status:e.status, rating:e.rating, rewatch:e.rewatch_count||0,
+          cinema:!!e.seen_at_cinema, eps:e.watched_eps||[], f:e.media.facts||null }));
+        const byMedia={}; entries.forEach(e=>{ byMedia[e.mediaId]=e; });
+        let logs=[];
+        try{
+          const {data:lg}=await client.from("watch_logs").select("media_id,ep_key,watched_on,kind").eq("user_id",currentUserId);
+          logs=(lg||[]).map(l=>{ const e=byMedia[l.media_id]; return e ? {tmdb:e.tmdb, type:e.type, ep:l.ep_key,
+            date:l.watched_on, kind:l.kind, f:e.f} : null; }).filter(Boolean);
+        }catch(_){}
+        const app=await achAppData(entries);
+        achResults=SeenAchievements.evaluate({entries, logs, app});
+        try{
+          const {data:un}=await client.from("achievements").select("ach_id,unlocked_at").eq("user_id",currentUserId);
+          achUnlocked=new Set((un||[]).map(r=>r.ach_id));
+          achUnlockedAt={}; (un||[]).forEach(r=>{ achUnlockedAt[r.ach_id]=r.unlocked_at; });
+        }catch(_){}
+        const fresh=achResults.filter(a=>a.done && !achUnlocked.has(a.id));
+        if(fresh.length){
+          try{ await client.from("achievements").insert(fresh.map(a=>({ach_id:a.id}))); }catch(_){}
+          fresh.forEach(a=>achUnlocked.add(a.id));
+          if(!opts.silent) setTimeout(()=>showToast(fresh[0].e+" "+fresh[0].n+(fresh.length>1?(" +"+(fresh.length-1)):"")), 600);
+        }
+        // un succes deja debloque le reste, meme si la condition n'est plus vraie
+        achResults.forEach(a=>{ if(achUnlocked.has(a.id)){ a.done=true; if(a.have<a.need) a.have=a.need; } });
+        if(typeof refreshRank==="function") refreshRank();
+        return achResults;
+      } finally { achBusy=false; }
+    }
+    function achAll(){ return achResults||[]; }
+    function achEarned(){ return achAll().filter(a=>a.done); }
+    function achXP(list){ return (list||achEarned()).reduce((s,a)=>s+(SeenAchievements.xp[a.r]||0),0); }
+
     function computeCounts(entries){
       let movies=0, series=0, total=0, rated=0, gems=0;
       for(const e of (entries||[])){ const m=e.media; if(!m) continue; total++;
@@ -2565,14 +2777,12 @@
         if(e.rating) rated++; if(e.is_gem) gems++; }
       return {movies, series, total, rated, gems};
     }
-    function badgeState(counts){ const all=BADGES.map(b=>({emoji:b.emoji,name:b.name,desc:b.desc,rarity:b.rarity,earned:b.test(counts),prog:b.prog(counts)}));
-      return {all, earnedCount:all.filter(b=>b.earned).length}; }
     // ---- XP & ranks (computed from entries, retroactive, nothing stored) ----
     const RANKS=[
-      {name:"Newbie", min:0, tier:"common"},
-      {name:"Netflix account borrower", min:500, tier:"common"},
-      {name:"Popcorn seller", min:1500, tier:"uncommon"},
-      {name:"Trailer addict", min:3500, tier:"uncommon"},
+      {name:"Newbie", min:0, tier:"uncommon"},
+      {name:"Netflix account borrower", min:500, tier:"uncommon"},
+      {name:"Popcorn seller", min:1500, tier:"rare"},
+      {name:"Trailer addict", min:3500, tier:"rare"},
       {name:"Just one more episode", min:7000, tier:"epic"},
       {name:"Couch critic", min:13000, tier:"epic"},
       {name:"IMDb detective", min:22000, tier:"epic"},
@@ -2593,7 +2803,7 @@
           if(e.status==="watched") bd.finishes += 150;
         }
       });
-      const {earnedCount}=badgeState(computeCounts(entries)); bd.badges=earnedCount*200;
+      bd.badges=achXP();
       const xp=bd.films+bd.episodes+bd.finishes+bd.ratings+bd.gems+bd.rewatches+bd.badges;
       return {xp, bd};
     }
@@ -2620,7 +2830,7 @@
         if(e.type==="movie"){ if(e.status==="watched"){ const rt=e.runtime||0; bd.films += rt?(rt<90?60:(rt<=150?100:150)):100; movies++; } }
         else if(e.type==="tv"){ const eps=(e.watched_eps&&e.watched_eps.length)?e.watched_eps.length:(e.status==="watched"?(e.total_eps||0):0); bd.episodes+=eps*10; if(e.status==="watched"){ bd.finishes+=150; series++; } }
       });
-      const {earnedCount}=badgeState({movies,series,total,rated,gems}); bd.badges=earnedCount*200;
+      bd.badges=achXP();
       const xp=bd.films+bd.episodes+bd.finishes+bd.ratings+bd.gems+bd.rewatches+bd.badges;
       return {xp,bd};
     }
@@ -2644,25 +2854,21 @@
       $("rank-body").innerHTML=h;
     }
 
-    function renderBadges(counts){
-      const grid=$("badge-grid"), cnt=$("badge-count"); const {all, earnedCount}=badgeState(counts);
-      cnt.textContent=earnedCount; grid.innerHTML="";
-      all.forEach(b=>{ const el=document.createElement("div"); el.className="badge-item "+b.rarity+" "+(b.earned?"earned":"locked");
-        el.innerHTML=`<span class="bi-emoji">${b.emoji}</span><div style="flex:1;min-width:0"><div class="bi-name">${esc(b.name)}</div>
-          <div class="bi-sub">${b.earned?"Unlocked":esc(TR(b.desc))+" ("+b.prog+")"}</div></div>
-          <span class="rar rar-${b.rarity}">${b.rarity}</span>`;
-        el.onclick=()=>openBadge(b); grid.appendChild(el); });
-    }
-    // ---- badge info card ----
+    // ---- fiche d'un succes ----
     function openBadge(b){
-      $("bm-emoji").textContent=b.emoji;
-      $("bm-emoji").className="bm-emoji "+b.rarity;
-      $("bm-name").textContent=b.name;
-      const rar=$("bm-rar"); rar.textContent=b.rarity; rar.className="rar rar-"+b.rarity;
-      const _d=TR(b.desc); const _dl=_d.charAt(0).toLowerCase()+_d.slice(1)+".";
-      $("bm-desc").textContent = (b.earned ? "Unlocked: " : "How to unlock: ")+_dl;
-      $("bm-status").textContent = b.earned ? "Unlocked ✓" : ("Progress: "+b.prog);
-      $("bm-status").className = "bm-status "+(b.earned?"done":"");
+      $("bm-emoji").textContent=b.e;
+      $("bm-emoji").className="bm-emoji "+b.r;
+      $("bm-name").textContent=b.n;
+      const rar=$("bm-rar"); rar.textContent=b.r; rar.className="rar rar-"+b.r;
+      const _d=TR(b.d); const _dl=_d.charAt(0).toLowerCase()+_d.slice(1)+".";
+      $("bm-desc").textContent = (b.done ? "Unlocked: " : "How to unlock: ")+_dl;
+      let st;
+      if(b.done){ const at=achUnlockedAt[b.id];
+        st = at ? ("Unlocked on "+prettyDate(String(at).slice(0,10))) : "Unlocked ✓"; }
+      else if(b.pending) st = "Not tracked yet";
+      else st = "Progress: "+b.have+"/"+b.need;
+      $("bm-status").textContent = st;
+      $("bm-status").className = "bm-status "+(b.done?"done":"");
       $("badge-overlay").hidden=false; document.body.classList.add("no-scroll");
     }
     function closeBadge(){ $("badge-overlay").hidden=true; document.body.classList.remove("no-scroll"); }
@@ -2791,10 +2997,7 @@
       $("home-inprogress").textContent=inprog;
       $("home-watchlist").textContent=watchlist.length;
       $("home-greetsub").textContent = rows.length ? (counts.gems+(counts.gems===1?" gem":" gems")+" · "+friendsCache.length+(friendsCache.length===1?" friend":" friends")) : "Your collection is empty. Add something from Search.";
-      const brow=$("home-badges-row"); brow.innerHTML=""; $("home-badges-lab").hidden=!rows.length;
-      if(rows.length){ badgeState(counts).all.slice().sort((a,b)=>(b.earned?1:0)-(a.earned?1:0)).slice(0,12).forEach(b=>{
-        const el=document.createElement("div"); el.className="hbadge "+b.rarity+(b.earned?" earned":" locked");
-        el.textContent=b.emoji; el.title=b.name; el.onclick=()=>openBadge(b); brow.appendChild(el); }); }
+      renderHomeBadges();
       homePickPool = watchlist.slice(); $("home-pick-btn").hidden = !homePickPool.length;
       homeShelf("home-continue","home-continue-wrap", rows.filter(e=>e.status==="watching"));
       homeShelf("home-gems","home-gems-wrap", rows.filter(e=>e.is_gem));
@@ -2802,6 +3005,25 @@
       loadHomeRecos();
       $("home-time").textContent="…";
       computeWatchMinutes(rows).then(min=>{ $("home-time").textContent = fmtHours(min); }).catch(()=>{ $("home-time").textContent="—"; });
+    }
+    // Les derniers succes debloques, les plus recents d'abord.
+    function renderHomeBadges(){
+      const brow=$("home-badges-row"), lab=$("home-badges-lab"); if(!brow||!lab) return;
+      const all=achAll();
+      lab.hidden = !all.length;
+      brow.innerHTML="";
+      if(!all.length) return;
+      const earned=all.filter(a=>a.done).sort((a,b)=>{
+        const A=achUnlockedAt[a.id]||"", B=achUnlockedAt[b.id]||"";
+        return B.localeCompare(A);
+      });
+      // les derniers debloques d'abord, puis les plus proches du but, en grise
+      const close=all.filter(a=>!a.done && !a.pending)
+        .sort((a,b)=> (b.have/b.need) - (a.have/a.need));
+      const show=earned.concat(close).slice(0,12);
+      show.forEach(b=>{ const el=document.createElement("div");
+        el.className="hbadge "+b.r+(b.done?" earned":" locked"); el.textContent=b.e; el.title=b.n;
+        el.onclick=()=>openBadge(b); brow.appendChild(el); });
     }
     async function computeWatchMinutes(rows){
       let total=0;
@@ -3169,14 +3391,77 @@
     // ---- compare ----
     $("cmp-back").onclick=()=>showSection("friends");
 
-    // ---- achievements (dedicated screen, reached from Home) ----
+    // ---- ecran des succes ----
+    let achFilter="all", achOpenCats=new Set();
     async function openAchievements(){
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
-      $("section-universe").hidden=true;
+      $("section-universe").hidden=true; $("section-uni-builder").hidden=true; $("section-club").hidden=true;
+      $("section-rank").hidden=true; $("section-profile").hidden=true;
       $("section-achievements").hidden=false; window.scrollTo(0,0);
-      const {data}=await client.from("entries").select("status,rating,is_gem,media:media_id(type)").eq("user_id",currentUserId);
-      renderBadges(computeCounts((data||[]).filter(e=>e.media)));
+      if(!achResults){
+        $("ach-body").innerHTML='<div class="hint" id="ach-loading">Reading your collection...</div>';
+        await refreshAchievements({ onProgress:(n,t)=>{ const el=$("ach-loading");
+          if(el) el.textContent="Looking up "+n+" of "+t+" titles on TMDB..."; } });
+      } else {
+        refreshAchievements({silent:true});
+      }
+      renderAchievements();
+    }
+    function renderAchievements(){
+      const body=$("ach-body"); if(!body) return;
+      const all=achAll();
+      const earned=all.filter(a=>a.done);
+      $("badge-count").textContent=earned.length;
+      const pct=all.length?Math.round(earned.length/all.length*100):0;
+      const byR={uncommon:0,rare:0,epic:0,legendary:0};
+      earned.forEach(a=>{ byR[a.r]=(byR[a.r]||0)+1; });
+      const totR={uncommon:0,rare:0,epic:0,legendary:0};
+      all.forEach(a=>{ totR[a.r]=(totR[a.r]||0)+1; });
+      let h='<div class="ach-top"><div class="ach-bar"><div class="ach-fill" style="width:'+pct+'%"></div></div>'+
+            '<div class="ach-rars">'+["uncommon","rare","epic","legendary"].map(r=>
+              '<span class="rar rar-'+r+'"><b>'+byR[r]+'/'+totR[r]+'</b> '+r+'</span>').join("")+'</div></div>';
+      h+='<div class="seg ach-seg" id="ach-filter">'+
+         ['all','unlocked','locked'].map(f=>'<button data-v="'+f+'"'+(achFilter===f?' class="sel"':'')+'>'+
+            (f==="all"?"All":(f==="unlocked"?"Unlocked":"Locked"))+'</button>').join("")+'</div>';
+      SeenAchievements.cats.forEach(([key,label])=>{
+        const list=all.filter(a=>a.cat===key);
+        if(!list.length) return;
+        const got=list.filter(a=>a.done).length;
+        const shown=list.filter(a=> achFilter==="all" || (achFilter==="unlocked"?a.done:!a.done));
+        const open=achOpenCats.has(key);
+        h+='<div class="ach-cat"><button class="ach-chead'+(open?" open":"")+'" data-cat="'+key+'">'+
+             '<span class="ach-cname">'+esc(label)+'</span>'+
+             '<span class="ach-cn">'+got+'/'+list.length+'</span>'+
+             '<span class="ur-caret">'+(open?"▾":"▸")+'</span></button>';
+        if(open){
+          h+='<div class="ach-list">';
+          if(!shown.length) h+='<div class="hint">Nothing here.</div>';
+          shown.forEach(a=>{
+            const p=a.need>1 ? Math.round(Math.min(1,a.have/a.need)*100) : (a.done?100:0);
+            h+='<div class="ach-item '+a.r+' '+(a.done?"earned":"locked")+'" data-id="'+a.id+'">'+
+               '<span class="bi-emoji">'+a.e+'</span>'+
+               '<div class="ach-mid"><div class="bi-name">'+esc(a.n)+'</div>'+
+               '<div class="bi-sub">'+esc(TR(a.d))+'</div>'+
+               (a.done?'' : (a.pending?'<div class="ach-pending">Not tracked yet</div>'
+                    : '<div class="ach-prog"><div class="ach-pbar"><div class="ach-pfill" style="width:'+p+'%"></div></div>'+
+                      '<span class="ach-pn">'+a.have+'/'+a.need+'</span></div>'))+
+               '</div><span class="rar rar-'+a.r+'">'+a.r+'</span></div>';
+          });
+          h+='</div>';
+        }
+        h+='</div>';
+      });
+      body.innerHTML=h;
+      const seg=$("ach-filter");
+      if(seg) seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{ achFilter=b.dataset.v; renderAchievements(); });
+      body.querySelectorAll(".ach-chead").forEach(b=>b.onclick=()=>{
+        const k=b.dataset.cat; if(achOpenCats.has(k)) achOpenCats.delete(k); else achOpenCats.add(k);
+        renderAchievements();
+      });
+      body.querySelectorAll(".ach-item").forEach(el=>el.onclick=()=>{
+        const a=achAll().find(z=>z.id===el.dataset.id); if(a) openBadge(a);
+      });
     }
     $("rank-back").onclick=()=>showSection("home");
     $("ach-back").onclick=()=>showSection("home");
@@ -3216,6 +3501,11 @@
       const body=$("cmp-body"), hint=$("cmp-hint");
       body.innerHTML=""; hint.hidden=false; hint.textContent="Loading "+friend.username+"'s collection...";
       const [mine, theirs, theirUnis]=await Promise.all([ fetchEntriesFull(currentUserId), fetchEntriesFull(friend.friendId), fetchPublicUniverses(friend.friendId) ]);
+      try{ const {data:ta}=await client.from("achievements").select("ach_id").eq("user_id",friend.friendId);
+        const set=new Set((ta||[]).map(r=>r.ach_id));
+        friend._ach=SeenAchievements.list.map(a=>({id:a.id,n:a.n,d:a.d,cat:a.cat,r:a.r,e:a.e,need:a.need,
+          have:set.has(a.id)?a.need:0, done:set.has(a.id)}));
+      }catch(_){ friend._ach=[]; }
       await ensureTitles(mine.concat(theirs).map(e=>e.media));
       await refreshSubs();
       hint.hidden=true; renderCompare(friend, mine, theirs, theirUnis);
@@ -3238,7 +3528,7 @@
 
       // Personalised profile header — the same showcase as "view my profile",
       // honouring this friend's own avatar, accent, bio, genres and visibility toggles.
-      renderProfileShowcase(body, {profile:friend, username:friend.username, entries:theirs, self:false,
+      renderProfileShowcase(body, {profile:friend, username:friend.username, entries:theirs, self:false, ach:friend._ach,
         onClose:()=>{ if(compareFriend) openCompare(compareFriend); }});
 
       if(theirUnis && theirUnis.length){
