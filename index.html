@@ -750,6 +750,14 @@
     .ubep-chip { width: 38px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--field); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; }
     .ubep-chip.on { background: rgba(139,92,246,.18); border-color: #8b5cf6; color: #a98be6; }
     .ub-actions { margin-top: 22px; }
+    .ub-lbx { margin-top: 10px; background: none; border: 1px dashed var(--line); color: var(--muted); border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; }
+    .lbx-btn { flex: 0 0 auto; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--field); color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer; }
+    .lbx-guide { margin: 12px 0 4px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--field); }
+    .lbx-guide summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+    .lbx-step { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; font-size: 13.5px; line-height: 1.45; }
+    .lbx-step > b { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .lbx-tip { margin-top: 12px; font-size: 13px; color: var(--muted); line-height: 1.45; }
+    #lbx-ov textarea.ub-inp { font-family: inherit; resize: vertical; }
     .ub-save { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
     /* shared universes (subscribe) */
     .uni-share-row { align-items: center; }
@@ -986,6 +994,132 @@
     .danger-btn-final { display: block; width: 100%; margin-top: 14px; padding: 14px; background: var(--err); color: #fff; border-color: transparent; }
     .danger-btn-final:disabled { opacity: .4; cursor: default; }
     .reset-cancel { display: block; width: 100%; margin-top: 8px; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; }
+    /* ================= Achievements 1.3: medals, trophy case, compare ================= */
+    .medal { --rc: 130,140,160; position: relative; flex: 0 0 auto; width: 52px; height: 52px; border-radius: 15px;
+      display: flex; align-items: center; justify-content: center; font-size: 25px; line-height: 1;
+      background: radial-gradient(130% 130% at 28% 18%, rgba(var(--rc),.30), rgba(var(--rc),.07) 58%, var(--card-2));
+      border: 1.5px solid rgba(var(--rc),.6); }
+    .medal .me { position: relative; z-index: 2; }
+    .medal::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1; }
+    .medal.sm { width: 40px; height: 40px; border-radius: 12px; font-size: 19px; }
+    .medal.lg { width: 96px; height: 96px; border-radius: 26px; font-size: 50px; border-width: 2px; }
+    /* the rarer, the brighter */
+    .medal.uncommon { --rc: 56,193,114; box-shadow: 0 0 7px -3px rgba(var(--rc),.5); }
+    .medal.rare { --rc: 74,144,217; box-shadow: 0 0 12px -3px rgba(var(--rc),.6); }
+    .medal.epic { --rc: 165,107,255; animation: medal-glow-e 3.4s ease-in-out infinite; }
+    .medal.legendary { --rc: 255,178,62; animation: medal-glow-l 2.6s ease-in-out infinite; }
+    .medal.epic::after, .medal.legendary::after {
+      background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.32) 50%, transparent 62%);
+      background-size: 260% 100%; background-position: 160% 0; animation: medal-shine 5s ease-in-out infinite; }
+    .medal.legendary::after { background-image: linear-gradient(115deg, transparent 36%, rgba(255,236,190,.6) 50%, transparent 64%); animation-duration: 3.4s; }
+    .medal.lg.legendary { box-shadow: 0 0 34px 2px rgba(var(--rc),.55); }
+    @keyframes medal-glow-e { 0%,100% { box-shadow: 0 0 12px -2px rgba(var(--rc),.45), inset 0 0 8px -4px rgba(var(--rc),.7); }
+                              50% { box-shadow: 0 0 20px 0 rgba(var(--rc),.7), inset 0 0 12px -3px rgba(var(--rc),.9); } }
+    @keyframes medal-glow-l { 0%,100% { box-shadow: 0 0 16px 0 rgba(var(--rc),.55), inset 0 0 10px -3px rgba(var(--rc),.8); }
+                              50% { box-shadow: 0 0 28px 3px rgba(var(--rc),.85), inset 0 0 16px -2px rgba(var(--rc),1); } }
+    @keyframes medal-shine { 0%, 55% { background-position: 160% 0; } 100% { background-position: -60% 0; } }
+    .medal.locked { --rc: 130,140,160; animation: none; box-shadow: none; border-style: dashed; background: var(--card-2); }
+    .medal.locked::after { display: none; }
+    .medal.locked .me { filter: grayscale(1); opacity: .42; }
+
+    /* home trophy case */
+    .trophy { background: linear-gradient(160deg, rgba(var(--accent-rgb),.10), transparent 55%), var(--card);
+      border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+    .tr-head { display: flex; align-items: center; gap: 14px; }
+    .tr-count { font-family: var(--disp); font-weight: 800; font-size: 30px; line-height: 1; }
+    .tr-count span { color: var(--muted); font-size: 16px; font-weight: 700; }
+    .tr-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .tr-rars { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .tr-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--text-soft); }
+    .tr-dot i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .tr-dot.uncommon i { background: var(--ok); } .tr-dot.rare i { background: var(--watch); }
+    .tr-dot.epic i { background: var(--epic); box-shadow: 0 0 6px var(--epic); } .tr-dot.legendary i { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+    .tr-shelf { display: flex; gap: 14px; overflow-x: auto; padding: 16px 4px 6px; margin: 0 -4px; scrollbar-width: none; }
+    .tr-shelf::-webkit-scrollbar { display: none; }
+    .tr-item { flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; }
+    .tr-item .tn { font-size: 10.5px; line-height: 1.2; text-align: center; color: var(--text-soft); max-width: 64px;
+      overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .tr-lab { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 12px 0 8px; font-weight: 700; }
+    .tr-next { display: flex; align-items: center; gap: 12px; padding: 7px 0; cursor: pointer; }
+    .tr-next .tx { flex: 1; min-width: 0; }
+    .tr-next .tt { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tr-next .ach-prog { margin-top: 5px; }
+    .tr-empty { color: var(--muted); font-size: 13px; padding: 12px 0 2px; }
+
+    /* achievements screen */
+    #section-achievements .ach-head { display: none; }
+    .ach-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; padding: 18px; border-radius: 20px; margin-bottom: 14px;
+      background: radial-gradient(120% 140% at 0% 0%, rgba(var(--accent-rgb),.16), transparent 60%), var(--card); border: 1px solid var(--line); }
+    .ach-ring { --p: 0; flex: 0 0 auto; width: 92px; height: 92px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--card-2) 0); position: relative; }
+    .ach-ring::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--card); }
+    .ach-ring b { position: relative; font-family: var(--disp); font-size: 24px; font-weight: 800; line-height: 1; text-align: center; }
+    .ach-ring b small { display: block; font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 3px; font-family: var(--body); }
+    .ach-hero-r { flex: 1; min-width: 0; }
+    .ach-hero-t { font-family: var(--disp); font-weight: 800; font-size: 20px; line-height: 1.15; }
+    .ach-hero-s { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
+    .ach-rgrid { flex-basis: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .ach-rc { display: flex; align-items: center; justify-content: space-between; gap: 6px; white-space: nowrap; min-width: 0; }
+    .ach-rc b { font-size: 13px; }
+    .ach-cmp-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; margin-bottom: 14px;
+      border-radius: 14px; border: 1px solid rgba(var(--accent-rgb),.45); background: rgba(var(--accent-rgb),.08); color: var(--text); font-weight: 700; font-size: 14px; cursor: pointer; }
+    .ach-chead { flex-wrap: wrap; }
+    .ach-cbar { flex-basis: 100%; height: 4px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 2px; }
+    .ach-cbar i { display: block; height: 100%; background: var(--accent); }
+    .ach-item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+    .ach-item.locked { opacity: 1; }
+    .ach-item.locked .bi-name { color: var(--text-soft); }
+    .ach-item.earned.legendary { background: linear-gradient(100deg, rgba(255,178,62,.10), transparent 60%), var(--card); }
+    .ach-item.earned.epic { background: linear-gradient(100deg, rgba(165,107,255,.09), transparent 60%), var(--card); }
+    .ach-when { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    /* badge card: titles that counted */
+    .badge-modal { max-width: 380px; max-height: calc(100vh - 40px); overflow-y: auto; }
+    .bm-emoji.medal { margin: 6px auto 14px; }
+    .bm-titles { margin-top: 18px; text-align: left; }
+    .bm-tlab { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+    .bm-tgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .bm-t { cursor: pointer; min-width: 0; }
+    .bm-t img, .bm-t .ph { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; background: var(--card-2); display: block; }
+    .bm-t .tt { font-size: 10.5px; line-height: 1.2; margin-top: 4px; color: var(--text-soft); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .bm-more { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .bm-friend { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13.5px; font-weight: 700; color: var(--text-soft); }
+
+    /* compare with a friend */
+    .ac-pick { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .ac-friend { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); cursor: pointer; color: var(--text); font-size: 15px; font-weight: 700; text-align: left; }
+    .ac-vs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; padding: 16px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); margin-bottom: 14px; }
+    .ac-side { text-align: center; min-width: 0; }
+    .ac-side .nm { font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ac-side .ct { font-family: var(--disp); font-weight: 800; font-size: 30px; line-height: 1.1; }
+    .ac-side .xp { color: var(--muted); font-size: 12px; }
+    .ac-mid { font-family: var(--disp); font-weight: 800; color: var(--muted); font-size: 15px; }
+    .ac-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; scrollbar-width: none; }
+    .ac-tabs::-webkit-scrollbar { display: none; }
+    .ac-tabs button { flex: 0 0 auto; padding: 8px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; }
+    .ac-tabs button.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .ac-row { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); margin-bottom: 8px; cursor: pointer; }
+    .ac-row .tx { flex: 1; min-width: 0; }
+    .ac-row .tt { font-weight: 700; font-size: 14px; }
+    .ac-row .ds { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+    .ac-bars { margin-top: 7px; display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: center; font-size: 11px; color: var(--muted); font-weight: 700; }
+    .ac-bars .b { height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; }
+    .ac-bars .b i { display: block; height: 100%; background: var(--accent); }
+    .ac-bars .b.them i { background: var(--watch); }
+    /* collection filters */
+    .cf-bar { display: flex; gap: 8px; margin: -4px 0 12px; }
+    .cf-bar input { flex: 1; min-width: 0; padding: 10px 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 15px; font-family: inherit; }
+    .cf-btn { flex: 0 0 auto; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-weight: 700; font-size: 14px; cursor: pointer; }
+    .cf-btn.on { border-color: var(--accent); color: var(--accent); }
+    .cf-panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 14px; }
+    .cf-panel[hidden] { display: none; }
+    .cf-row { margin-bottom: 12px; min-width: 0; }
+    .cf-row label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+    .cf-row select.ub-inp { appearance: none; -webkit-appearance: none; }
+    .cf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0 12px; }
+    .cf-count { font-size: 13px; color: var(--muted); margin: -2px 0 12px; display: flex; align-items: center; gap: 10px; }
+    .cf-count[hidden] { display: none; }
+    .cf-clear { background: none; border: none; color: var(--accent); font-weight: 700; font-size: 13px; cursor: pointer; padding: 0; }
   </style>
   <script>
     /* Applique le theme + l'accent en cache AVANT le rendu, pour eviter le flash. */
@@ -1076,7 +1210,7 @@
       </button>
       <div class="row-lab" id="home-universes-lab" hidden>Universe watch orders</div>
       <div id="home-universes-wrap" hidden><div class="uni-shelf" id="home-universes"></div></div>
-      <div class="row-lab home-tap" id="home-badges-lab" hidden>Latest achievements<span class="seeall">See all ›</span></div>
+      <div class="row-lab home-tap" id="home-badges-lab" hidden>Achievements<span class="seeall">See all ›</span></div>
       <div class="home-badges home-tap" id="home-badges-row"></div>
       <div class="shelf-wrap" id="home-continue-wrap" hidden>
         <div class="shelf-title">Continue watching</div>
@@ -1114,6 +1248,9 @@
         <div class="pill" data-f="watching">Watching</div>
         <div class="pill" data-f="watched">Watched</div>
       </div>
+      <div class="cf-bar"><input id="cf-q" type="search" autocomplete="off" placeholder="Title, actor, director…"/><button class="cf-btn" id="cf-open">Filters<span id="cf-n"></span></button></div>
+      <div class="cf-panel" id="cf-panel" hidden></div>
+      <div class="cf-count" id="cf-count" hidden></div>
       <div class="grid" id="collection"></div>
       <div class="hint" id="collection-hint">Loading your collection...</div>
     </div>
@@ -1235,7 +1372,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.1</div>
+    <div class="appfoot">Seen · v1.3</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1324,6 +1461,7 @@
       <span class="rar" id="bm-rar"></span>
       <div class="bm-desc" id="bm-desc"></div>
       <div class="bm-status" id="bm-status"></div>
+      <div id="bm-titles"></div>
     </div>
   </div>
 
@@ -1468,7 +1606,7 @@
         // meme utilisateur, app deja affichee : simple rafraichissement de jeton, on ne touche a rien
         if(currentUserId===session.user.id && !appView.hidden) return;
         showApp(session); }
-      else { currentUserId=null; myEntries={}; myProfile=null; friendsCache=[]; compareFriend=null; applyMyAccent(null); appView.hidden=true; authView.hidden=false; } }
+      else { currentUserId=null; myEntries={}; myProfile=null; friendsCache=[]; compareFriend=null; colRows=[]; colFacts=null; achState=null; achCmp=null; applyMyAccent(null); appView.hidden=true; authView.hidden=false; } }
 
     submitBtn.onclick=async()=>{ const email=emailInput.value.trim(),password=passwordInput.value,username=usernameInput.value.trim();
       if(!email||!password){ setMsg("Please fill in email and password.","err"); return; }
@@ -1703,11 +1841,15 @@
         '<div class="sett-lab">Episodes</div>'+
         '<div class="tg-row first"><div><div class="tgl">Show episode titles</div><div class="tgs">Off hides episode names to avoid spoilers</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-eptitles" '+(showEpTitles()?"checked":"")+'><span class="sl"></span></label></div>'+
+        '<div class="sett-lab">Import</div>'+
+        '<div class="tg-row first"><div><div class="tgl">Letterboxd</div><div class="tgs">Import a list, your watchlist or your watched films</div></div>'+
+          '<button class="lbx-btn" id="set-lbx">Import…</button></div>'+
         '<div class="sett-lab danger-lab">Danger zone</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
           '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
-        '<div class="sett-ver">Seen · v1.1</div></div>';
+        '<div class="sett-ver">Seen · v1.3</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
+      { const lb=$("set-lbx"); if(lb) lb.onclick=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); openLetterboxdImport(); }; }
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       { const lg=$("set-lang"); if(lg){ paintSeg(lg, LANG);
           lg.querySelectorAll("button").forEach(b=>b.onclick=()=>{ if(b.dataset.v!==LANG) setSeenLang(b.dataset.v); }); } }
@@ -1973,14 +2115,104 @@
       return { items: all.filter(r=>r.media_type==="movie"||r.media_type==="tv"),
                persons: all.filter(r=>r.media_type==="person") };
     }
-    // Recherche en cascade : la requete telle quelle, puis corrigee, puis
-    // reduite aux mots les plus distinctifs. Les resultats des replis sont
-    // reclasses par ressemblance avec ce qui a vraiment ete tape.
+    // ---- search helpers ----
+    const tmdbGet=(path, params)=>fetch(`https://api.themoviedb.org/3/${path}?api_key=${TMDB_KEY}&language=${tmdbLang()}&include_adult=false&${params||""}`)
+      .then(r=>r.ok?r.json():null).catch(()=>null);
+    const nq=s=>SeenFuzzy.norm(s||"");
+    function isExact(q, it){ const n=nq(q); return !!n && (nq(it.title||it.name)===n || nq(it.original_title||it.original_name)===n); }
+    function bestSim(q, it){ return Math.max(SeenFuzzy.sim(q, it.title||it.name||""), SeenFuzzy.sim(q, it.original_title||it.original_name||"")); }
+    // Exact title matches jump to the top (most popular first); everything else keeps TMDB's order.
+    function exactFirst(q, items){
+      const ex=[], rest=[];
+      items.forEach(it=>(isExact(q,it)?ex:rest).push(it));
+      ex.sort((a,b)=>(b.popularity||0)-(a.popularity||0));
+      return ex.concat(rest);
+    }
+    function dedupe(items){ const seen=new Set(); return items.filter(it=>{ const k=it.media_type+"_"+it.id; if(seen.has(k)) return false; seen.add(k); return true; }); }
+    // search/movie and search/tv rank differently from search/multi: for a one-word title like "Super"
+    // the film can sit past the first page of multi. Pull exact matches from both.
+    async function exactRescue(q){
+      const [m,t]=await Promise.all([ tmdbGet("search/movie","query="+encodeURIComponent(q)), tmdbGet("search/tv","query="+encodeURIComponent(q)) ]);
+      const all=((m&&m.results)||[]).map(x=>Object.assign({media_type:"movie"},x))
+        .concat(((t&&t.results)||[]).map(x=>Object.assign({media_type:"tv"},x)));
+      return all.filter(it=>isExact(q,it));
+    }
+    // "super 2010" / "super (2010)": title plus a release year.
+    const YEAR_TAIL=/^(.+?)\s*\(?((?:18|19|20)\d{2})\)?$/;
+    async function yearSearch(title, year){
+      const q=encodeURIComponent(title);
+      const [m,t]=await Promise.all([ tmdbGet("search/movie","query="+q+"&year="+year), tmdbGet("search/tv","query="+q+"&first_air_date_year="+year) ]);
+      const all=((m&&m.results)||[]).map(x=>Object.assign({media_type:"movie"},x))
+        .concat(((t&&t.results)||[]).map(x=>Object.assign({media_type:"tv"},x)));
+      return exactFirst(title, all.sort((a,b)=>bestSim(title,b)-bestSim(title,a)));
+    }
+    // Find a person from a (possibly misspelled) name. "gunn" matches James Gunn by surname.
+    async function findPerson(name){
+      const n=nq(name); if(n.length<3) return null;
+      const words=n.split(" ").filter(w=>w.length>=3).sort((a,b)=>b.length-a.length);
+      const queries=[n].concat(words.length>1?words.slice(0,2):[]);
+      const res=await Promise.all(queries.map(x=>tmdbGet("search/person","query="+encodeURIComponent(x))));
+      const pool=dedupe([].concat(...res.map(r=>((r&&r.results)||[]).map(p=>Object.assign({media_type:"person"},p)))));
+      const ok=pool.filter(p=>{ const pn=nq(p.name);
+        return pn===n || (n.indexOf(" ")<0 && pn.split(" ").pop()===n && (p.popularity||0)>=2) || (n.indexOf(" ")>0 && SeenFuzzy.sim(n, pn)>=0.72); });
+      ok.sort((a,b)=>(b.popularity||0)-(a.popularity||0));
+      return ok[0]||null;
+    }
+    // "super rainn wilson", "super gunn", "rainn wilson super": a title narrowed down by someone in it.
+    async function titleWithPerson(query){
+      const w=nq(query).split(" "); if(w.length<2) return null;
+      const splits=[];
+      for(let k=Math.min(3,w.length-1); k>=1; k--){
+        splits.push({title:w.slice(0,w.length-k).join(" "), person:w.slice(w.length-k).join(" ")});
+        splits.push({title:w.slice(k).join(" "), person:w.slice(0,k).join(" ")});
+      }
+      const cands=splits.filter(s=>s.person.replace(/ /g,"").length>=4 && s.title.length>=2).slice(0,4);
+      const persons=await Promise.all(cands.map(s=>findPerson(s.person)));
+      for(let i=0;i<cands.length;i++){
+        const p=persons[i]; if(!p) continue;
+        const d=await tmdbGet(`person/${p.id}/combined_credits`,"");
+        if(!d) continue;
+        const t=cands[i].title;
+        const hits=dedupe((d.cast||[]).concat(d.crew||[]))
+          .filter(c=>(c.media_type==="movie"||c.media_type==="tv"))
+          .filter(c=>isExact(t,c) || nq(c.title||c.name).startsWith(t+" ") || nq(c.original_title||c.original_name).startsWith(t+" ") || bestSim(t,c)>=0.8);
+        if(hits.length){
+          hits.sort((a,b)=>(isExact(t,b)-isExact(t,a)) || (bestSim(t,b)-bestSim(t,a)) || ((b.popularity||0)-(a.popularity||0)));
+          return {items:hits, person:p, title:t};
+        }
+      }
+      return null;
+    }
+    // Recherche en cascade : annee, puis la requete telle quelle (titres exacts d'abord),
+    // puis titre + personne, puis corrigee, puis reduite aux mots les plus distinctifs.
     async function smartSearch(query, seqCheck){
+      const ym=query.match(YEAR_TAIL);
+      if(ym && ym[1].trim().length>=2){
+        const items=await yearSearch(ym[1].trim(), ym[2]);
+        if(seqCheck && !seqCheck()) return null;
+        if(items.length) return {items, persons:[], used:null, label:ym[1].trim()+" ("+ym[2]+")"};
+      }
       const first=await tmdbSearch(query);
       if(seqCheck && !seqCheck()) return null;
       let items=first.items, persons=first.persons, used=null;
+      if(items.length && !items.some(it=>isExact(query,it)) && nq(query).split(" ").length<=3){
+        const ex=await exactRescue(query);
+        if(seqCheck && !seqCheck()) return null;
+        if(ex.length) items=dedupe(ex.concat(items));
+      }
+      if(items.length) items=exactFirst(query, items);
+      const strong=items.some(it=>isExact(query,it) || bestSim(query,it)>=0.75);
+      const hasPerson=persons.some(p=>p && p.name && SeenFuzzy.sim(query,p.name)>=0.5);
+      if(!strong && !hasPerson){
+        const tp=await titleWithPerson(query);
+        if(seqCheck && !seqCheck()) return null;
+        if(tp) return {items:dedupe(tp.items.concat(items)), persons:[], used:null, label:tp.title+" · "+tp.person.name};
+      }
       if(items.length) return {items, persons, used:null};
+      // Nothing at all: maybe a misspelled person ("eliott page").
+      const who=await findPerson(query);
+      if(seqCheck && !seqCheck()) return null;
+      if(who) return {items:[], persons:[who], used:who.name};
       const fixed=SeenFuzzy.correct(query);
       if(fixed){
         const r=await tmdbSearch(fixed);
@@ -1997,9 +2229,7 @@
         }
       }
       if(items.length && used){
-        items=items.map(it=>({it, sc:Math.max(
-            SeenFuzzy.sim(query, it.title||it.name||""),
-            SeenFuzzy.sim(query, it.original_title||it.original_name||""))}))
+        items=items.map(it=>({it, sc:bestSim(query,it)}))
           .sort((a,b)=> (b.sc-a.sc) || ((b.it.popularity||0)-(a.it.popularity||0)))
           .map(x=>x.it);
       }
@@ -2036,7 +2266,7 @@
         const k=c.media_type+"_"+c.id;
         if(seen.has(k) || known.has(k)) continue;
         seen.add(k); list.push(c);
-        if(list.length>=18) break;
+        if(list.length>=60) break;
       }
       if(!list.length) return false;
       const lab=$("person-label"), box=$("person-results");
@@ -2066,7 +2296,7 @@
           return;
         }
         hint.hidden=true; resultsLabel.hidden=false;
-        resultsLabel.textContent = out.used ? ('Results for "'+out.used+'"') : "Results";
+        resultsLabel.textContent = out.label ? ('Results for "'+out.label+'"') : out.used ? ('Results for "'+out.used+'"') : "Results";
         renderItems(items);
         showPersonCredits(out.used||query, out.persons, seq);
       }catch(e){ if(seq===searchSeq){ hint.hidden=false; hint.textContent="Search failed: "+(e&&e.message?e.message:e); } }
@@ -2123,7 +2353,7 @@
     async function loadCollection(){
       collectionHint.hidden=true; collection.innerHTML='<div class="skel-grid">'+Array.from({length:12}).map(()=>'<div class="skel skel-poster"></div>').join("")+'</div>';
       let query=client.from("entries")
-        .select("id, status, rating, last_season, last_episode, is_gem, seen_at_cinema, rewatch_count, added_at, media:media_id ( tmdb_id, type, title, poster_url, year )")
+        .select("id, status, rating, last_season, last_episode, is_gem, seen_at_cinema, rewatch_count, added_at, media:media_id ( id, tmdb_id, type, title, poster_url, year )")
         .eq("user_id", currentUserId)
         .order("added_at",{ascending:false});
       if(collectionFilter!=="all") query=query.eq("status",collectionFilter);
@@ -2132,9 +2362,113 @@
       renderMyGems();
       collection.innerHTML="";
       if(error){ collectionHint.hidden=false; collectionHint.textContent="Could not load: "+error.message; return; }
-      if(!data||!data.length){ collectionHint.hidden=false; collectionHint.textContent=collectionFilter==="all"?"Your collection is empty. Add titles from Search.":"Nothing here yet."; return; }
-      currentDisplays=data.map(e=>displayFromMedia(e.media)); collectionHint.hidden=true; for(const entry of data) collection.appendChild(collectionCard(entry));
+      if(!data||!data.length){ colRows=[]; renderCollectionGrid(); collectionHint.hidden=false; collectionHint.textContent=collectionFilter==="all"?"Your collection is empty. Add titles from Search.":"Nothing here yet."; return; }
+      colRows=data.filter(e=>e.media);
+      if(colFacts && colRows.some(e=>!(e.media.id in colFacts))) colFacts=null;   // new titles since the last load
+      collectionHint.hidden=true; applyColFilters();
     }
+    // ---- collection filters ----
+    // Everything filters on the client: the list is already loaded, and the TMDB fact sheets
+    // (cast, crew, countries, genres) are fetched once, only when a filter needs them.
+    let colRows=[], colFacts=null, colFactsLoading=null;
+    const colState={q:"", type:"all", sort:"added", director:"", actor:"", country:"", decade:"", genre:""};
+    function colActiveCount(){ return ["director","actor","country","decade","genre"].filter(k=>colState[k]).length + (colState.type!=="all"?1:0) + (colState.sort!=="added"?1:0); }
+    function colNeedsFacts(){ return !!(colState.q || colState.director || colState.actor || colState.country || colState.genre); }
+    async function loadColFacts(){
+      if(colFacts) return colFacts;
+      if(colFactsLoading) return colFactsLoading;
+      colFactsLoading=(async()=>{
+        const map={};
+        try{
+          const {data}=await client.from("entries").select("media:media_id(id,facts)").eq("user_id",currentUserId);
+          (data||[]).forEach(e=>{ if(e.media && e.media.facts) map[e.media.id]=e.media.facts; });
+        }catch(_){}
+        colFacts=map; colFactsLoading=null; return map;
+      })();
+      return colFactsLoading;
+    }
+    function colFiltered(){
+      const st=colState, F=e=>(colFacts&&colFacts[e.media.id])||null, has=(s,n)=>nq(s).indexOf(n)>=0;
+      let list=colRows.filter(e=>e.media);
+      if(st.type!=="all") list=list.filter(e=>e.media.type===st.type);
+      if(st.decade) list=list.filter(e=>{ const y=parseInt(e.media.year,10); return y && Math.floor(y/10)*10===+st.decade; });
+      if(st.q){ const n=nq(st.q);
+        list=list.filter(e=>{ const m=e.media, f=F(e);
+          if(has(locTitle(m),n) || has(m.title,n)) return true;
+          return !!f && (has(f.t,n) || (f.cast||[]).some(p=>has(p[1],n)) || (f.crew||[]).some(p=>has(p[1],n))); }); }
+      if(st.director){ const n=nq(st.director);
+        list=list.filter(e=>{ const f=F(e); return !!f && (f.crew||[]).some(p=>(p[2]==="Director"||p[2]==="Creator") && has(p[1],n)); }); }
+      if(st.actor){ const n=nq(st.actor);
+        list=list.filter(e=>{ const f=F(e); return !!f && (f.cast||[]).some(p=>has(p[1],n)); }); }
+      if(st.country) list=list.filter(e=>{ const f=F(e); return !!f && ((f.c||[]).indexOf(st.country)>=0 || (f.oc||[]).indexOf(st.country)>=0); });
+      if(st.genre) list=list.filter(e=>{ const f=F(e); return !!f && (f.g||[]).indexOf(st.genre)>=0; });
+      const T=e=>locTitle(e.media)||"";
+      if(st.sort==="title") list.sort((a,b)=>T(a).localeCompare(T(b), LANG));
+      else if(st.sort==="new") list.sort((a,b)=>(parseInt(b.media.year,10)||0)-(parseInt(a.media.year,10)||0));
+      else if(st.sort==="old") list.sort((a,b)=>(parseInt(a.media.year,10)||9999)-(parseInt(b.media.year,10)||9999));
+      else if(st.sort==="rating") list.sort((a,b)=>(b.rating||0)-(a.rating||0));
+      return list;
+    }
+    function renderCollectionGrid(){
+      const list=colFiltered();
+      collection.innerHTML="";
+      const cnt=$("cf-count"), n=colActiveCount()+(colState.q?1:0);
+      $("cf-n").textContent = colActiveCount() ? " · "+colActiveCount() : "";
+      if(cnt){ cnt.hidden = !n; cnt.innerHTML = n ? ('<span>'+list.length+" of "+colRows.length+' titles</span><button class="cf-clear" id="cf-clear">Clear filters</button>') : "";
+        const cl=$("cf-clear"); if(cl) cl.onclick=()=>{ Object.assign(colState,{q:"",type:"all",sort:"added",director:"",actor:"",country:"",decade:"",genre:""}); $("cf-q").value=""; if(!$("cf-panel").hidden) renderColPanel(); renderCollectionGrid(); }; }
+      if(!colRows.length) return;
+      if(!list.length){ collectionHint.hidden=false; collectionHint.textContent = (colNeedsFacts() && !colFacts) ? "Loading details..." : "Nothing matches these filters."; currentDisplays=[]; return; }
+      collectionHint.hidden=true;
+      currentDisplays=list.map(e=>displayFromMedia(e.media));
+      const frag=document.createDocumentFragment(); list.forEach(e=>frag.appendChild(collectionCard(e))); collection.appendChild(frag);
+    }
+    async function applyColFilters(){
+      if(colNeedsFacts() && !colFacts){ renderCollectionGrid(); await loadColFacts(); }
+      renderCollectionGrid();
+    }
+    function colOptions(){
+      const people={dir:{}, act:{}}, countries={}, genres={}, decades={};
+      colRows.forEach(e=>{ const m=e.media; if(!m) return;
+        const y=parseInt(m.year,10); if(y) decades[Math.floor(y/10)*10]=(decades[Math.floor(y/10)*10]||0)+1;
+        const f=colFacts&&colFacts[m.id]; if(!f) return;
+        (f.crew||[]).forEach(p=>{ if(p[2]==="Director"||p[2]==="Creator") people.dir[p[1]]=(people.dir[p[1]]||0)+1; });
+        (f.cast||[]).slice(0,10).forEach(p=>{ people.act[p[1]]=(people.act[p[1]]||0)+1; });
+        new Set((f.c||[]).concat(f.oc||[])).forEach(c=>{ countries[c]=(countries[c]||0)+1; });
+        (f.g||[]).forEach(g=>{ genres[g]=(genres[g]||0)+1; }); });
+      const top=(o,n)=>Object.keys(o).sort((a,b)=>o[b]-o[a]).slice(0,n);
+      return { dir:top(people.dir,300), act:top(people.act,400),
+        countries:Object.keys(countries).map(c=>({c, name:statCountryName(c), n:countries[c]})).sort((a,b)=>a.name.localeCompare(b.name, LANG)),
+        genres:Object.keys(genres).map(g=>({g, name:TR(g), n:genres[g]})).sort((a,b)=>a.name.localeCompare(b.name, LANG)),
+        decades:Object.keys(decades).map(Number).sort((a,b)=>b-a) };
+    }
+    function renderColPanel(){
+      const p=$("cf-panel"); const st=colState; const o=colOptions();
+      const opt=(v,label,cur)=>'<option value="'+esc(String(v))+'"'+(String(cur)===String(v)?' selected':'')+'>'+esc(label)+'</option>';
+      p.innerHTML=
+        '<div class="cf-row"><label>Type</label><div class="seg" id="cf-type">'+
+          [["all","All"],["movie","Movies"],["tv","TV shows"]].map(t=>'<button data-v="'+t[0]+'"'+(st.type===t[0]?' class="sel"':'')+'>'+t[1]+'</button>').join("")+'</div></div>'+
+        '<div class="cf-row"><label>Sort by</label><select id="cf-sort" class="ub-inp">'+
+          [["added","Recently added"],["title","Title (A to Z)"],["new","Newest first"],["old","Oldest first"],["rating","My rating"]].map(t=>opt(t[0],t[1],st.sort)).join("")+'</select></div>'+
+        '<div class="cf-grid">'+
+          '<div class="cf-row"><label>Director or creator</label><input id="cf-dir" class="ub-inp" list="cf-dir-l" value="'+esc(st.director)+'" placeholder="Any"/><datalist id="cf-dir-l">'+o.dir.map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist></div>'+
+          '<div class="cf-row"><label>Actor</label><input id="cf-act" class="ub-inp" list="cf-act-l" value="'+esc(st.actor)+'" placeholder="Any"/><datalist id="cf-act-l">'+o.act.map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist></div>'+
+          '<div class="cf-row"><label>Country of origin</label><select id="cf-country" class="ub-inp">'+opt("","Any",st.country)+o.countries.map(c=>opt(c.c,c.name+" ("+c.n+")",st.country)).join("")+'</select></div>'+
+          '<div class="cf-row"><label>Decade</label><select id="cf-decade" class="ub-inp">'+opt("","Any",st.decade)+o.decades.map(d=>opt(d,d+"s",st.decade)).join("")+'</select></div>'+
+          '<div class="cf-row"><label>Genre</label><select id="cf-genre" class="ub-inp">'+opt("","Any",st.genre)+o.genres.map(g=>opt(g.g,g.name+" ("+g.n+")",st.genre)).join("")+'</select></div>'+
+        '</div>'+(colFacts?'':'<div class="hint" style="margin-top:8px">Loading details...</div>');
+      p.querySelectorAll("#cf-type button").forEach(b=>b.onclick=()=>{ st.type=b.dataset.v; p.querySelectorAll("#cf-type button").forEach(x=>x.classList.toggle("sel",x===b)); applyColFilters(); });
+      const bind=(id,key,ev)=>{ const el=$(id); let t=null; el.addEventListener(ev,()=>{ clearTimeout(t); t=setTimeout(()=>{ st[key]=el.value.trim(); applyColFilters(); }, ev==="input"?250:0); }); };
+      bind("cf-sort","sort","change"); bind("cf-country","country","change"); bind("cf-decade","decade","change"); bind("cf-genre","genre","change");
+      bind("cf-dir","director","input"); bind("cf-act","actor","input");
+    }
+    function initColFilters(){
+      const q=$("cf-q"); let t=null;
+      q.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ colState.q=q.value.trim(); applyColFilters(); },200); });
+      $("cf-open").onclick=async()=>{ const p=$("cf-panel"); p.hidden=!p.hidden; $("cf-open").classList.toggle("on",!p.hidden);
+        if(!p.hidden){ renderColPanel(); if(!colFacts){ await loadColFacts(); if(!p.hidden) renderColPanel(); } } };
+    }
+    try{ initColFilters(); }catch(_){}
+
     async function renderMyGems(){
       const wrap=$("my-gems-wrap"), box=$("my-gems"); box.innerHTML="";
       const {data}=await client.from("entries").select("media:media_id ( tmdb_id, type, title, poster_url, year )").eq("user_id", currentUserId).eq("is_gem",true);
@@ -2664,6 +2998,7 @@
     // ================= achievements =================
     // Les 154 regles vivent dans achievements.js. Ici : la fiche TMDB mise en
     // cache par titre, le calcul, et la memorisation des deblocages.
+    let achState = null;            // what the last evaluation saw, to explain a badge
     let achResults = null;          // [{id,n,d,cat,r,e,need,have,done}]
     let achUnlocked = new Set();    // ids deja debloques en base
     let achInflight = null, achProgress = null, achUnlockedAt = {};
@@ -2671,7 +3006,7 @@
 
     const FACT_JOBS = ["Director","Creator","Original Music Composer","Music","Writer","Screenplay","Story"];
     async function fetchFacts(type, tmdbId){
-      const extra = type==="movie" ? ",release_dates" : "";
+      const extra = type==="movie" ? ",release_dates" : ",aggregate_credits";
       const url = `https://api.themoviedb.org/3/${type}/${tmdbId}?api_key=${TMDB_KEY}&language=en-US&append_to_response=credits,keywords${extra}`;
       const d = await fetch(url).then(r=>r.ok?r.json():null);
       if(!d) return null;
@@ -2697,6 +3032,12 @@
         f.th=rd.some(r=>(r.release_dates||[]).some(x=>x.type===2||x.type===3));
         if(f.co){ const pos=await collectionPos(f.co, d.id); if(pos){ f.cpos=pos.cpos; f.csize=pos.csize; } }
       } else {
+        // Whole-run cast with each person's episode count, so "movies or episodes featuring X"
+        // counts a guest spot as 1 episode and Pedro Pascal in The Mandalorian as every episode.
+        const ag=(d.aggregate_credits&&d.aggregate_credits.cast)||[];
+        if(ag.length) f.cast=ag.slice(0,40).map(x=>[x.id,x.name,((x.roles||[])[0]||{}).character||"",x.total_episode_count||0]);
+        (d.created_by||[]).forEach(p=>{ if(!f.crew.some(c=>c[0]===p.id && c[2]==="Creator")) f.crew.push([p.id,p.name,"Creator",p.gender]); });
+        f.fv=2;
         f.c=(d.origin_country||[]); f.oc=(d.origin_country||[]);
         f.ns=d.number_of_seasons||0; f.ne=d.number_of_episodes||0;
         f.st=d.status||""; f.ert=(d.episode_run_time&&d.episode_run_time[0])||42;
@@ -2721,7 +3062,8 @@
     }
     // Complete les fiches manquantes et les partage en base (un titre = un calcul pour tout le monde).
     async function ensureFacts(rows, onProgress){
-      const need=rows.filter(e=>e.media && !e.media.facts);
+      // Series sheets from before fact version 2 lack per-actor episode counts: refresh them once.
+      const need=rows.filter(e=>e.media && (!e.media.facts || (e.media.type==="tv" && e.media.facts.fv!==2)));
       if(!need.length) return 0;
       let done=0;
       await mapPool(need, 6, async e=>{
@@ -2790,7 +3132,7 @@
     async function runAchievements(opts){
       try{
         const {data}=await client.from("entries")
-          .select("media_id,status,rating,rewatch_count,seen_at_cinema,watched_eps,media:media_id(id,tmdb_id,type,title,facts)")
+          .select("media_id,status,rating,rewatch_count,seen_at_cinema,watched_eps,media:media_id(id,tmdb_id,type,title,facts,poster_url,year)")
           .eq("user_id", currentUserId);
         const rows=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
         if(opts.fetchFacts!==false){
@@ -2799,7 +3141,7 @@
         achProgress=null;
         const entries=rows.map(e=>({ tmdb:e.media.tmdb_id, type:e.media.type, title:e.media.title,
           mediaId:e.media_id, status:e.status, rating:e.rating, rewatch:e.rewatch_count||0,
-          cinema:!!e.seen_at_cinema, eps:e.watched_eps||[], f:e.media.facts||null }));
+          cinema:!!e.seen_at_cinema, eps:e.watched_eps||[], f:e.media.facts||null, poster:e.media.poster_url||null, year:e.media.year||null }));
         const byMedia={}; entries.forEach(e=>{ byMedia[e.mediaId]=e; });
         let logs=[];
         try{
@@ -2809,6 +3151,7 @@
         }catch(_){}
         const app=await achAppData(entries);
         achResults=SeenAchievements.evaluate({entries, logs, app});
+        achState={entries, logs, app};
         try{
           const {data:un}=await client.from("achievements").select("ach_id,unlocked_at").eq("user_id",currentUserId);
           achUnlocked=new Set((un||[]).map(r=>r.ach_id));
@@ -2849,17 +3192,19 @@
       return {movies, series, total, rated, gems};
     }
     // ---- XP & ranks (computed from entries, retroactive, nothing stored) ----
+    // Rescaled in 1.3: a 761-film import reached The Academy. Roughly 100 XP a film, 10 an episode,
+    // so the top now takes a few thousand films and series, and a heavy watcher sits around rank 7-8.
     const RANKS=[
       {name:"Newbie", min:0, tier:"uncommon"},
-      {name:"Netflix account borrower", min:500, tier:"uncommon"},
-      {name:"Popcorn seller", min:1500, tier:"rare"},
-      {name:"Trailer addict", min:3500, tier:"rare"},
-      {name:"Just one more episode", min:7000, tier:"epic"},
-      {name:"Couch critic", min:13000, tier:"epic"},
-      {name:"IMDb detective", min:22000, tier:"epic"},
-      {name:"Certified cinephile", min:35000, tier:"legendary"},
-      {name:"Festival regular", min:55000, tier:"legendary"},
-      {name:"The Academy", min:85000, tier:"legendary"}
+      {name:"Netflix account borrower", min:1000, tier:"uncommon"},
+      {name:"Popcorn seller", min:4000, tier:"rare"},
+      {name:"Trailer addict", min:10000, tier:"rare"},
+      {name:"Just one more episode", min:20000, tier:"epic"},
+      {name:"Couch critic", min:40000, tier:"epic"},
+      {name:"IMDb detective", min:70000, tier:"epic"},
+      {name:"Certified cinephile", min:120000, tier:"legendary"},
+      {name:"Festival regular", min:200000, tier:"legendary"},
+      {name:"The Academy", min:350000, tier:"legendary"}
     ];
     function xpForEntries(entries){
       const bd={films:0,episodes:0,finishes:0,ratings:0,gems:0,rewatches:0,badges:0};
@@ -2926,9 +3271,9 @@
     }
 
     // ---- fiche d'un succes ----
-    function openBadge(b){
-      $("bm-emoji").textContent=b.e;
-      $("bm-emoji").className="bm-emoji "+b.r;
+    function openBadge(b, opts){
+      opts=opts||{};
+      const em=$("bm-emoji"); em.className="bm-emoji medal lg "+b.r+" "+(b.done?"earned":"locked"); em.innerHTML='<span class="me">'+b.e+'</span>';
       $("bm-name").textContent=b.n;
       const rar=$("bm-rar"); rar.textContent=b.r; rar.className="rar rar-"+b.r;
       const _d=TR(b.d); const _dl=_d.charAt(0).toLowerCase()+_d.slice(1)+".";
@@ -2940,7 +3285,31 @@
       else st = "Progress: "+b.have+"/"+b.need;
       $("bm-status").textContent = st;
       $("bm-status").className = "bm-status "+(b.done?"done":"");
+      const tb=$("bm-titles"); tb.innerHTML="";
+      if(opts.friend){
+        const fr=document.createElement("div"); fr.className="bm-friend";
+        fr.textContent = opts.friend.done ? (opts.friend.name+" has it ✓") : (opts.friend.name+": "+opts.friend.have+"/"+b.need);
+        tb.appendChild(fr);
+      }
       $("badge-overlay").hidden=false; document.body.classList.add("no-scroll");
+      // Which titles counted. Worked out on demand, after the card is on screen.
+      if(achState && (b.done || b.have>0) && !b.pending){
+        const token=b.id; tb.dataset.for=token;
+        setTimeout(()=>{
+          if(tb.dataset.for!==token || $("badge-overlay").hidden) return;
+          let list=[]; try{ list=SeenAchievements.explain(achState, b.id); }catch(_){}
+          if(!list.length) return;
+          const wrap=document.createElement("div"); wrap.className="bm-titles";
+          const MAX=40;
+          wrap.innerHTML='<div class="bm-tlab">'+(b.done?"Titles that earned it":"Counted so far")+' · '+list.length+'</div><div class="bm-tgrid">'+
+            list.slice(0,MAX).map((e,i)=>'<div class="bm-t" data-i="'+i+'">'+(e.poster?'<img src="'+e.poster+'" alt="" loading="lazy"/>':'<div class="ph"></div>')+
+              '<div class="tt">'+esc(locTitle({tmdb_id:e.tmdb,type:e.type,title:e.title}))+'</div></div>').join("")+'</div>'+
+            (list.length>MAX?'<div class="bm-more">+'+(list.length-MAX)+' more</div>':'');
+          wrap.querySelectorAll(".bm-t").forEach(el=>el.onclick=()=>{ const e=list[+el.dataset.i]; closeBadge();
+            openDetail({tmdbId:e.tmdb, type:e.type, title:locTitle({tmdb_id:e.tmdb,type:e.type,title:e.title}), year:e.year, poster_url:e.poster}, null); });
+          tb.appendChild(wrap);
+        }, 30);
+      }
     }
     function closeBadge(){ $("badge-overlay").hidden=true; document.body.classList.remove("no-scroll"); }
     $("badge-close").onclick=closeBadge;
@@ -3078,23 +3447,35 @@
       computeWatchMinutes(rows).then(min=>{ $("home-time").textContent = fmtHours(min); }).catch(()=>{ $("home-time").textContent="—"; });
     }
     // Les derniers succes debloques, les plus recents d'abord.
+    function medalHTML(b, size){
+      return '<div class="medal '+(size||"")+' '+b.r+' '+(b.done?"earned":"locked")+'"><span class="me">'+b.e+'</span></div>';
+    }
     function renderHomeBadges(){
       const brow=$("home-badges-row"), lab=$("home-badges-lab"); if(!brow||!lab) return;
       const all=achAll();
-      lab.hidden = !all.length;
+      lab.hidden = !all.length; brow.hidden = !all.length;
+      brow.className="trophy";
       brow.innerHTML="";
       if(!all.length) return;
-      const earned=all.filter(a=>a.done).sort((a,b)=>{
-        const A=achUnlockedAt[a.id]||"", B=achUnlockedAt[b.id]||"";
-        return B.localeCompare(A);
-      });
-      // les derniers debloques d'abord, puis les plus proches du but, en grise
-      const close=all.filter(a=>!a.done && !a.pending)
-        .sort((a,b)=> (b.have/b.need) - (a.have/a.need));
-      const show=earned.concat(close).slice(0,12);
-      show.forEach(b=>{ const el=document.createElement("div");
-        el.className="hbadge "+b.r+(b.done?" earned":" locked"); el.textContent=b.e; el.title=b.n;
-        el.onclick=()=>openBadge(b); brow.appendChild(el); });
+      const earned=all.filter(a=>a.done).sort((a,b)=>String(achUnlockedAt[b.id]||"").localeCompare(String(achUnlockedAt[a.id]||"")));
+      const byR={uncommon:0,rare:0,epic:0,legendary:0}; earned.forEach(a=>{ byR[a.r]=(byR[a.r]||0)+1; });
+      let h='<div class="tr-head" data-go="all"><div><div class="tr-count">'+earned.length+'<span> / '+all.length+'</span></div>'+
+        '<div class="tr-sub">achievements unlocked</div></div><div class="tr-rars">'+
+        ["legendary","epic","rare","uncommon"].map(r=>'<span class="tr-dot '+r+'"><i></i>'+byR[r]+'</span>').join("")+'</div></div>';
+      if(earned.length){
+        h+='<div class="tr-shelf">'+earned.slice(0,12).map(b=>'<div class="tr-item" data-id="'+b.id+'">'+medalHTML(b)+'<div class="tn">'+esc(b.n)+'</div></div>').join("")+'</div>';
+      } else {
+        h+='<div class="tr-empty">Nothing unlocked yet. Your first one is closer than you think.</div>';
+      }
+      const close=all.filter(a=>!a.done && !a.pending && a.have>0).sort((a,b)=>(b.have/b.need)-(a.have/a.need)).slice(0,3);
+      if(close.length){
+        h+='<div class="tr-lab">Almost there</div>'+close.map(b=>{ const p=Math.round(b.have/b.need*100);
+          return '<div class="tr-next" data-id="'+b.id+'">'+medalHTML(b,"sm")+'<div class="tx"><div class="tt">'+esc(b.n)+'</div>'+
+            '<div class="ach-prog"><div class="ach-pbar"><div class="ach-pfill" style="width:'+p+'%"></div></div><span class="ach-pn">'+b.have+'/'+b.need+'</span></div></div></div>'; }).join("");
+      }
+      brow.innerHTML=h;
+      brow.querySelectorAll("[data-id]").forEach(el=>el.onclick=(ev)=>{ ev.stopPropagation(); const a=achAll().find(z=>z.id===el.dataset.id); if(a) openBadge(a); });
+      const hd=brow.querySelector(".tr-head"); if(hd){ hd.style.cursor="pointer"; hd.onclick=openAchievements; }
     }
     async function computeWatchMinutes(rows){
       let total=0;
@@ -3512,6 +3893,7 @@
     // ---- ecran des succes ----
     let achFilter="all", achOpenCats=new Set();
     async function openAchievements(){
+      achCmp=null;
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
       $("section-universe").hidden=true; $("section-uni-builder").hidden=true; $("section-club").hidden=true;
@@ -3529,23 +3911,23 @@
     }
     function renderAchievements(){
       const body=$("ach-body"); if(!body) return;
+      $("ach-back").hidden=!!achCmp;
+      if(achCmp){ renderAchCompare(); return; }
       const all=achAll();
-      if(achProgress && achProgress.t){
-        const old=body.querySelector(".ach-fetching");
-        if(!old){ const n=document.createElement("div"); n.className="hint ach-fetching";
-          n.textContent="Looking up "+achProgress.n+" of "+achProgress.t+" titles on TMDB...";
-          body.insertBefore(n, body.firstChild); }
-      }
       const earned=all.filter(a=>a.done);
       $("badge-count").textContent=earned.length;
       const pct=all.length?Math.round(earned.length/all.length*100):0;
-      const byR={uncommon:0,rare:0,epic:0,legendary:0};
+      const byR={uncommon:0,rare:0,epic:0,legendary:0}, totR={uncommon:0,rare:0,epic:0,legendary:0};
       earned.forEach(a=>{ byR[a.r]=(byR[a.r]||0)+1; });
-      const totR={uncommon:0,rare:0,epic:0,legendary:0};
       all.forEach(a=>{ totR[a.r]=(totR[a.r]||0)+1; });
-      let h='<div class="ach-top"><div class="ach-bar"><div class="ach-fill" style="width:'+pct+'%"></div></div>'+
-            '<div class="ach-rars">'+["uncommon","rare","epic","legendary"].map(r=>
-              '<span class="rar rar-'+r+'"><b>'+byR[r]+'/'+totR[r]+'</b> '+r+'</span>').join("")+'</div></div>';
+      let h='';
+      if(achProgress && achProgress.t) h+='<div class="hint ach-fetching">Looking up '+achProgress.n+' of '+achProgress.t+' titles on TMDB...</div>';
+      h+='<div class="ach-hero"><div class="ach-ring" style="--p:'+pct+'"><b>'+earned.length+'<small>of '+all.length+'</small></b></div>'+
+         '<div class="ach-hero-r"><div class="ach-hero-t">'+achXP().toLocaleString(numLocale())+' XP from achievements</div>'+
+         '<div class="ach-hero-s">'+pct+'% of the collection unlocked</div></div><div class="ach-rgrid">'+
+         ["legendary","epic","rare","uncommon"].map(r=>'<span class="ach-rc"><span class="rar rar-'+r+'">'+r+'</span><b>'+byR[r]+'/'+totR[r]+'</b></span>').join("")+
+         '</div></div>';
+      h+='<button class="ach-cmp-btn" id="ach-cmp">👥 Compare with a friend</button>';
       h+='<div class="seg ach-seg" id="ach-filter">'+
          ['all','unlocked','locked'].map(f=>'<button data-v="'+f+'"'+(achFilter===f?' class="sel"':'')+'>'+
             (f==="all"?"All":(f==="unlocked"?"Unlocked":"Locked"))+'</button>').join("")+'</div>';
@@ -3553,22 +3935,25 @@
         const list=all.filter(a=>a.cat===key);
         if(!list.length) return;
         const got=list.filter(a=>a.done).length;
-        const shown=list.filter(a=> achFilter==="all" || (achFilter==="unlocked"?a.done:!a.done));
+        const shown=list.filter(a=> achFilter==="all" || (achFilter==="unlocked"?a.done:!a.done))
+          .sort((a,b)=> (b.done-a.done) || ((b.have/b.need)-(a.have/a.need)));
         const open=achOpenCats.has(key);
         h+='<div class="ach-cat"><button class="ach-chead'+(open?" open":"")+'" data-cat="'+key+'">'+
              '<span class="ach-cname">'+esc(label)+'</span>'+
              '<span class="ach-cn">'+got+'/'+list.length+'</span>'+
-             '<span class="ur-caret">'+(open?"▾":"▸")+'</span></button>';
+             '<span class="ur-caret">'+(open?"▾":"▸")+'</span>'+
+             '<span class="ach-cbar"><i style="width:'+Math.round(got/list.length*100)+'%"></i></span></button>';
         if(open){
           h+='<div class="ach-list">';
           if(!shown.length) h+='<div class="hint">Nothing here.</div>';
           shown.forEach(a=>{
             const p=a.need>1 ? Math.round(Math.min(1,a.have/a.need)*100) : (a.done?100:0);
+            const at=a.done && achUnlockedAt[a.id] ? ('<div class="ach-when">Unlocked on '+prettyDate(String(achUnlockedAt[a.id]).slice(0,10))+'</div>') : '';
             h+='<div class="ach-item '+a.r+' '+(a.done?"earned":"locked")+'" data-id="'+a.id+'">'+
-               '<span class="bi-emoji">'+a.e+'</span>'+
+               medalHTML(a,"sm")+
                '<div class="ach-mid"><div class="bi-name">'+esc(a.n)+'</div>'+
                '<div class="bi-sub">'+esc(TR(a.d))+'</div>'+
-               (a.done?'' : (a.pending?'<div class="ach-pending">Not tracked yet</div>'
+               (a.done?at : (a.pending?'<div class="ach-pending">Not tracked yet</div>'
                     : '<div class="ach-prog"><div class="ach-pbar"><div class="ach-pfill" style="width:'+p+'%"></div></div>'+
                       '<span class="ach-pn">'+a.have+'/'+a.need+'</span></div>'))+
                '</div><span class="rar rar-'+a.r+'">'+a.r+'</span></div>';
@@ -3578,6 +3963,7 @@
         h+='</div>';
       });
       body.innerHTML=h;
+      $("ach-cmp").onclick=pickAchFriend;
       const seg=$("ach-filter");
       if(seg) seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{ achFilter=b.dataset.v; renderAchievements(); });
       body.querySelectorAll(".ach-chead").forEach(b=>b.onclick=()=>{
@@ -3587,6 +3973,75 @@
       body.querySelectorAll(".ach-item").forEach(el=>el.onclick=()=>{
         const a=achAll().find(z=>z.id===el.dataset.id); if(a) openBadge(a);
       });
+    }
+
+    // ---- compare achievements with a friend ----
+    let achCmp=null, achCmpTab="race";
+    async function pickAchFriend(){
+      if(!friendsCache.length) await loadFriendsCache();
+      let ov=$("achcmp-ov"); if(!ov){ ov=document.createElement("div"); ov.id="achcmp-ov"; ov.className="modal-ov"; document.body.appendChild(ov); }
+      const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
+      ov.innerHTML='<div class="modal-sheet"><button class="close" id="acp-close">×</button><div class="modal-title">Compare with a friend</div>'+
+        '<div class="modal-sub">See what you both have, what only one of you has, and the ones you are both chasing.</div>'+
+        (friendsCache.length ? '<div class="ac-pick">'+friendsCache.map((f,i)=>'<button class="ac-friend" data-i="'+i+'">'+
+            '<span class="pf-av" style="width:34px;height:34px;font-size:16px;border-radius:10px">'+esc(f.avatar||(f.username||"?").charAt(0).toUpperCase())+'</span>'+esc(f.username)+'</button>').join("")+'</div>'
+          : '<div class="hint">Add a friend first, from the Friends tab.</div>')+'</div>';
+      ov.hidden=false; document.body.classList.add("no-scroll");
+      $("acp-close").onclick=close; ov.onclick=e=>{ if(e.target===ov) close(); };
+      ov.querySelectorAll(".ac-friend").forEach(b=>b.onclick=()=>{ close(); openAchCompare(friendsCache[+b.dataset.i]); });
+    }
+    async function openAchCompare(f){
+      achCmp={friend:f, res:null};
+      const body=$("ach-body"); body.innerHTML='<div class="hint" id="acc-load">Reading '+esc(f.username)+'\'s collection...</div>';
+      window.scrollTo(0,0);
+      try{
+        const [{data}, {data:un}]=await Promise.all([
+          client.from("entries").select("status,rating,rewatch_count,seen_at_cinema,watched_eps,media:media_id(id,tmdb_id,type,title,facts,poster_url,year)").eq("user_id",f.friendId),
+          client.from("achievements").select("ach_id").eq("user_id",f.friendId) ]);
+        const rows=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
+        await ensureFacts(rows,(n,t)=>{ const el=$("acc-load"); if(el) el.textContent="Looking up "+n+" of "+t+" titles on TMDB..."; });
+        if(!achCmp || achCmp.friend!==f) return;
+        const entries=rows.map(e=>({ tmdb:e.media.tmdb_id, type:e.media.type, title:e.media.title, status:e.status, rating:e.rating,
+          rewatch:e.rewatch_count||0, cinema:!!e.seen_at_cinema, eps:e.watched_eps||[], f:e.media.facts||null }));
+        // Their watch dates and app activity are private, so date- and app-based rules only show what they already unlocked.
+        const res=SeenAchievements.evaluate({entries, logs:[], app:{}});
+        const got=new Set((un||[]).map(r=>r.ach_id));
+        res.forEach(a=>{ if(got.has(a.id)){ a.done=true; a.have=Math.max(a.have,a.need); } });
+        achCmp.res=res;
+      }catch(_){ achCmp.res=[]; }
+      if(!$("section-achievements").hidden) renderAchievements();
+    }
+    function renderAchCompare(){
+      const body=$("ach-body"); const f=achCmp.friend, them=achCmp.res; if(!them) return;
+      const mine=achAll(); const tm={}; them.forEach(a=>{ tm[a.id]=a; });
+      const pairs=mine.map(a=>({me:a, th:tm[a.id]||Object.assign({},a,{have:0,done:false})}));
+      const both=pairs.filter(p=>p.me.done && p.th.done), onlyMe=pairs.filter(p=>p.me.done && !p.th.done),
+            onlyThem=pairs.filter(p=>!p.me.done && p.th.done),
+            race=pairs.filter(p=>!p.me.done && !p.th.done && !p.me.pending && (p.me.have>0 || p.th.have>0))
+              .sort((a,b)=>((b.me.have+b.th.have)/b.me.need)-((a.me.have+a.th.have)/a.me.need));
+      const xpOf=list=>list.reduce((s,a)=>s+(a.done?(SeenAchievements.xp[a.r]||0):0),0);
+      const tabs=[["race","Chasing together",race],["both","Both have",both],["me","Only you",onlyMe],["them","Only "+f.username,onlyThem]];
+      const cur=tabs.find(t=>t[0]===achCmpTab)||tabs[0];
+      let h='<button class="cmp-back" id="acc-exit" style="margin-bottom:12px">‹ All achievements</button>'+
+        '<div class="ac-vs"><div class="ac-side"><div class="nm">'+esc(myUsername||"You")+'</div><div class="ct">'+mine.filter(a=>a.done).length+'</div><div class="xp">'+xpOf(mine).toLocaleString(numLocale())+' XP</div></div>'+
+        '<div class="ac-mid">vs</div>'+
+        '<div class="ac-side"><div class="nm">'+esc(f.username)+'</div><div class="ct">'+them.filter(a=>a.done).length+'</div><div class="xp">'+xpOf(them).toLocaleString(numLocale())+' XP</div></div></div>';
+      h+='<div class="ac-tabs">'+tabs.map(t=>'<button data-t="'+t[0]+'"'+(t===cur?' class="sel"':'')+'>'+esc(t[1])+' · '+t[2].length+'</button>').join("")+'</div>';
+      if(!cur[2].length) h+='<div class="hint">'+(cur[0]==="race"?"No achievement in progress for both of you yet.":"Nothing here.")+'</div>';
+      cur[2].forEach(p=>{
+        const a=p.me, showMedal=(cur[0]==="them")?p.th:a;
+        h+='<div class="ac-row" data-id="'+a.id+'">'+medalHTML(showMedal,"sm")+'<div class="tx"><div class="tt">'+esc(a.n)+'</div><div class="ds">'+esc(TR(a.d))+'</div>';
+        if(cur[0]==="race"){
+          const pm=Math.round(Math.min(1,p.me.have/a.need)*100), pt=Math.round(Math.min(1,p.th.have/a.need)*100);
+          h+='<div class="ac-bars"><span>You</span><span class="b"><i style="width:'+pm+'%"></i></span><span>'+p.me.have+'/'+a.need+'</span>'+
+             '<span>'+esc(f.username)+'</span><span class="b them"><i style="width:'+pt+'%"></i></span><span>'+p.th.have+'/'+a.need+'</span></div>';
+        }
+        h+='</div><span class="rar rar-'+a.r+'">'+a.r+'</span></div>';
+      });
+      body.innerHTML=h;
+      $("acc-exit").onclick=()=>{ achCmp=null; renderAchievements(); window.scrollTo(0,0); };
+      body.querySelectorAll(".ac-tabs button").forEach(b=>b.onclick=()=>{ achCmpTab=b.dataset.t; renderAchCompare(); });
+      body.querySelectorAll(".ac-row").forEach(el=>el.onclick=()=>{ const p=pairs.find(z=>z.me.id===el.dataset.id); if(p) openBadge(p.me,{friend:{name:f.username, have:p.th.have, done:p.th.done}}); });
     }
     $("rank-back").onclick=()=>showSection("home");
     $("ach-back").onclick=()=>showSection("home");
@@ -3625,14 +4080,22 @@
       sectionStats.hidden=true; sectionCompare.hidden=false;
       const body=$("cmp-body"), hint=$("cmp-hint");
       body.innerHTML=""; hint.hidden=false; hint.textContent="Loading "+friend.username+"'s collection...";
-      const [mine, theirs, theirUnis]=await Promise.all([ fetchEntriesFull(currentUserId), fetchEntriesFull(friend.friendId), fetchPublicUniverses(friend.friendId) ]);
-      try{ const {data:ta}=await client.from("achievements").select("ach_id").eq("user_id",friend.friendId);
+      // Everything in parallel: both collections, public universes, badges and subscriptions.
+      const achP=(async()=>{ try{ const {data:ta}=await client.from("achievements").select("ach_id").eq("user_id",friend.friendId);
         const set=new Set((ta||[]).map(r=>r.ach_id));
         friend._ach=SeenAchievements.list.map(a=>({id:a.id,n:a.n,d:a.d,cat:a.cat,r:a.r,e:a.e,need:a.need,
           have:set.has(a.id)?a.need:0, done:set.has(a.id)}));
-      }catch(_){ friend._ach=[]; }
-      await ensureTitles(mine.concat(theirs).map(e=>e.media));
-      await refreshSubs();
+      }catch(_){ friend._ach=[]; } })();
+      const [mine, theirs, theirUnis]=await Promise.all([ fetchEntriesFull(currentUserId), fetchEntriesFull(friend.friendId), fetchPublicUniverses(friend.friendId), achP, refreshSubs() ]);
+      if(compareFriend!==friend) return; // user opened someone else meanwhile
+      // Only translate the titles that will actually be on screen (not the friend's whole collection),
+      // and never block the page for more than ~1.5 s on TMDB.
+      const keyE=e=>e.media.tmdb_id+"_"+e.media.type, mineKeys=new Set(mine.map(keyE));
+      const vis=theirs.filter(e=>mineKeys.has(keyE(e)) && e.media.type==="tv")
+        .concat(theirs.filter(e=>e.status==="watched" && !mineKeys.has(keyE(e))).slice(0,24))
+        .concat(theirs.filter(e=>e.is_gem)).map(e=>e.media);
+      await Promise.race([ ensureTitles(vis), new Promise(r=>setTimeout(r,1500)) ]);
+      if(compareFriend!==friend) return;
       hint.hidden=true; renderCompare(friend, mine, theirs, theirUnis);
     }
     function renderCompare(friend, mine, theirs, theirUnis){
@@ -3964,6 +4427,164 @@
       }catch(_){ userUniverses=[]; }
     }
 
+    // ================= Letterboxd import =================
+    // Reads a Letterboxd CSV (a list export, or watchlist.csv / watched.csv / diary.csv from the
+    // account export) or plain text with one "Title (Year)" per line, finds each film on TMDB,
+    // then adds them to the watchlist, to watched, or to a new custom universe.
+    function parseCSV(text){
+      const rows=[]; let row=[], cell="", q=false;
+      for(let i=0;i<text.length;i++){
+        const c=text[i];
+        if(q){ if(c==='"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else q=false; } else cell+=c; }
+        else if(c==='"') q=true;
+        else if(c===','){ row.push(cell); cell=""; }
+        else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=""; }
+        else cell+=c;
+      }
+      if(cell!==""||row.length){ row.push(cell); rows.push(row); }
+      return rows;
+    }
+    function parseLetterboxd(text){
+      text=String(text||"").replace(/^﻿/,"");
+      const rows=parseCSV(text); let listName="", films=[], header=null;
+      for(let i=0;i<rows.length;i++){
+        const low=rows[i].map(c=>c.trim().toLowerCase());
+        if(!header){
+          if(low.includes("name") && low.includes("url") && low.includes("tags") && !low.includes("year") && rows[i+1]) listName=(rows[i+1][low.indexOf("name")]||"").trim();
+          if(low.includes("name") && low.includes("year")){ header={ n:low.indexOf("name"), y:low.indexOf("year"),
+            d:low.indexOf("watched date")>=0?low.indexOf("watched date"):low.indexOf("date") }; }
+          continue;
+        }
+        const r=rows[i]; const name=(r[header.n]||"").trim(); if(!name) continue;
+        films.push({ name, year:(r[header.y]||"").trim(), date:/^\d{4}-\d{2}-\d{2}$/.test((r[header.d]||"").trim())?r[header.d].trim():null });
+      }
+      if(!header){ // plain text, one title per line
+        text.split(/\r?\n/).forEach(line=>{ const l=line.replace(/^\s*\d+[.)]\s+/,"").trim(); if(!l) return;
+          const m=l.match(/^(.*?)[\s,]*\(?((?:18|19|20)\d{2})\)?\s*$/);
+          films.push(m && m[1].trim() ? {name:m[1].trim(), year:m[2], date:null} : {name:l, year:"", date:null}); });
+      }
+      const seen=new Set(); films=films.filter(f=>{ const k=f.name.toLowerCase()+"|"+f.year; if(seen.has(k)) return false; seen.add(k); return true; });
+      return { listName, films };
+    }
+    async function matchFilm(f){
+      const q="query="+encodeURIComponent(f.name);
+      const pick=(res,type)=>{ const arr=((res&&res.results)||[]).map(x=>Object.assign({media_type:type},x));
+        return arr.find(x=>isExact(f.name,x)) || arr[0] || null; };
+      if(f.year){
+        let r=pick(await tmdbGet("search/movie",q+"&primary_release_year="+f.year),"movie"); if(r) return r;
+        r=pick(await tmdbGet("search/movie",q+"&year="+f.year),"movie"); if(r) return r;
+        r=pick(await tmdbGet("search/tv",q+"&first_air_date_year="+f.year),"tv"); if(r) return r;
+      }
+      return pick(await tmdbGet("search/movie",q),"movie") || pick(await tmdbGet("search/tv",q),"tv");
+    }
+    // The guide mixes bold words into sentences, which the fragment translator in i18n.js
+    // cannot handle, so it carries both languages here.
+    function lbxGuideHTML(){
+      const fr=(typeof LANG!=="undefined" && LANG==="fr");
+      const T=fr ? {
+        sum:"Comment récupérer le fichier",
+        s:["Sur <b>letterboxd.com</b> (le site, pas l'appli), connecte-toi et ouvre <b>Settings&#8203;</b>, puis l'onglet <b>Data&#8203;</b>.",
+           "Touche <b>Export your data&#8203;</b>. Letterboxd télécharge un fichier .zip.",
+           "Ouvre le .zip. Sur iPhone, touche-le dans l'appli Fichiers et il se décompresse en dossier.",
+           "Choisis le fichier voulu ci-dessous : <b>watchlist.csv</b> pour ta watchlist, <b>watched.csv</b> pour tous les films que tu as notés comme vus, ou un fichier du dossier <b>lists</b> pour une de tes listes."],
+        tip:"La liste de quelqu'un d'autre ? Copie ses titres et colle-les plus bas, un par ligne, au format <b>Titre (Année)</b>. L'année est facultative mais aide à trouver le bon film."
+      } : {
+        sum:"How to get the file",
+        s:["On <b>letterboxd.com</b> (the website, not the app), sign in and open <b>Settings</b>, then the <b>Data</b> tab.",
+           "Tap <b>Export your data</b>. Letterboxd downloads a .zip file.",
+           "Open the .zip. On iPhone, tap it in the Files app and it unpacks into a folder.",
+           "Pick the file you want below: <b>watchlist.csv</b> for your watchlist, <b>watched.csv</b> for every film you logged, or a file in the <b>lists</b> folder for one of your lists."],
+        tip:"Someone else's list? Copy its titles and paste them below, one per line, as <b>Title (Year)</b>. The year is optional but helps find the right film."
+      };
+      return '<details class="lbx-guide" open><summary>'+T.sum+'</summary>'+
+        T.s.map((t,i)=>'<div class="lbx-step"><b>'+(i+1)+'</b><div>'+t+'</div></div>').join("")+
+        '<div class="lbx-tip">'+T.tip+'</div></details>';
+    }
+    function openLetterboxdImport(opts){
+      opts=opts||{};
+      let ov=$("lbx-ov"); if(!ov){ ov=document.createElement("div"); ov.id="lbx-ov"; ov.className="modal-ov"; document.body.appendChild(ov); }
+      const st={ dest:opts.dest||"universe", text:"", parsed:null, found:[], missing:[], busy:false };
+      const close=()=>{ if(st.busy) return; ov.hidden=true; document.body.classList.remove("no-scroll"); };
+      function paint(){
+        let h='<div class="modal-sheet"><button class="close" id="lbx-close">×</button><div class="modal-title">Import from Letterboxd</div>'+
+          '<div class="modal-sub">Bring your films over from Letterboxd with a file, or by pasting titles.</div>'+
+          lbxGuideHTML();
+        if(!opts.dest){
+          h+='<div class="sett-lab first">Add to</div><div class="seg" id="lbx-dest">'+
+             '<button data-v="universe">New custom list</button><button data-v="watchlist">Watchlist</button><button data-v="watched">Watched</button></div>';
+        }
+        h+='<div class="sett-lab">File</div><input type="file" id="lbx-file" accept=".csv,.txt,text/csv,text/plain" class="ub-inp"/>'+
+           '<div class="sett-lab">Or paste</div><textarea id="lbx-text" class="ub-inp" rows="5" placeholder="Super (2010)&#10;The Suicide Squad (2021)">'+esc(st.text)+'</textarea>'+
+           '<div id="lbx-status" class="hint" style="margin-top:12px"></div>'+
+           '<div class="ub-actions" style="margin-top:12px"><button class="ub-save" id="lbx-go">Find the films</button></div></div>';
+        ov.innerHTML=h;
+        $("lbx-close").onclick=close; ov.onclick=e=>{ if(e.target===ov) close(); };
+        const seg=$("lbx-dest"); if(seg){ [...seg.children].forEach(b=>{ b.classList.toggle("sel", b.dataset.v===st.dest); b.onclick=()=>{ st.dest=b.dataset.v; [...seg.children].forEach(x=>x.classList.toggle("sel", x===b)); }; }); }
+        $("lbx-text").oninput=e=>{ st.text=e.target.value; };
+        $("lbx-file").onchange=async e=>{ const file=e.target.files&&e.target.files[0]; if(!file) return;
+          try{ st.text=await file.text(); $("lbx-text").value=st.text.slice(0,4000); }catch(_){ showToast("Could not read the file"); } };
+        $("lbx-go").onclick=run;
+      }
+      const status=t=>{ const el=$("lbx-status"); if(el) el.textContent=t; };
+      async function run(){
+        if(st.busy) return;
+        const parsed=parseLetterboxd(st.text);
+        if(!parsed.films.length){ status("No films found in that file."); return; }
+        if(parsed.films.length>1000){ status("That's more than 1000 films. Split the file and import it in parts."); return; }
+        st.busy=true; st.parsed=parsed; const go=$("lbx-go"); go.disabled=true;
+        let n=0; const res=new Array(parsed.films.length);
+        await mapPool(parsed.films, 5, async (f,i)=>{ try{ res[i]=await matchFilm(f); }catch(_){ res[i]=null; }
+          n++; status("Finding films on TMDB… "+n+"/"+parsed.films.length); });
+        st.found=[]; st.missing=[];
+        parsed.films.forEach((f,i)=>{ if(res[i]) st.found.push({film:f, item:res[i]}); else st.missing.push(f); });
+        st.busy=false; go.disabled=false;
+        if(!st.found.length){ status("None of these films were found on TMDB."); return; }
+        const miss=st.missing.length ? (" Not found: "+st.missing.slice(0,8).map(f=>f.name+(f.year?" ("+f.year+")":"")).join(", ")+(st.missing.length>8?"…":"")) : "";
+        status(st.found.length+" of "+parsed.films.length+" films found."+miss);
+        go.textContent= st.dest==="universe" ? "Open in the list editor" : ("Add "+st.found.length+" to "+(st.dest==="watched"?"Watched":"Watchlist"));
+        go.onclick=commit;
+      }
+      async function commit(){
+        if(st.busy) return;
+        if(st.dest==="universe"){
+          const items=st.found.map(x=>({t:x.item.media_type, id:x.item.id, label:titleOf(x.item),
+            poster:x.item.poster_path?IMG+x.item.poster_path:null, year:yearOf(x.item)}));
+          st.busy=false; ov.hidden=true; document.body.classList.remove("no-scroll");
+          if(opts.onItems){ opts.onItems(items, st.parsed.listName); return; }
+          openBuilder(null);
+          builderState.name=st.parsed.listName||"Letterboxd import";
+          items.forEach(it=>{ if(!builderState.items.some(x=>x.id===it.id && x.t===it.t)) builderState.items.push(it); });
+          renderBuilder(); showToast(items.length+" titles added. Check the order, then save.");
+          return;
+        }
+        st.busy=true; const go=$("lbx-go"); go.disabled=true;
+        let done=0, added=0, skipped=0;
+        await mapPool(st.found, 4, async x=>{
+          try{
+            const display=displayFromItem(x.item); const k=keyOf(display.tmdbId,display.type); const cur=myEntries[k];
+            // Never downgrade: a title already in the collection stays as it is for a watchlist import,
+            // and a watched import only upgrades.
+            if((st.dest==="watchlist" && cur) || (st.dest==="watched" && cur && cur.status==="watched")){ skipped++; return; }
+            const mediaId=await upsertMedia(mediaFields(display));
+            const {data,error}=await client.from("entries")
+              .upsert({user_id:currentUserId,media_id:mediaId,status:st.dest},{onConflict:"user_id,media_id"})
+              .select("id,status,rating,last_season,last_episode,watched_eps,ep_ratings,is_gem,seen_at_cinema,rewatch_count").single();
+            if(error) throw error;
+            myEntries[k]={entryId:data.id,mediaId,status:data.status,rating:data.rating,last_season:data.last_season,last_episode:data.last_episode,watched_eps:data.watched_eps||[],ep_ratings:data.ep_ratings||{},is_gem:data.is_gem,seen_at_cinema:!!data.seen_at_cinema,rewatch_count:data.rewatch_count||0,type:display.type,runtime:null,total_eps:null};
+            // Past viewings go in as "backfill": they count for totals, never for date-based achievements.
+            if(st.dest==="watched"){ try{ await client.from("watch_logs").insert({media_id:mediaId, ep_key:null, watched_on:x.film.date||todayLocal(), kind:"backfill"}); }catch(_){} }
+            added++;
+          }catch(_){}
+          finally{ done++; status("Adding… "+done+"/"+st.found.length); }
+        });
+        st.busy=false; ov.hidden=true; document.body.classList.remove("no-scroll");
+        showToast(added+" added"+(skipped?(", "+skipped+" already in your collection"):""));
+        if(typeof achTouch==="function") achTouch();
+        if(!sectionCollection.hidden) loadCollection();
+      }
+      paint(); ov.hidden=false; document.body.classList.add("no-scroll");
+    }
+
     // ---- universe builder (create / edit) ----
     let builderState=null, ubSearchSeq=0, ubTimer=null;
     function openBuilder(universe){
@@ -3990,7 +4611,8 @@
       h+=`<div class="ub-field"><label>Accent colour</label><div class="ub-swatches">`;
       ["#e0685f","#ffe81f","#ed1d24","#d3a625","#4f9dde","#8f5fd6","#3fbf7f","#ff8a3d"].forEach(c=>{ h+=`<button class="ub-sw${s.accent.toLowerCase()===c?" on":""}" data-c="${c}" style="background:${c}"></button>`; });
       h+=`</div></div>`;
-      h+=`<div class="ub-field"><label>Add titles</label><input id="ub-search" class="ub-inp" placeholder="Search movies &amp; series…"/><div id="ub-results" class="ub-results"></div></div>`;
+      h+=`<div class="ub-field"><label>Add titles</label><input id="ub-search" class="ub-inp" placeholder="Search movies &amp; series…"/><div id="ub-results" class="ub-results"></div>
+          <button class="ub-lbx" id="ub-lbx">Import from Letterboxd</button></div>`;
       h+=`<div class="ub-list-lab">${s.items.length} title${s.items.length===1?"":"s"} · watch order</div><div class="ub-list">`;
       if(!s.items.length) h+=`<div class="hint">No titles yet. Search above and tap to add.</div>`;
       s.items.forEach((it,i)=>{
@@ -4017,6 +4639,10 @@
       b.querySelectorAll(".ub-rm").forEach(x=>x.onclick=()=>{ s.items.splice(+x.dataset.i,1); renderBuilder(); });
       b.querySelectorAll(".ub-eps").forEach(x=>x.onclick=()=>ubOpenEpisodes(+x.dataset.i));
       $("ub-save").onclick=saveUserUniverse;
+      $("ub-lbx").onclick=()=>openLetterboxdImport({dest:"universe", onItems:(items, listName)=>{
+        if(!s.name.trim() && listName) s.name=listName;
+        let n=0; items.forEach(it=>{ if(!s.items.some(x=>x.id===it.id && x.t===it.t)){ s.items.push(it); n++; } });
+        renderBuilder(); showToast(n+" titles added"); }});
     }
     async function ubOpenEpisodes(i){
       const it=builderState.items[i]; if(!it||it.t!=="tv") return;

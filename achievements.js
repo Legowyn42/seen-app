@@ -230,7 +230,28 @@
       var n = 0;
       x.tvAll.forEach(function (e) {
         if (p && !(e.f && p(e.f, e))) return;
-        n += (e.eps || []).length || (e.status === "watched" && e.f ? (e.f.ne || 0) : 0);
+        n += x.epCount(e);
+      });
+      return n;
+    };
+    // Episodes seen of one series: the ticked episodes, or the whole show once it is marked watched.
+    x.epCount = function (e) {
+      var ticked = (e.eps || []).length;
+      if (e.status === "watched" && e.f) return Math.max(ticked, e.f.ne || 0);
+      return ticked;
+    };
+    // "Movies or episodes": a movie counts 1, a series counts each episode seen.
+    x.cntAllEp = function (p) { return x.cnt(p) + x.epTotal(p); };
+    // Same for a person: a series only counts the episodes they are actually in
+    // (TMDB aggregate credits give their episode count; older fact sheets fall back to every episode seen).
+    x.actorAnyEp = function (pid) {
+      var n = x.actor(pid);
+      x.tvAll.forEach(function (e) {
+        if (!e.f) return;
+        var c = (e.f.cast || []).filter(function (p) { return p[0] === pid; })[0];
+        if (!c) return;
+        var seen = x.epCount(e);
+        n += (c[3] ? Math.min(seen, c[3]) : seen);
       });
       return n;
     };
@@ -542,16 +563,16 @@
     function (x) { return x.actor(D.p.jodieFoster); });
   A("nic_cage", "Not the bees", "Watch 10 movies featuring Nicolas Cage", "star", "rare", "🐝", 10,
     function (x) { return x.actor(D.p.nicolasCage); });
-  A("pedro", "Pedro Pedro Pedro", "Watch 40 titles featuring Pedro Pascal", "star", "rare", "👶", 40,
-    function (x) { return x.actorAny(D.p.pedroPascal); });
+  A("pedro", "Pedro Pedro Pedro", "Watch 40 movies or episodes featuring Pedro Pascal", "star", "rare", "👶", 40,
+    function (x) { return x.actorAnyEp(D.p.pedroPascal); });
   A("britta", "Oh, Britta's in this?", "Watch a movie featuring Gillian Jacobs", "star", "rare", "🎨", 1,
     function (x) { return x.actor(D.p.gillianJacobs) ? 1 : 0; });
   A("meryl", "She can do anything", "Watch 10 movies featuring Meryl Streep", "star", "rare", "👗", 10,
     function (x) { return x.actor(D.p.meryl); });
-  A("tudyk", "A leaf on the wind", "Watch 100 titles featuring Alan Tudyk", "star", "epic", "🍃", 100,
-    function (x) { return x.actorAny(D.p.alanTudyk); });
-  A("marilyn", "Marilyn Diptych", "Watch 5 titles featuring Marilyn Monroe", "star", "epic", "💋", 5,
-    function (x) { return x.actorAny(D.p.marilyn); });
+  A("tudyk", "A leaf on the wind", "Watch 100 movies or episodes featuring Alan Tudyk", "star", "epic", "🍃", 100,
+    function (x) { return x.actorAnyEp(D.p.alanTudyk); });
+  A("marilyn", "Marilyn Diptych", "Watch 5 movies or episodes featuring Marilyn Monroe", "star", "epic", "💋", 5,
+    function (x) { return x.actorAnyEp(D.p.marilyn); });
 
   // ---------------------------- Super-Hero ----------------------------
   A("infinity_saga", "Snap", "Watch every movie from the MCU Infinity Saga", "hero", "uncommon", "🫰", 23,
@@ -572,8 +593,8 @@
     function (x) { return x.hasTv(D.arrowverse); });
   A("road_to_endgame", "Infinity Gauntlet", "Finish the Road to Endgame collection", "hero", "epic", "🧤", 1,
     function (x) { return x.app.roadToEndgame ? 1 : 0; });
-  A("tights", "Tights over pants", "Watch 1938 super-hero titles", "hero", "legendary", "🩲", 1938,
-    function (x) { return x.cntAll(function (f) { return x.k(f, "superhero"); }); });
+  A("tights", "Tights over pants", "Watch 1938 super-hero movies or episodes", "hero", "legendary", "🩲", 1938,
+    function (x) { return x.cntAllEp(function (f) { return x.k(f, "superhero"); }); });
 
   // ---------------------------- Western ----------------------------
   A("high_noon", "High noon", "Watch 12 westerns", "western", "uncommon", "🤠", 12,
@@ -720,7 +741,38 @@
     });
   }
 
+  // Which titles earned an achievement: the smallest part of the collection that still gives the
+  // same score. Entries are dropped in blocks, then one by one inside a block that mattered, so a
+  // big collection costs a few hundred evaluations of one rule, not one per title per rule.
+  // For a count ("40 titles with Pedro Pascal") that is every title that counted; for a set with
+  // spares ("a movie from every continent") it keeps one title per slot.
+  function explain(state, id) {
+    var a = ACH.filter(function (z) { return z.id === id; })[0];
+    if (!a) return [];
+    var logs = state.logs || [], app = state.app || {};
+    var key = function (e) { return e.tmdb + "_" + e.type; };
+    function score(list) {
+      var keys = new Set(list.map(key));
+      var lg = logs.filter(function (l) { return keys.has(l.tmdb + "_" + l.type); });
+      try { return a.calc(ctx({ entries: list, logs: lg, app: app })) || 0; } catch (e) { return 0; }
+    }
+    var keep = (state.entries || []).slice();
+    var target = score(keep);
+    if (target <= 0 || score([]) >= target) return [];
+    var B = 24;
+    for (var start = keep.length - 1; start >= 0; start -= B) {
+      var lo = Math.max(0, start - B + 1);
+      var without = keep.slice(0, lo).concat(keep.slice(start + 1));
+      if (score(without) >= target) { keep = without; continue; }
+      for (var i = start; i >= lo; i--) {
+        var w = keep.slice(0, i).concat(keep.slice(i + 1));
+        if (score(w) >= target) keep = w;
+      }
+    }
+    return keep;
+  }
+
   window.SeenAchievements = {
-    list: ACH, cats: CATS, xp: XP, ids: D, evaluate: evaluate, count: ACH.length
+    list: ACH, cats: CATS, xp: XP, ids: D, evaluate: evaluate, explain: explain, count: ACH.length
   };
 })();
