@@ -932,6 +932,9 @@
     .modal-sheet .close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line);
       background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
     .fld { margin-bottom: 20px; }
+    .fld .ed-uname { width: 100%; }
+    .fld .fl-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .fld .fl-hint.err { color: var(--err); }
     .fld > .fl { font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 9px; }
     .fld textarea { width: 100%; padding: 12px 14px; background: var(--field); border: 1px solid var(--line); border-radius: 10px;
       color: var(--text); font-size: 15px; font-family: var(--body); resize: vertical; min-height: 62px; }
@@ -1232,7 +1235,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.0</div>
+    <div class="appfoot">Seen · v1.1</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1433,6 +1436,8 @@
       toastTimer=setTimeout(()=>toast.classList.remove("show"),2500); }
     function esc(s){ return String(s).replace(/</g,"&lt;"); }
 
+    // Pseudo : meme regle qu'en base (contrainte profiles_username_fmt).
+    const USERNAME_RE=/^[A-Za-z0-9_.-]{3,20}$/;
     // ---- auth ----
     let mode="login";
     function setMode(next){ mode=next; const login=next==="login";
@@ -1468,6 +1473,7 @@
     submitBtn.onclick=async()=>{ const email=emailInput.value.trim(),password=passwordInput.value,username=usernameInput.value.trim();
       if(!email||!password){ setMsg("Please fill in email and password.","err"); return; }
       if(mode==="signup"&&!username){ setMsg("Please choose a username.","err"); return; }
+      if(mode==="signup"&&!USERNAME_RE.test(username)){ setMsg("Only letters, numbers, _ . - (3 to 20)","err"); return; }
       submitBtn.disabled=true; setMsg("Please wait...","");
       try{ if(mode==="signup"){ const {data,error}=await client.auth.signUp({email,password,options:{data:{username}}});
           if(error) throw error; setMsg(data.session?"Account created.":"Account created. Check your email to confirm, then log in.","ok");
@@ -1607,6 +1613,9 @@
       ov.innerHTML='<div class="modal-sheet"><button class="close" id="edit-close">×</button>'+
         '<div class="modal-title">Edit profile</div>'+
         '<div class="modal-sub">Personalise what friends see when they open your profile.</div>'+
+        '<div class="fld"><div class="fl">Username</div>'+
+          '<input id="ed-uname" class="ub-inp ed-uname" maxlength="20" autocapitalize="none" autocomplete="off" spellcheck="false"/>'+
+          '<div class="fl-hint" id="ed-uname-hint">3 to 20 characters: letters, numbers, _ . -</div></div>'+
         '<div class="fld"><div class="fl">Avatar</div><div class="emoji-grid" id="ed-emojis"></div></div>'+
         '<div class="fld"><div class="fl">Accent colour (used across the app)</div><div class="swatches" id="ed-swatches"></div></div>'+
         '<div class="fld"><div class="fl">Status / bio</div>'+
@@ -1642,13 +1651,31 @@
             '<label class="switch"><input type="checkbox" '+(sel[k]?"checked":"")+'><span class="sl"></span></label>';
           row.querySelector("input").onchange=(e)=>{ sel[k]=e.target.checked; }; vis.appendChild(row); });
       $("edit-close").onclick=closeEdit; ov.onclick=(e)=>{ if(e.target===ov) closeEdit(); };
+      const un=$("ed-uname"), unHint=$("ed-uname-hint");
+      un.value=myUsername||"";
+      const unRule="3 to 20 characters: letters, numbers, _ . -";
+      un.oninput=()=>{ const v=un.value.trim();
+        const ok=USERNAME_RE.test(v);
+        unHint.textContent = ok||!v ? unRule : "Only letters, numbers, _ . - (3 to 20)";
+        unHint.classList.toggle("err", !!v && !ok); };
       $("ed-save").onclick=async()=>{
-        const btn=$("ed-save"); btn.disabled=true; btn.textContent="Saving...";
+        const btn=$("ed-save");
+        const newName=un.value.trim();
+        const nameChanged = newName && newName!==myUsername;
+        if(nameChanged && !USERNAME_RE.test(newName)){ showToast("Only letters, numbers, _ . - (3 to 20)"); un.focus(); return; }
+        btn.disabled=true; btn.textContent="Saving...";
         const patch={ avatar:sel.avatar||null, accent:sel.accent, bio:bio.value.trim()||null,
           fav_genres:sel.fav, show_gems:sel.show_gems, show_badges:sel.show_badges, show_stats:sel.show_stats };
+        if(nameChanged) patch.username=newName;
         const {error}=await client.from("profiles").update(patch).eq("id",currentUserId);
-        if(error){ btn.disabled=false; btn.textContent="Save profile"; showToast("Could not save: "+error.message); return; }
+        if(error){ btn.disabled=false; btn.textContent="Save profile";
+          if(error.code==="23505" || /duplicate|unique/i.test(error.message||"")){ showToast("This username is already taken"); un.focus(); }
+          else showToast("Could not save: "+error.message);
+          return; }
         myProfile=Object.assign(myProfile||{}, patch);
+        if(nameChanged){ myUsername=newName; who.textContent=newName;
+          // l'accueil affiche le pseudo dans le bonjour
+          if(!sectionHome.hidden) loadHome(); }
         applyMyAccent(patch.accent); refreshUserButton();
         closeEdit(); showToast("Profile saved");
         if(!$("section-profile").hidden) renderMyProfile();
@@ -1676,10 +1703,10 @@
         '<div class="sett-lab">Episodes</div>'+
         '<div class="tg-row first"><div><div class="tgl">Show episode titles</div><div class="tgs">Off hides episode names to avoid spoilers</div></div>'+
           '<label class="switch"><input type="checkbox" id="set-eptitles" '+(showEpTitles()?"checked":"")+'><span class="sl"></span></label></div>'+
-        '<div class="sett-lab danger-lab">Zone danger</div>'+
-        '<div class="danger-box"><div class="danger-txt"><div class="dgl">Réinitialiser ma collection</div><div class="dgs">Efface tous tes films et séries, tes notes, ta progression par épisode, tes pépites et tes rewatchs. Action définitive.</div></div>'+
-          '<button class="danger-btn" id="set-reset">Réinitialiser…</button></div>'+
-        '<div class="sett-ver">Seen · v1.0</div></div>';
+        '<div class="sett-lab danger-lab">Danger zone</div>'+
+        '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
+          '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
+        '<div class="sett-ver">Seen · v1.1</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       { const lg=$("set-lang"); if(lg){ paintSeg(lg, LANG);
@@ -1705,14 +1732,14 @@
       let ov=document.getElementById("reset-ov");
       if(!ov){ ov=document.createElement("div"); ov.id="reset-ov"; ov.className="modal-ov"; document.body.appendChild(ov); }
       ov.innerHTML='<div class="modal-sheet"><button class="close" id="rst-close">×</button>'+
-        '<div class="modal-title">⚠️ Réinitialiser ma collection</div>'+
-        '<div class="reset-warn">Tu es sur le point de <b>tout effacer</b>. Ça supprime définitivement :</div>'+
-        '<ul class="reset-list"><li>tous tes films et séries (watchlist, en cours, vus)</li><li>toutes tes notes, par titre et par épisode</li><li>ta progression par épisode</li><li>tes pépites et tes compteurs de rewatch</li><li>ta progression des rewatchs d\'univers</li></ul>'+
-        '<div class="reset-keep">Ce qui reste : ton profil, tes amis, tes ciné clubs, et les watch orders que tu as créés.</div>'+
-        '<div class="reset-warn2">Cette action est <b>irréversible</b>. Pour confirmer, tape <b>RESET</b> ci-dessous.</div>'+
-        '<input id="rst-input" class="ub-inp" placeholder="Tape RESET" autocapitalize="characters" autocomplete="off"/>'+
-        '<button class="danger-btn danger-btn-final" id="rst-go" disabled>Tout effacer définitivement</button>'+
-        '<button class="reset-cancel" id="rst-cancel">Annuler</button></div>';
+        '<div class="modal-title">⚠️ Reset my collection</div>'+
+        '<div class="reset-warn"><b>This erases everything.</b> It permanently deletes:</div>'+
+        '<ul class="reset-list"><li>all your films and series (watchlist, watching, watched)</li><li>all your ratings, per title and per episode</li><li>your episode progress</li><li>your gems and rewatch counters</li><li>your universe rewatch progress</li><li>your achievements and viewing history</li></ul>'+
+        '<div class="reset-keep">What stays: your profile, your friends, your ciné clubs and the watch orders you created.</div>'+
+        '<div class="reset-warn2"><b>This cannot be undone.</b> Type RESET below to confirm.</div>'+
+        '<input id="rst-input" class="ub-inp" placeholder="Type RESET" autocapitalize="characters" autocomplete="off"/>'+
+        '<button class="danger-btn danger-btn-final" id="rst-go" disabled>Erase everything for good</button>'+
+        '<button class="reset-cancel" id="rst-cancel">Cancel</button></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const close=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); };
       $("rst-close").onclick=close; $("rst-cancel").onclick=close; ov.onclick=(e)=>{ if(e.target===ov) close(); };
@@ -1720,14 +1747,19 @@
       inp.oninput=()=>{ go.disabled = inp.value.trim().toUpperCase()!=="RESET"; };
       go.onclick=async()=>{
         if(inp.value.trim().toUpperCase()!=="RESET") return;
-        go.disabled=true; go.textContent="Effacement…";
+        go.disabled=true; go.textContent="Erasing…";
         try{
           const {error}=await client.from("entries").delete().eq("user_id",currentUserId);
           if(error) throw error;
           try{ await client.from("universe_progress").delete().eq("user_id",currentUserId); }catch(_){}
-          showToast("Collection réinitialisée");
+          // les succes et l'historique de seances font partie de la collection :
+          // sans ca, un compte remis a zero gardait ses succes (cas signale au lancement)
+          try{ await client.from("achievements").delete().eq("user_id",currentUserId); }catch(_){}
+          try{ await client.from("watch_logs").delete().eq("user_id",currentUserId); }catch(_){}
+          try{ localStorage.removeItem("seen_last_tab"); }catch(_){}
+          showToast("Collection reset");
           setTimeout(()=>location.reload(), 700);
-        }catch(e){ go.disabled=false; go.textContent="Tout effacer définitivement"; showToast("Erreur : "+(e.message||e)); }
+        }catch(e){ go.disabled=false; go.textContent="Erase everything for good"; showToast("Error: "+(e.message||e)); }
       };
     }
 
