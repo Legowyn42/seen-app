@@ -324,7 +324,15 @@
     .rec-card .rc-t { font-size: 14px; font-weight: 600; line-height: 1.3; }
     .rec-card .rc-from { font-size: 12px; color: var(--muted); margin-top: 3px; }
     .rec-card .rc-note { font-size: 13px; color: var(--text-soft); margin-top: 6px; font-style: italic; }
-    .rec-card .rc-btns { display: flex; gap: 6px; margin-top: 10px; }
+    .rec-card .rc-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .rec-card img, .rec-card .rc-t { cursor: pointer; }
+    /* bandeau de recommandation dans la fiche */
+    .sheet-reco { margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px;
+      background: rgba(var(--accent-rgb), .08); border: 1px solid rgba(var(--accent-rgb), .35); }
+    .sheet-reco .sr-t { font-size: 13px; font-weight: 700; }
+    .sheet-reco .sr-n { font-size: 13px; color: var(--text-soft); font-style: italic; margin-top: 4px; }
+    .sheet-reco .sr-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .sheet-reco[hidden] { display: none; }
 
     /* ---- Compare ---- */
     #section-compare { padding-top: 4px; }
@@ -1224,7 +1232,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v3.50</div>
+    <div class="appfoot">Seen · v3.51</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1248,6 +1256,7 @@
           <div class="sheet-meta" id="sheet-meta"></div>
         </div>
       </div>
+      <div class="sheet-reco" id="sheet-reco" hidden></div>
       <div class="sheet-overview" id="sheet-overview"></div>
       <div class="sheet-section" id="providers-section" hidden>
         <div class="sheet-label">Where to watch (France)</div>
@@ -1666,7 +1675,7 @@
         '<div class="sett-lab danger-lab">Zone danger</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Réinitialiser ma collection</div><div class="dgs">Efface tous tes films et séries, tes notes, ta progression par épisode, tes pépites et tes rewatchs. Action définitive.</div></div>'+
           '<button class="danger-btn" id="set-reset">Réinitialiser…</button></div>'+
-        '<div class="sett-ver">Seen · v3.50</div></div>';
+        '<div class="sett-ver">Seen · v3.51</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
       { const lg=$("set-lang"); if(lg){ paintSeg(lg, LANG);
@@ -2284,7 +2293,7 @@
       stars.querySelectorAll(".star").forEach(s=>s.classList.toggle("on", parseInt(s.dataset.v,10)<=rating));
       if(detailDisplay && detailDisplay.type==="tv" && detailSeasons) renderEpisodes();
       sheetRemove.hidden=!e;
-      renderGem(); renderRewatch(); renderCinema();
+      renderGem(); renderRewatch(); renderCinema(); renderRecoBar();
     }
     // Vu au cinema : uniquement pour les films, une fois le titre dans la collection.
     function renderCinema(){
@@ -3348,13 +3357,59 @@
         .select("id,note,sender_id,status,media:media_id(tmdb_id,type,title,poster_url,year)")
         .eq("recipient_id",currentUserId).eq("status","pending").order("created_at",{ascending:false});
       const rows=data||[];
+      inboxRecos={};
       if(!rows.length){ block.hidden=true; return; }
       const profs=await fetchProfilesMap(rows.map(r=>r.sender_id));
       await ensureTitles(rows.map(r=>r.media));
       block.hidden=false; rows.forEach(r=>box.appendChild(inboxCard(r,profs)));
     }
+    // Recommandations recues, indexees par titre : la fiche s'en sert pour
+    // afficher le bandeau "Recommande par X" avec Ajouter / Ignorer.
+    let inboxRecos = {};
+    async function acceptReco(r){
+      const k=keyOf(r.display.tmdbId, r.display.type);
+      // deja dans la collection : on ne retrograde pas un titre vu en "a voir"
+      if(!myEntries[k]) await setStatusByDisplay(r.display,"watchlist");
+      await client.from("recommendations").update({status:"added"}).eq("id",r.id);
+      r.state="added"; if(typeof achTouch==="function") achTouch();
+    }
+    async function dismissReco(r){
+      await client.from("recommendations").update({status:"dismissed"}).eq("id",r.id);
+      r.state="dismissed";
+    }
+    function renderRecoBar(){
+      const bar=$("sheet-reco"); if(!bar) return;
+      const r = detailDisplay && inboxRecos[keyOf(detailDisplay.tmdbId, detailDisplay.type)];
+      if(!r){ bar.hidden=true; bar.innerHTML=""; return; }
+      bar.hidden=false;
+      if(r.state==="added"){ bar.innerHTML='<div class="sr-t">Added to your watchlist ✓</div>'; return; }
+      if(r.state==="dismissed"){ bar.innerHTML='<div class="sr-t">Recommendation dismissed</div>'; return; }
+      bar.innerHTML='<div class="sr-t">Recommended by '+esc(r.sender)+'</div>'+
+        (r.note?'<div class="sr-n">"'+esc(r.note)+'"</div>':'')+
+        '<div class="sr-btns"><button class="btn-sm ok" id="sr-add">Add to watchlist</button>'+
+        '<button class="btn-sm ghost" id="sr-no">Dismiss</button></div>';
+      $("sr-add").onclick=async()=>{ $("sr-add").disabled=true;
+        try{ await acceptReco(r); showToast("Added to watchlist"); renderSheet(); }
+        catch(e){ showToast("Error"); renderRecoBar(); } };
+      $("sr-no").onclick=async()=>{ $("sr-no").disabled=true;
+        try{ await dismissReco(r); renderRecoBar(); }catch(e){ showToast("Error"); renderRecoBar(); } };
+    }
+    // A la fermeture de la fiche : si le titre a ete ajoute via les boutons de
+    // statut, la recommandation est consideree comme acceptee.
+    async function afterRecoPreview(){
+      const pending=Object.values(inboxRecos).filter(r=>r.state==="pending" && myEntries[keyOf(r.display.tmdbId,r.display.type)]);
+      for(const r of pending){ try{ await client.from("recommendations").update({status:"added"}).eq("id",r.id); r.state="added"; }catch(_){} }
+      loadFriends();
+    }
+    function previewReco(r){
+      currentDisplays=Object.values(inboxRecos).filter(x=>x.state==="pending").map(x=>x.display);
+      openDetail(r.display, afterRecoPreview);
+    }
     function inboxCard(r, profs){
       const m=r.media||{}; const sender=(profs[r.sender_id]&&profs[r.sender_id].username)||"A friend";
+      const display={tmdbId:m.tmdb_id, type:m.type, title:locTitle(m), year:m.year, poster_url:m.poster_url};
+      const rec={id:r.id, sender, note:r.note||"", display, state:"pending"};
+      inboxRecos[keyOf(display.tmdbId, display.type)]=rec;
       const el=document.createElement("div"); el.className="rec-card";
       el.innerHTML=(m.poster_url?`<img src="${m.poster_url}" alt="" />`:`<img alt="" />`)+
         `<div class="rc-body">
@@ -3363,18 +3418,19 @@
            ${r.note?`<div class="rc-note">"${esc(r.note)}"</div>`:""}
            <div class="rc-btns"></div>
          </div>`;
+      el.querySelector("img").onclick=()=>previewReco(rec);
+      el.querySelector(".rc-t").onclick=()=>previewReco(rec);
       const btns=el.querySelector(".rc-btns");
+      const look=document.createElement("button"); look.className="btn-sm ghost"; look.textContent="Details";
       const add=document.createElement("button"); add.className="btn-sm ok"; add.textContent="Add to watchlist";
       const no=document.createElement("button"); no.className="btn-sm ghost"; no.textContent="Dismiss";
+      look.onclick=()=>previewReco(rec);
       add.onclick=async()=>{ add.disabled=true;
-        const display={tmdbId:m.tmdb_id, type:m.type, title:locTitle(m), year:m.year, poster_url:m.poster_url};
-        try{ await setStatusByDisplay(display,"watchlist");
-          await client.from("recommendations").update({status:"added"}).eq("id",r.id);
-          showToast("Added to watchlist"); loadFriends();
-        }catch(e){ add.disabled=false; showToast("Error"); } };
+        try{ await acceptReco(rec); showToast("Added to watchlist"); loadFriends(); }
+        catch(e){ add.disabled=false; showToast("Error"); } };
       no.onclick=async()=>{ no.disabled=true;
-        await client.from("recommendations").update({status:"dismissed"}).eq("id",r.id); loadFriends(); };
-      btns.appendChild(add); btns.appendChild(no); return el;
+        try{ await dismissReco(rec); loadFriends(); }catch(e){ no.disabled=false; showToast("Error"); } };
+      btns.appendChild(look); btns.appendChild(add); btns.appendChild(no); return el;
     }
 
     // ---- recommend a title to a friend (from the detail sheet) ----

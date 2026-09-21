@@ -304,6 +304,9 @@
     "Already recommended": "Déjà recommandé",
     "Could not send": "Envoi impossible",
     "Recommended": "Recommandé",
+    "Details": "Détails",
+    "Added to your watchlist ✓": "Ajouté à ta liste à voir ✓",
+    "Recommendation dismissed": "Recommandation ignorée",
 
     /* ---- comparaison ---- */
     "Finished": "Terminé",
@@ -676,6 +679,7 @@
     [/^Results for "(.*)"$/, "Résultats pour « $1 »"],
     [/^Unlocked on (.+)$/, "Débloqué le $1"],
     [/^Looking up (\d+) of (\d+) titles on TMDB\.\.\.$/, "Analyse de $1 titres sur $2 via TMDB…"],
+    [/^Recommended by (.+)$/, "Recommandé par $1"],
     [/^With (.+)$/, "Avec $1"],
     [/^Directed by (.+)$/, "Réalisé par $1"],
     [/^(\d+)% to (.+)$/, "$1 % jusqu'à $2"],
