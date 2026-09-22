@@ -649,6 +649,10 @@
     .uni-hero .uh-body { position: relative; }
     .uni-hero .uh-name { font-family: var(--disp); font-weight: 800; font-size: 31px; color: #fff; line-height: 1.05; }
     .uni-hero .uh-tag { color: #dfe4ec; font-size: 13.5px; margin-top: 4px; }
+    .uni-hero .uh-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 84px; line-height: 1; opacity: .18; pointer-events: none; }
+    .uni-hero .uh-line { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--uaccent); opacity: .9; }
+    .uni-card .uc-icon { margin-right: 6px; }
+    .uni-card .uc-ring { position: absolute; inset: 0; border-radius: 16px; pointer-events: none; }
     .uni-orders { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
     .uni-order { padding: 8px 15px; border-radius: 999px; border: 1px solid var(--line); background: var(--card);
       color: var(--muted); font-size: 13px; cursor: pointer; font-weight: 600; }
@@ -1372,7 +1376,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.3.1</div>
+    <div class="appfoot">Seen · v1.5</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1847,7 +1851,7 @@
         '<div class="sett-lab danger-lab">Danger zone</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
           '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
-        '<div class="sett-ver">Seen · v1.3.1</div></div>';
+        '<div class="sett-ver">Seen · v1.5</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       { const lb=$("set-lbx"); if(lb) lb.onclick=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); openLetterboxdImport(); }; }
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
@@ -3072,7 +3076,12 @@
         try{
           const f=await fetchFacts(e.media.type, e.media.tmdb_id);
           if(f){ e.media.facts=f;
-            try{ await client.from("media").update({facts:f, facts_at:new Date().toISOString()}).eq("id", e.media.id); }catch(_){}
+            // The fact sheet already knows the runtime and the episode count: keep them on the
+            // media row too, because XP is counted from there.
+            const patch={facts:f, facts_at:new Date().toISOString()};
+            if(e.media.type==="movie" && f.rt) patch.runtime=f.rt;
+            if(e.media.type==="tv" && f.ne) patch.total_episodes=f.ne;
+            try{ await client.from("media").update(patch).eq("id", e.media.id); }catch(_){}
           }
         }catch(_){}
         done++; if(onProgress) onProgress(done, need.length);
@@ -3134,13 +3143,14 @@
     async function runAchievements(opts){
       try{
         const {data}=await client.from("entries")
-          .select("media_id,status,rating,rewatch_count,seen_at_cinema,watched_eps,media:media_id(id,tmdb_id,type,title,facts,poster_url,year)")
+          .select("media_id,status,rating,rewatch_count,seen_at_cinema,watched_eps,media:media_id(id,tmdb_id,type,title,facts,poster_url,year,runtime,total_episodes)")
           .eq("user_id", currentUserId);
         const rows=(data||[]).filter(e=>e.media && e.media.tmdb_id!=null);
         if(opts.fetchFacts!==false){
           await ensureFacts(rows, (n,t)=>{ achProgress={n,t}; if(opts.onProgress) opts.onProgress(n,t); });
         }
         achProgress=null;
+        await repairMediaNumbers(rows);
         const entries=rows.map(e=>({ tmdb:e.media.tmdb_id, type:e.media.type, title:e.media.title,
           mediaId:e.media_id, status:e.status, rating:e.rating, rewatch:e.rewatch_count||0,
           cinema:!!e.seen_at_cinema, eps:e.watched_eps||[], f:e.media.facts||null, poster:e.media.poster_url||null, year:e.media.year||null }));
@@ -3175,6 +3185,24 @@
         try{ renderHomeBadges(); }catch(_){}
         try{ if(!$("section-achievements").hidden) renderAchievements(); }catch(_){}
       }
+    }
+    // A series marked watched earns 10 XP per episode, so the episode count has to be on the media
+    // row. Titles added before their fact sheet existed are topped up here, without calling TMDB.
+    async function repairMediaNumbers(rows){
+      const todo=(rows||[]).filter(e=>{ const m=e.media, f=m&&m.facts; if(!f) return false;
+        return (m.type==="movie" && !m.runtime && f.rt) || (m.type==="tv" && !m.total_episodes && f.ne); });
+      if(!todo.length) return;
+      let changed=false;
+      await mapPool(todo, 6, async e=>{
+        const m=e.media, f=m.facts;
+        const patch = m.type==="movie" ? {runtime:f.rt} : {total_episodes:f.ne};
+        try{ await client.from("media").update(patch).eq("id", m.id);
+          Object.assign(m, patch); changed=true;
+          const k=keyOf(m.tmdb_id, m.type), mine=myEntries[k];
+          if(mine){ if(m.type==="movie") mine.runtime=f.rt; else mine.total_eps=f.ne; }
+        }catch(_){}
+      });
+      if(changed && typeof refreshRank==="function") refreshRank();
     }
     // Apres une action qui change la collection, on recalcule un peu plus tard.
     function achTouch(){
@@ -4201,13 +4229,32 @@
       ["S7E9","Old Friends Not Forgotten"],["S7E10","The Phantom Apprentice"],["S7E11","Shattered"],["S7E12","Victory and Death"]
     ];
 
+    // Arrowverse — the full chronological order the online guides use: every episode of the ten
+    // shows interleaved by air date, so the crossovers land where they belong. Encoded compactly as
+    // "<show index><episode key>~<episode title>", one per "|", and expanded into step nodes below.
+    const AV_SHOWS = [1412, 60735, 62688, 62643, 89247, 71663, 62125, 75486, 60743, 95057];
+    const AV_CHRONO = "0S1E1~Pilot|0S1E2~Honor Thy Father|0S1E3~Lone Gunmen|0S1E4~An Innocent Man|0S1E5~Damaged|0S1E6~Legacies|0S1E7~Muse of Fire|0S1E8~Vendetta|0S1E9~Year's End|0S1E10~Burned|0S1E11~Trust But Verify|0S1E12~Vertigo|0S1E13~Betrayal|0S1E14~The Odyssey|0S1E15~Dodger|0S1E16~Dead to Rights|0S1E17~The Huntress Returns|0S1E18~Salvation|0S1E19~Unfinished Business|0S1E20~Home Invasion|0S1E21~The Undertaking|0S1E22~Darkness on the Edge of Town|0S1E23~Sacrifice|0S2E1~City of Heroes|0S2E2~Identity|0S2E3~Broken Dolls|0S2E4~Crucible|0S2E5~League of Assassins|0S2E6~Keep Your Enemies Closer|0S2E7~State v. Queen|0S2E8~The Scientist|0S2E9~Three Ghosts|0S2E10~Blast Radius|0S2E11~Blind Spot|0S2E12~Tremors|0S2E13~Heir to the Demon|0S2E14~Time of Death|0S2E15~The Promise|0S2E16~Suicide Squad|0S2E17~Birds of Prey|0S2E18~Deathstroke|0S2E19~The Man Under the Hood|0S2E20~Seeing Red|0S2E21~City of Blood|0S2E22~Streets of Fire|0S2E23~Unthinkable|1S1E1~Pilot|0S3E1~The Calm|1S1E2~Fastest Man Alive|0S3E2~Sara|1S1E3~Things You Can't Outrun|0S3E3~Corto Maltese|8S1E1~Non Est Asylum|1S1E4~Going Rogue|0S3E4~The Magician|8S1E2~The Darkness Beneath|0S3E5~The Secret Origin of Felicity Smoak|8S1E3~The Devil's Vinyl|1S1E5~Plastique|0S3E6~Guilty|8S1E4~A Feast of Friends|1S1E6~The Flash is Born|0S3E7~Draw Back Your Bow|8S1E5~Danse Vaudou|1S1E7~Power Outage|8S1E6~Rage of Caliban|1S1E8~Flash vs. Arrow (I)|0S3E8~The Brave and the Bold (II)|8S1E7~Blessed Are the Damned|1S1E9~The Man in the Yellow Suit|0S3E9~The Climb|8S1E8~The Saint of Last Resorts (1)|8S1E9~The Saint of Last Resorts (2)|1S1E10~Revenge of the Rogues|0S3E10~Left Behind|8S1E10~Quid Pro Quo|1S1E11~The Sound and the Fury|0S3E11~Midnight City|8S1E11~A Whole World Out There|1S1E12~Crazy for You|0S3E12~Uprising|8S1E12~Angels and Ministers of Grace|1S1E13~The Nuclear Man|0S3E13~Canaries|8S1E13~Waiting for the Man|1S1E14~Fallout|0S3E14~The Return|0S3E15~Nanda Parbat|1S1E15~Out of Time|0S3E16~The Offer|1S1E16~Rogue Time|0S3E17~Suicidal Tendencies|1S1E17~Tricksters|0S3E18~Public Enemy|1S1E18~All Star Team Up|0S3E19~Broken Arrow|1S1E19~Who Is Harrison Wells?|0S3E20~The Fallen|1S1E20~The Trap|0S3E21~Al Sah-him|1S1E21~Grodd Lives|0S3E22~This is Your Sword|1S1E22~Rogue Air|0S3E23~My Name Is Oliver Queen|1S1E23~Fast Enough|6S1E1~Family Reunion: Episode 1|6S1E2~Family Reunion: Episode 2|6S1E3~Family Reunion: Episode 3|6S1E4~Family Reunion: Episode 4|6S1E5~Family Reunion: Episode 5|6S1E6~Family Reunion: Episode 6|1S2E1~The Man Who Saved Central City|0S4E1~Green Arrow|1S2E2~Flash of Two Worlds|0S4E2~The Candidate|1S2E3~Family of Rogues|0S4E3~Restoration|2S1E1~Pilot|1S2E4~The Fury of Firestorm|0S4E4~Beyond Redemption|2S1E2~Stronger Together|1S2E5~The Darkness and the Light|0S4E5~Haunted|2S1E3~Fight or Flight|1S2E6~Enter Zoom|0S4E6~Lost Souls|2S1E4~Livewire|1S2E7~Gorilla Warfare|0S4E7~Brotherhood|2S1E5~How Does She Do It?|2S1E6~Red Faced|1S2E8~Legends of Today (I)|0S4E8~Legends of Yesterday (II)|2S1E7~Human for a Day|1S2E9~Running to Stand Still|0S4E9~Dark Waters|2S1E8~Hostile Takeover|2S1E9~Blood Bonds|2S1E10~Childish Things|1S2E10~Potential Energy|0S4E10~Blood Debts|3S1E1~Pilot (1)|2S1E11~Strange Visitor from Another Planet|1S2E11~The Reverse-Flash Returns|0S4E11~A.W.O.L.|3S1E2~Pilot (2)|2S1E12~Bizarro|1S2E12~Fast Lane|0S4E12~Unchained|3S1E3~Blood Ties|2S1E13~For The Girl Who Has Everything|1S2E13~Welcome to Earth-2|0S4E13~Sins of the Father|3S1E4~White Knights|1S2E14~Escape from Earth-2|0S4E14~Code of Silence|3S1E5~Fail-Safe|2S1E14~Truth, Justice and the American Way|1S2E15~King Shark|0S4E15~Taken|3S1E6~Star City 2046|2S1E15~Solitude|3S1E7~Marooned|3S1E8~Night of The Hawk|2S1E16~Falling|2S1E17~Manhunter|1S2E16~Trajectory|0S4E16~Broken Hearts|2S1E18~Worlds Finest|1S2E17~Flash Back|0S4E17~Beacon of Hope|3S1E9~Left Behind|0S4E18~Eleven-Fifty-Nine|3S1E10~Progeny|2S1E19~Myriad|3S1E11~The Magnificent Eight|2S1E20~Better Angels|1S2E18~Versus Zoom|3S1E12~Last Refuge|1S2E19~Back to Normal|0S4E19~Canary Cry|3S1E13~Leviathan|1S2E20~Rupture|0S4E20~Genesis|3S1E14~River of Time|1S2E21~The Runaway Dinosaur|0S4E21~Monument Point|3S1E15~Destiny|1S2E22~Invincible|0S4E22~Lost in the Flood|3S1E16~Legendary|1S2E23~The Race of His Life|0S4E23~Schism|1S3E1~Flashpoint|0S5E1~Legacy|2S2E1~The Adventures of Supergirl|1S3E2~Paradox|0S5E2~The Recruits|6S2E1~Trial by Fire: Episode 1|3S2E1~Out of Time|2S2E2~The Last Children of Krypton|1S3E3~Magenta|0S5E3~A Matter of Trust|3S2E2~The Justice Society of America|6S2E2~Trial by Fire: Episode 2|2S2E3~Welcome to Earth|1S3E4~The New Rogues|0S5E4~Penance|3S2E3~Shogun|6S2E3~Trial by Fire: Episode 3|2S2E4~Survivors|1S3E5~Monster|0S5E5~Human Target|3S2E4~Abominations|6S2E4~Trial by Fire: Episode 4|2S2E5~Crossfire|0S5E6~So It Begins|3S2E5~Compromised|6S2E5~Trial by Fire: Episode 5|2S2E6~Changing|1S3E6~Shade|0S5E7~Vigilante|3S2E6~Outlaw Country|6S2E6~Trial by Fire: Episode 6|2S2E7~The Darkest Places|1S3E7~Killer Frost|2S2E8~Medusa (I)|1S3E8~Invasion! (II)|0S5E8~Invasion! (III)|3S2E7~Invasion! (IV)|1S3E9~The Present|0S5E9~What We Leave Behind|3S2E8~The Chicago Way|2S2E9~Supergirl Lives|1S3E10~Borrowing Problems from the Future|3S2E9~Raiders of the Lost Art|0S5E10~Who Are You?|2S2E10~We Can Be Heroes|1S3E11~Dead or Alive|3S2E10~The Legion of Doom|0S5E11~Second Chances|2S2E11~The Martian Chronicles|1S3E12~Untouchable|3S2E11~Turncoat|0S5E12~Bratva|2S2E12~Luthors|0S5E13~Spectre of the Gun|2S2E13~Mr. & Mrs. Mxyzptlk|1S3E13~Attack on Gorilla City (1)|3S2E12~Camelot/3000|0S5E14~The Sin-Eater|2S2E14~Homecoming|1S3E14~Attack on Central City (2)|0S5E15~Fighting Fire with Fire|2S2E15~Exodus|1S3E15~The Wrath of Savitar|3S2E13~Land of the Lost|1S3E16~Into the Speed Force|3S2E14~Moonshot|0S5E16~Checkmate|2S2E16~Star-Crossed (I)|1S3E17~Duet (II)|3S2E15~Fellowship of the Spear|0S5E17~Kapiushon|2S2E17~Distant Sun|1S3E18~Abra Kadabra|3S2E16~Doomworld|0S5E18~Disbanded|3S2E17~Aruba|2S2E18~Ace Reporter|1S3E19~The Once and Future Flash|0S5E19~Dangerous Liaisons|2S2E19~Alex|1S3E20~I Know Who You Are|0S5E20~Underneath|2S2E20~City of Lost Children|1S3E21~Cause and Effect|0S5E21~Honor Thy Fathers|2S2E21~Resist|1S3E22~Infantino Street|0S5E22~Missing|2S2E22~Nevertheless, She Persisted|1S3E23~Finish Line|0S5E23~Lian Yu|2S3E1~Girl of Steel|1S4E1~The Flash Reborn|3S3E1~Aruba-Con|0S6E1~Fallout|2S3E2~Triggers|1S4E2~Mixed Signals|3S3E2~Freakshow|0S6E2~Tribute|2S3E3~Far From the Tree|1S4E3~Luck Be a Lady|3S3E3~Zari|0S6E3~Next of Kin|2S3E4~The Faithful|1S4E4~Elongated Journey Into Night|3S3E4~Phone Home|0S6E4~Reversal|2S3E5~Damage|1S4E5~Girls Night Out|3S3E5~Return of the Mack|0S6E5~Deathstroke Returns|2S3E6~Midvale|1S4E6~When Harry Met Harry...|3S3E6~Helen Hunt|0S6E6~Promises Kept|2S3E7~Wake Up|1S4E7~Therefore I Am|3S3E7~Welcome to the Jungle|0S6E7~Thanksgiving|2S3E8~Crisis on Earth-X (I)|0S6E8~Crisis on Earth-X (II)|1S4E8~Crisis on Earth-X (III)|3S3E8~Crisis on Earth-X (IV)|2S3E9~Reign|1S4E9~Don't Run|3S3E9~Beebo the God of War|0S6E9~Irreconcilable Differences|7S1E1~Episode 1|7S1E2~Episode 2|7S1E3~Episode 3|7S1E4~Episode 4|7S1E5~Episode 5|7S1E6~Episode 6|2S3E10~Legion of Superheroes|1S4E10~The Trial of The Flash|5S1E1~The Resurrection|0S6E10~Divided|2S3E11~Fort Rozz|1S4E11~The Elongated Knight Rises|5S1E2~Lawanda: The Book of Hope|0S6E11~We Fall|2S3E12~For Good|1S4E12~Honey, I Shrunk Team Flash|5S1E3~Lawanda: The Book of Burial|0S6E12~All for Nothing|2S3E13~Both Sides Now|1S4E13~True Colors|5S1E4~Black Jesus|0S6E13~The Devil's Greatest Trick|3S3E10~Daddy Darhkest|5S1E5~And Then the Devil Brought the Plague: The Book of Green Light|3S3E11~Here I Go Again|3S3E12~The Curse of the Earth Totem|1S4E14~Subject 9|5S1E6~Three Sevens: The Book of Thunder|0S6E14~Collision Course|3S3E13~No Country for Old Dads|1S4E15~Enter Flashtime|5S1E7~Equinox: The Book of Fate|0S6E15~Doppelganger|3S3E14~Amazing Grace|1S4E16~Run, Iris, Run|5S1E8~The Book of Revelations|3S3E15~Necromancing the Stone|5S1E9~The Book of Little Black Lies|3S3E16~I, Ava|5S1E10~Sins of the Father: The Book of Redemption|0S6E16~The Thanatos Guild|3S3E17~Guest Starring John Noble|5S1E11~Black Jesus: The Book of Crucifixion|0S6E17~Brothers in Arms|3S3E18~The Good, The Bad and The Cuddly|1S4E17~Null and Annoyed|5S1E12~The Resurrection and the Light: The Book of Pain|0S6E18~Fundamentals|2S3E14~Schott Through the Heart|1S4E18~Lose Yourself|5S1E13~Shadow of Death: The Book of War|0S6E19~The Dragon|2S3E15~In Search of Lost Time|1S4E19~Fury Rogue|0S6E20~Shifting Allegiances|2S3E16~Of Two Minds|1S4E20~Therefore She Is|0S6E21~Docket No. 11-19-41-73|2S3E17~Trinity|1S4E21~Harry and the Harrisons|0S6E22~The Ties That Bind|2S3E18~Shelter from the Storm|1S4E22~Think Fast|0S6E23~Life Sentence|2S3E19~The Fanatical|1S4E23~We Are The Flash|2S3E20~Dark Side of the Moon|2S3E21~Not Kansas|2S3E22~Make It Reign|2S3E23~Battles Lost and Won|7S2E1~Episode 1|7S2E2~Episode 2|7S2E3~Episode 3|7S2E4~Episode 4|7S2E5~Episode 5|7S2E6~Episode 6|1S5E1~Nora|5S2E1~The Book of Consequences: Chapter One: Rise of the Green Light Babies|2S4E1~American Alien|0S7E1~Inmate 4587|1S5E2~Blocked|5S2E2~The Book of Consequences: Chapter Two: Black Jesus Blues|2S4E2~Fallout|0S7E2~The Longbow Hunters|3S4E1~The Virgin Gary|1S5E3~The Death of Vibe|5S2E3~The Book of Consequences: Chapter Three: Master Lowry|2S4E3~Man of Steel|0S7E3~Crossing Lines|3S4E2~Witch Hunt|1S5E4~News Flash|5S2E4~The Book of Consequences: Chapter Four: Translucent Freak|2S4E4~Ahimsa|0S7E4~Level Two|3S4E3~Dancing Queen|2S4E5~Parasite Lost|0S7E5~The Demon|3S4E4~Wet Hot American Bummer|1S5E5~All Doll'd Up|5S2E5~The Book of Blood: Chapter One: Requiem|2S4E6~Call to Action|0S7E6~Due Process|3S4E5~Tagumo Attacks!!!|1S5E6~The Icicle Cometh|5S2E6~The Book of Blood: Chapter Two: The Perdi|2S4E7~Rather the Fallen Angel|0S7E7~The Slabside Redemption|3S4E6~Tender Is the Nate|1S5E7~O Come, All Ye Thankful|5S2E7~The Book of Blood: Chapter Three: The Sange|2S4E8~Bunker Hill|0S7E8~Unmasked|3S4E7~Hell No, Dolly!|1S5E8~What's Past Is Prologue|5S2E8~The Book of Rebellion: Chapter One: Exodus|1S5E9~Elseworlds (I)|0S7E9~Elseworlds (II)|3S4E8~Legends of To-Meow-Meow|2S4E9~Elseworlds (III)|5S2E9~The Book of Rebellion: Chapter Two: Gift of the Magi|1S5E10~The Flash & The Furious|2S4E10~Suspicious Minds|0S7E10~My Name Is Emiko Queen|5S2E10~The Book of Rebellion: Chapter Three: Angelitos Negros|1S5E11~Seeing Red|2S4E11~Blood Memory|0S7E11~Past Sins|5S2E11~The Book of Secrets: Chapter One: Prodigal Son|1S5E12~Memorabilia|0S7E12~Emerald Archer|5S2E12~The Book of Secrets: Chapter Two: Just and Unjust|1S5E13~Goldfaced|0S7E13~Star City Slayer|5S2E13~The Book of Secrets: Chapter Three: Pillar of Fire|1S5E14~Cause and XS|2S4E12~Menagerie|2S4E13~What's So Funny About Truth, Justice, and the American Way?|0S7E14~Brothers & Sisters|5S2E14~The Book of Secrets: Chapter Four: Original Sin|1S5E15~King Shark vs. Gorilla Grodd|2S4E14~Stand and Deliver|0S7E15~Training Day|5S2E15~The Book of the Apocalypse: Chapter One: The Alpha|1S5E16~Failure Is an Orphan|2S4E15~O Brother, Where Art Thou?|0S7E16~Star City 2040|5S2E16~The Book of the Apocalypse: Chapter Two: The Omega|1S5E17~Time Bomb|2S4E16~The House of L|0S7E17~Inheritance|2S4E17~All About Eve|3S4E9~Lucha de Apuestas|3S4E10~The Getaway|0S7E18~Lost Canary|3S4E11~S\u00e9ance and Sensibility|1S5E18~Godspeed|2S4E18~Crime and Punishment|0S7E19~Spartan|3S4E12~The Eggplant, the Witch & the Wardrobe|1S5E19~Snow Pack|2S4E19~American Dreamer|0S7E20~Confessions|3S4E13~Egg MacGuffin|1S5E20~Gone Rogue|2S4E20~Will The Real Miss Tessmacher Please Stand Up?|0S7E21~Living Proof|3S4E14~Nip/Stuck|1S5E21~The Girl With The Red Lightning|2S4E21~Red Dawn|0S7E22~You Have Saved This City|3S4E15~Terms of Service|1S5E22~Legacy|2S4E22~The Quest for Peace|3S4E16~Hey, World!|2S5E1~Event Horizon|4S1E1~Pilot|5S3E1~The Book of Occupation: Chapter One: Birth of Blackbird|1S6E1~Into The Void|2S5E2~Stranger Beside Me|4S1E2~The Rabbit Hole|5S3E2~The Book of Occupation: Chapter Two: Maryam's Tasbih|0S8E1~Starling City|1S6E2~A Flash of the Lightning|2S5E3~Blurred Lines|4S1E3~Down, Down, Down|5S3E3~The Book of Occupation: Chapter Three: Agent Odell's Pipe-Dream|0S8E2~Welcome to Hong Kong|1S6E3~Dead Man Running|2S5E4~In Plain Sight|4S1E4~Who Are You?|5S3E4~The Book of Occupation: Chapter Four: Lynn's Ouroboros|0S8E3~Leap of Faith|1S6E4~There Will Be Blood|2S5E5~Dangerous Liaisons|4S1E5~Mine Is a Long and a Sad Tale|0S8E4~Present Tense|1S6E5~Kiss Kiss Breach Breach|2S5E6~Confidence Women|4S1E6~I'll Be Judge, I'll Be Jury|5S3E5~The Book of Occupation: Chapter Five: Requiem for Tavon|2S5E7~Tremors|4S1E7~Tell Me the Truth|5S3E6~The Book of Resistance: Chapter One: Knocking on Heaven's Door|0S8E5~Prochnost|1S6E6~License to Elongate|5S3E7~The Book of Resistance: Chapter Two: Henderson's Opus|0S8E6~Reset|1S6E7~The Last Temptation of Barry Allen (1)|2S5E8~The Wrath of Rama Khan|4S1E8~A Mad Tea-Party|5S3E8~The Book of Resistance: Chapter Three: The Battle of Franklin Terrace|0S8E7~Purgatory|1S6E8~The Last Temptation of Barry Allen (2)|2S5E9~Crisis on Infinite Earths: Part One (I)|5S3E9~The Book of Resistance: Chapter Four: Earth Crisis|4S1E9~Crisis on Infinite Earths: Part Two (II)|1S6E9~Crisis on Infinite Earths: Part Three (III)|0S8E8~Crisis on Infinite Earths: Part Four (IV)|3S5E1~Crisis on Infinite Earths: Part Five (V)|2S5E10~The Bottle Episode|4S1E10~How Queer Everything Is Today!|5S3E10~The Book of Markovia: Chapter One: Blessings and Curses Reborn|0S8E9~Green Arrow & The Canaries|3S5E2~Meet the Legends|2S5E11~Back from the Future (1)|4S1E11~An Un-Birthday Present|5S3E11~The Book of Markovia: Chapter Two: Lynn's Addiction|0S8E10~Fadeout|5S3E12~The Book of Markovia: Chapter Three: Motherless ID|1S6E10~Marathon|3S5E3~Miss Me, Kiss Me, Love Me|5S3E13~The Book of Markovia: Chapter Four: Grab the Strap|1S6E11~Love Is a Battlefield|3S5E4~Slay Anything|2S5E12~Back from the Future (2)|4S1E12~Take Your Choice|1S6E12~A Girl Named Sue|3S5E5~A Head of Her Time|2S5E13~It's a Super Life|4S1E13~Drink Me|5S3E14~The Book of War: Chapter One: Homecoming|1S6E13~Grodd Friended Me|3S5E6~Mortal Khanbat|5S3E15~The Book of War: Chapter Two: Freedom Ain't Free|2S5E14~The Bodyguard|4S1E14~Grinning from Ear to Ear|5S3E16~The Book of War: Chapter Three: Liberation|1S6E14~Death of the Speed Force|3S5E7~Mr. Parker's Cul-De-Sac|2S5E15~Reality Bytes|4S1E15~Off with Her Head|1S6E15~The Exorcism of Nash Wells|3S5E8~Romeo v Juliet: Dawn of Justness|2S5E16~Alex in Wonderland|4S1E16~Through the Looking-Glass|1S6E16~So Long and Goodnight|3S5E9~Zari, Not Zari|4S1E17~A Narrow Escape|1S6E17~Liberation|3S5E10~The Great British Fake Off|2S5E17~Deus Lex Machina|4S1E18~If You Believe in Me, I'll Believe in You|1S6E18~Pay the Piper|3S5E11~Ship Broken|2S5E18~The Missing Link|4S1E19~A Secret Kept from All the Rest|1S6E19~Success Is Assured|3S5E12~Freaks and Greeks|2S5E19~Immortal Kombat|4S1E20~O, Mouse!|3S5E13~I Am Legends|3S5E14~The One Where We're Trapped On TV|3S5E15~Swan Thong|4S2E1~What Happened to Kate Kane?|4S2E2~Prior Criminal History|4S2E3~Bat Girl Magic!|5S4E1~The Book of Reconstruction: Chapter One|4S2E4~Fair Skin, Blue Eyes|5S4E2~The Book of Reconstruction: Chapter Two: Unacceptable Losses|4S2E5~Gore on Canvas|5S4E3~The Book of Reconstruction: Chapter Three|9S1E1~Pilot|4S2E6~Do Not Resuscitate|5S4E4~The Book of Reconstruction: Chapter Four|1S7E1~All's Wells That Ends Wells|9S1E2~Heritage|5S4E5~The Book of Ruin: Chapter One: Picking Up the Pieces|1S7E2~The Speed of Thought|9S1E3~The Perks of Not Being a Wallflower|4S2E7~It's Best You Stop Digging|5S4E6~The Book of Ruin: Chapter Two|1S7E3~Mother|9S1E4~Haywire|4S2E8~Survived Much Worse|1S7E4~Central City Strong|9S1E5~The Best of Smallville|4S2E9~Rule #1|1S7E5~Fear Me|2S6E1~Rebirth|1S7E6~The One With The Nineties|2S6E2~A Few Good Women|4S2E10~Time Off For Good Behavior|5S4E7~Painkiller|1S7E7~Growing Pains|2S6E3~Phantom Menaces|4S2E11~Arrive Alive|5S4E8~The Book of Ruin: Chapter Three|2S6E4~Lost Souls|5S4E9~The Book of Ruin: Chapter Four: Lyding|2S6E5~Prom Night! (1)|3S6E1~Ground Control to Sara Lance|4S2E12~Initiate Self-Destruct|5S4E10~The Book of Reunification: Chapter One: Revelations|1S7E8~The People v. Killer Frost|2S6E6~Prom Again! (2)|3S6E2~Meat: The Legends|4S2E13~I'll Give You a Clue|5S4E11~The Book of Reunification: Chapter Two|1S7E9~Timeless|2S6E7~Fear Knot|3S6E3~The Ex-Factor|4S2E14~And Justice For All|5S4E12~The Book of Resurrection: Chapter One: Crossroads|1S7E10~Family Matters (1)|9S1E6~Broken Trust|3S6E4~Bay of Squids|5S4E13~The Book of Resurrection: Chapter Two: Closure|1S7E11~Family Matters (2)|9S1E7~Man of Steel|9S1E8~Holding the Wrench|3S6E5~The Satanist's Apprentice|4S2E15~Armed and Dangerous|1S7E12~Good-Bye Vibrations|9S1E9~Loyal Subjekts|3S6E6~Bishop's Gambit|4S2E16~Rebirth|1S7E13~Masquerade|9S1E10~O Mother, Where Art Thou?|3S6E7~Back to the Finale: Part II|4S2E17~Kane, Kate|1S7E14~Rayo De Luz|9S1E11~A Brief Reminiscence In-Between Cataclysmic Events|3S6E8~Stressed Western|4S2E18~Power|1S7E15~Enemy at the Gates|1S7E16~P.O.W.|3S6E9~This Is Gus|1S7E17~Heart of the Matter (1)|9S1E12~Through the Valley of Death|3S6E10~Bad Blood|1S7E18~Heart of the Matter (2)|9S1E13~Fail Safe|3S6E11~The Final Frame|9S1E14~The Eradicator|3S6E12~Bored on Board Onboard|9S1E15~Last Sons of Krypton|3S6E13~Silence of the Sonograms|2S6E8~Welcome Back, Kara|3S6E14~There Will Be Brood|2S6E9~Dream Weaver|3S6E15~The Fungus Amongus|2S6E10~Still I Rise|2S6E11~Mxy in the Middle|2S6E12~Blind Spots|2S6E13~The Gauntlet|2S6E14~Magical Thinking|2S6E15~Hope for Tomorrow|3S7E1~The Bullet Blondes|4S3E1~Mad As A Hatter|2S6E16~Nightmare in National City|3S7E2~The Need For Speed|4S3E2~Loose Tooth|2S6E17~I Believe in a Thing Called Love|3S7E3~WVRDR_ERROR_100 Oest-of-th3-Gs.gid30n notFound|4S3E3~Freeze|2S6E18~Truth or Consequences|3S7E4~Speakeasy Does It|4S3E4~Antifreeze|2S6E19~The Last Gauntlet|2S6E20~Kara|3S7E5~It's a Mad, Mad, Mad, Mad Scientist|4S3E5~A Lesson From Professor Pyg|1S8E1~Armageddon (1)|3S7E6~Deus Ex Latrina|4S3E6~How Does Your Garden Grow?|1S8E2~Armageddon (2)|3S7E7~A Woman's Place Is In The War Effort|4S3E7~Pick Your Poison|1S8E3~Armageddon (3)|1S8E4~Armageddon (4)|1S8E5~Armageddon (5)|9S2E1~What Lies Beneath|3S7E8~Paranoid Android|4S3E8~Trust Destiny|9S2E2~The Ties That Bind|3S7E9~Lowest Common Denominator|4S3E9~Meet Your Maker|9S2E3~The Thing in the Mines|3S7E10~The Fixed Point|4S3E10~Toxic|9S2E4~The Inverse Method|3S7E11~Rage Against The Machines|4S3E11~Broken Toys|9S2E5~Girl\u2026 You'll Be a Woman, Soon|3S7E12~Too Legit To Quit|4S3E12~We're All Mad Here|9S2E6~Tried and True|3S7E13~Knocked Down, Knocked Up|4S3E13~We Having Fun Yet?|9S2E7~Anti-Hero|1S8E6~Impulsive Excessive Disorder|1S8E7~Lockdown|9S2E8~Into Oblivion|1S8E8~The Fire Next Time|9S2E9~30 Days and 30 Nights|1S8E9~Phantoms|1S8E10~Reckless|1S8E11~Resurrection|9S2E10~Bizarros in a Bizarro World|1S8E12~Death Rises|9S2E11~Truth and Consequences|1S8E13~Death Falls|1S8E14~Funeral for a Friend|1S8E15~Into the Still Force|1S8E16~The Curious Case of Bartholomew Allen|9S2E12~Lies That Bind|9S2E13~All Is Lost|1S8E17~Keep It Dark|1S8E18~The Man in the Yellow Tie|9S2E14~Worlds War Bizarre|1S8E19~Negative (1)|9S2E15~Waiting for Superman|1S8E20~Negative (2)|1S9E1~Wednesday Ever After|1S9E2~Hear No Evil|1S9E3~Rogues of War|1S9E4~Mask of the Red Death (1)|1S9E5~Mask of the Red Death (2)|9S3E1~Closer|1S9E6~The Good, the Bad and the Lucky|9S3E2~Uncontrollable Force|9S3E3~In Cold Blood|1S9E7~Wildest Dreams|9S3E4~Too Close to Home|1S9E8~Partners in Time|9S3E5~Head On|9S3E6~Of Sound Mind|1S9E9~It's My Party and I'll Die If I Want To|9S3E7~Forever and Always|1S9E10~A New World (1)|9S3E8~Guess Who's Coming to Dinner|1S9E11~A New World (2)|1S9E12~A New World (3)|9S3E9~The Dress|1S9E13~A New World (4)|9S3E10~Collision Course|9S3E11~Complications|9S3E12~Injustice|9S3E13~What Kills You Only Makes You Stronger|9S4E1~The End & the Beginning|9S4E2~A World Without|9S4E3~Always My Hero|9S4E4~A Perfectly Good Wedding|9S4E5~Break the Cycle|9S4E6~When the Lights Come On|9S4E7~A Regular Guy|9S4E8~Sharp Dressed Man|9S4E9~To Live and Die Again|9S4E10~It Went By So Fast";
+    function avChronoOrder(){
+      const steps={}, seq=[];
+      AV_CHRONO.split("|").forEach(part=>{
+        const id=AV_SHOWS[+part.charAt(0)]; const rest=part.slice(1); const i=rest.indexOf("~");
+        const ep = i<0 ? rest : rest.slice(0,i), label = i<0 ? "" : rest.slice(i+1);
+        const key = "t"+id+"@"+ep;
+        steps[key] = { t:"tv", id:id, ep:ep, label:label };
+        seq.push(key);
+      });
+      return { id:"chrono", name:"Chronological", dense:true,
+        note:"Every episode of the ten shows in the order they aired, the way the online guides do it: you jump from one show to another week by week, and the crossovers fall into place. "+seq.length+" episodes.",
+        steps:steps, seq:seq };
+    }
+
     const UNIVERSES = [
       {
         id: "star-wars",
         name: "Star Wars",
         tagline: "A galaxy far, far away",
         heroKey: "m140607",
-        theme: { accent: "#ffe81f", ink: "#0d0f14", bg: "#05070d", glow: "rgba(255,232,31,.14)" },
+        theme: { accent: "#ffe81f", ink: "#0d0f14", bg: "#05070d", glow: "rgba(255,232,31,.14)" , icon:"🌌" },
         titles: [
           {t:"movie", id:1893,    label:"The Phantom Menace"},
           {t:"movie", id:1894,    label:"Attack of the Clones"},
@@ -4248,7 +4295,7 @@
         name: "MCU",
         tagline: "The Marvel Cinematic Universe",
         heroKey: "m299534",
-        theme: { accent:"#ed1d24", ink:"#ffffff", bg:"#0b0d12", glow:"rgba(237,29,36,.16)" },
+        theme: { accent:"#ed1d24", ink:"#ffffff", bg:"#0b0d12", glow:"rgba(237,29,36,.16)" , icon:"🛡️" },
         titles: [
           {t:"movie",id:1726,label:"Iron Man"},
           {t:"movie",id:1724,label:"The Incredible Hulk"},
@@ -4321,7 +4368,7 @@
         name: "Wizarding World",
         tagline: "Harry Potter & Fantastic Beasts",
         heroKey: "m671",
-        theme: { accent:"#d3a625", ink:"#0d0f14", bg:"#0a0b10", glow:"rgba(211,166,37,.15)" },
+        theme: { accent:"#d3a625", ink:"#0d0f14", bg:"#0a0b10", glow:"rgba(211,166,37,.15)" , icon:"🪄" },
         titles: [
           {t:"movie",id:671,label:"Harry Potter and the Philosopher's Stone"},
           {t:"movie",id:672,label:"Harry Potter and the Chamber of Secrets"},
@@ -4348,7 +4395,7 @@
         name: "Middle-earth",
         tagline: "The Lord of the Rings & The Hobbit",
         heroKey: "m122",
-        theme: { accent:"#c9a227", ink:"#0d0f14", bg:"#0a0c0a", glow:"rgba(201,162,39,.14)" },
+        theme: { accent:"#c9a227", ink:"#0d0f14", bg:"#0a0c0a", glow:"rgba(201,162,39,.14)" , icon:"💍" },
         titles: [
           {t:"movie",id:120,label:"The Fellowship of the Ring"},
           {t:"movie",id:121,label:"The Two Towers"},
@@ -4366,6 +4413,684 @@
           ]}
         ],
         defaultOrder: "release"
+      },
+      {
+        id: "arrowverse",
+        name: "Arrowverse",
+        tagline: "The CW's DC shows, and the crossovers that tie them together",
+        heroKey: "t1412",
+        theme: { accent:"#3fbf7f", ink:"#eafff3", bg:"#070d0a", glow:"rgba(63,191,127,.16)" , icon:"🏹" },
+        titles: [
+          {t:"tv", id:1412,  label:"Arrow"},
+          {t:"tv", id:60735, label:"The Flash"},
+          {t:"tv", id:60743, label:"Constantine"},
+          {t:"tv", id:62125, label:"Vixen"},
+          {t:"tv", id:62688, label:"Supergirl"},
+          {t:"tv", id:62643, label:"DC's Legends of Tomorrow"},
+          {t:"tv", id:75486, label:"Freedom Fighters: The Ray"},
+          {t:"tv", id:71663, label:"Black Lightning"},
+          {t:"tv", id:89247, label:"Batwoman"},
+          {t:"tv", id:95057, label:"Superman & Lois"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"crossovers", name:"Crossovers", note:"Only the episodes where the shows meet, in the order they aired. A good way to follow the big events without watching all 900 episodes.",
+            episodes:{
+              "t1412#x0":[{note:"Barry Allen's first appearance, two years before his own show"},["S2E8","The Scientist"],["S2E9","Three Ghosts"]],
+              "t60735#x1":[{note:"Flash vs. Arrow, part 1"},["S1E8","Flash vs. Arrow"]],
+              "t1412#x1":[{note:"Flash vs. Arrow, part 2"},["S3E8","The Brave and the Bold"]],
+              "t60735#x2":[{note:"Heroes Join Forces, part 1 — Hawkgirl, Hawkman and Vandal Savage, the seed of Legends of Tomorrow"},["S2E8","Legends of Today"]],
+              "t1412#x2":[{note:"Heroes Join Forces, part 2"},["S4E8","Legends of Yesterday"]],
+              "t62688#wf":[{note:"Barry lands on Supergirl's Earth"},["S1E18","Worlds Finest"]],
+              "t62688#inv":[{note:"Invasion!, lead-in"},["S2E8","Medusa"]],
+              "t60735#inv":[{note:"Invasion!, part 1"},["S3E8","Invasion!"]],
+              "t1412#inv":[{note:"Invasion!, part 2"},["S5E8","Invasion!"]],
+              "t62643#inv":[{note:"Invasion!, part 3"},["S2E7","Invasion!"]],
+              "t62688#duet":[{note:"The musical crossover, lead-in"},["S2E16","Star-Crossed"]],
+              "t60735#duet":[{note:"The musical crossover"},["S3E17","Duet"]],
+              "t62688#ex":[{note:"Crisis on Earth-X, part 1"},["S3E8","Crisis on Earth-X"]],
+              "t1412#ex":[{note:"Crisis on Earth-X, part 2"},["S6E8","Crisis on Earth-X"]],
+              "t60735#ex":[{note:"Crisis on Earth-X, part 3"},["S4E8","Crisis on Earth-X"]],
+              "t62643#ex":[{note:"Crisis on Earth-X, part 4"},["S3E8","Crisis on Earth-X"]],
+              "t60735#els":[{note:"Elseworlds, part 1"},["S5E9","Elseworlds"]],
+              "t1412#els":[{note:"Elseworlds, part 2"},["S7E9","Elseworlds"]],
+              "t62688#els":[{note:"Elseworlds, part 3 — sets up Crisis"},["S4E9","Elseworlds"]],
+              "t71663#coie":[{note:"Crisis on Infinite Earths, tie-in"},["S3E9","Earth Crisis"]],
+              "t62688#coie":[{note:"Crisis on Infinite Earths, part 1"},["S5E9","Crisis on Infinite Earths: Part One"]],
+              "t89247#coie":[{note:"Crisis on Infinite Earths, part 2"},["S1E9","Crisis on Infinite Earths: Part Two"]],
+              "t60735#coie":[{note:"Crisis on Infinite Earths, part 3"},["S6E9","Crisis on Infinite Earths: Part Three"]],
+              "t1412#coie":[{note:"Crisis on Infinite Earths, part 4"},["S8E8","Crisis on Infinite Earths: Part Four"]],
+              "t62643#coie":[{note:"Crisis on Infinite Earths, part 5 — the new universe"},["S5E1","Crisis on Infinite Earths: Part Five"]]
+            },
+            seq:[
+              "t1412#x0","t60735#x1","t1412#x1","t60735#x2","t1412#x2","t62688#wf",
+              "t62688#inv","t60735#inv","t1412#inv","t62643#inv","t62688#duet","t60735#duet",
+              "t62688#ex","t1412#ex","t60735#ex","t62643#ex","t60735#els","t1412#els","t62688#els",
+              "t71663#coie","t62688#coie","t89247#coie","t60735#coie","t1412#coie","t62643#coie"
+            ]},
+          avChronoOrder(),
+          { id:"core", name:"The core four", note:"The four shows that carry the crossovers, in the order they started. Everything else is optional.",
+            seq:["t1412","t60735","t62688","t62643"] }
+        ],
+        defaultOrder: "release"
+      }
+    ];
+
+    // Buffy + Angel, every episode of both shows in air order (same encoding as the Arrowverse list).
+    const BUFFY_SHOWS = [95, 2426];
+    const BUFFY_CHRONO = "0S1E1~Welcome to the Hellmouth (1)|0S1E2~The Harvest (2)|0S1E3~Witch|0S1E4~Teacher's Pet|0S1E5~Never Kill a Boy on the First Date|0S1E6~The Pack|0S1E7~Angel|0S1E8~I, Robot... You, Jane|0S1E9~The Puppet Show|0S1E10~Nightmares|0S1E11~Out of Mind, Out of Sight|0S1E12~Prophecy Girl|0S2E1~When She Was Bad|0S2E2~Some Assembly Required|0S2E3~School Hard|0S2E4~Inca Mummy Girl|0S2E5~Reptile Boy|0S2E6~Halloween|0S2E7~Lie to Me|0S2E8~The Dark Age|0S2E9~What's My Line? (1)|0S2E10~What's My Line? (2)|0S2E11~Ted|0S2E12~Bad Eggs|0S2E13~Surprise (1)|0S2E14~Innocence (2)|0S2E15~Phases|0S2E16~Bewitched, Bothered and Bewildered|0S2E17~Passion|0S2E18~Killed by Death|0S2E19~I Only Have Eyes for You|0S2E20~Go Fish|0S2E21~Becoming (1)|0S2E22~Becoming (2)|0S3E1~Anne|0S3E2~Dead Man's Party|0S3E3~Faith, Hope & Trick|0S3E4~Beauty and the Beasts|0S3E5~Homecoming|0S3E6~Band Candy|0S3E7~Revelations|0S3E8~Lovers Walk|0S3E9~The Wish|0S3E10~Amends|0S3E11~Gingerbread|0S3E12~Helpless|0S3E13~The Zeppo|0S3E14~Bad Girls|0S3E15~Consequences|0S3E16~Doppelgangland|0S3E17~Enemies|0S3E18~Choices|0S3E19~The Prom|0S3E20~Graduation Day (1)|0S3E21~Graduation Day (2)|0S3E22~Earshot|0S4E1~The Freshman|1S1E1~City of|0S4E2~Living Conditions|1S1E2~Lonely Heart|0S4E3~The Harsh Light of Day|1S1E3~In the Dark|0S4E4~Fear, Itself|1S1E4~I Fall to Pieces|0S4E5~Beer Bad|1S1E5~Rm w/a Vu|0S4E6~Wild at Heart|1S1E6~Sense & Sensitivity|0S4E7~The Initiative|1S1E7~The Bachelor Party|0S4E8~Pangs|1S1E8~I Will Remember You|0S4E9~Something Blue|1S1E9~Hero|0S4E10~Hush|1S1E10~Parting Gifts|0S4E11~Doomed|1S1E11~Somnambulist|0S4E12~A New Man|1S1E12~Expecting|0S4E13~The I in Team|1S1E13~She|0S4E14~Goodbye Iowa|1S1E14~I've Got You Under My Skin|0S4E15~This Year's Girl (1)|1S1E15~The Prodigal|0S4E16~Who Are You? (2)|1S1E16~The Ring|0S4E17~Superstar|1S1E17~Eternity|0S4E18~Where the Wild Things Are|1S1E18~Five by Five (1)|0S4E19~New Moon Rising|1S1E19~Sanctuary (2)|0S4E20~The Yoko Factor (1)|1S1E20~War Zone|0S4E21~Primeval (2)|1S1E21~Blind Date|0S4E22~Restless|1S1E22~To Shanshu in L.A.|0S5E1~Buffy vs. Dracula|1S2E1~Judgment|0S5E2~Real Me|1S2E2~Are You Now or Have You Ever Been|0S5E3~The Replacement|1S2E3~First Impressions|0S5E4~Out of My Mind|1S2E4~Untouched|0S5E5~No Place Like Home|1S2E5~Dear Boy|0S5E6~Family|1S2E6~Guise Will Be Guise|0S5E7~Fool for Love|1S2E7~Darla|0S5E8~Shadow|1S2E8~The Shroud of Rahmon|0S5E9~Listening to Fear|1S2E9~The Trial|0S5E10~Into the Woods|1S2E10~Reunion|0S5E11~Triangle|1S2E11~Redefinition|0S5E12~Checkpoint|1S2E12~Blood Money|0S5E13~Blood Ties|1S2E13~Happy Anniversary|0S5E14~Crush|1S2E14~The Thin Dead Line|0S5E15~I Was Made to Love You|1S2E15~Reprise|0S5E16~The Body|1S2E16~Epiphany|0S5E17~Forever|1S2E17~Disharmony|0S5E18~Intervention|1S2E18~Dead End|0S5E19~Tough Love|1S2E19~Belonging|0S5E20~Spiral|1S2E20~Over the Rainbow|0S5E21~The Weight of the World|1S2E21~Through the Looking Glass|0S5E22~The Gift|1S2E22~There's No Place Like Plrtz Glrb|1S3E1~Heartthrob|1S3E2~That Vision Thing|0S6E1~Bargaining (1)|0S6E2~Bargaining (2)|1S3E3~That Old Gang of Mine|0S6E3~After Life|1S3E4~Carpe Noctem|0S6E4~Flooded|1S3E5~Fredless|0S6E5~Life Serial|1S3E6~Billy|0S6E6~All the Way|1S3E7~Offspring|0S6E7~Once More, with Feeling|1S3E8~Quickening|0S6E8~Tabula Rasa|1S3E9~Lullaby|0S6E9~Smashed|0S6E10~Wrecked|1S3E10~Dad|0S6E11~Gone|1S3E11~Birthday|1S3E12~Provider|0S6E12~Doublemeat Palace|1S3E13~Waiting in the Wings|0S6E13~Dead Things|0S6E14~Older and Far Away|1S3E14~Couplet|1S3E15~Loyalty|0S6E15~As You Were|1S3E16~Sleep Tight|0S6E16~Hell's Bells|0S6E17~Normal Again|1S3E17~Forgiving|1S3E18~Double or Nothing|1S3E19~The Price|0S6E18~Entropy|1S3E20~A New World|0S6E19~Seeing Red|1S3E21~Benediction|0S6E20~Villains|1S3E22~Tomorrow|0S6E21~Two to Go|0S6E22~Grave|0S7E1~Lessons|0S7E2~Beneath You|1S4E1~Deep Down|0S7E3~Same Time, Same Place|1S4E2~Ground State|0S7E4~Help|1S4E3~The House Always Wins|0S7E5~Selfless|1S4E4~Slouching Toward Bethlehem|1S4E5~Supersymmetry|0S7E6~Him|1S4E6~Spin the Bottle|0S7E7~Conversations with Dead People|1S4E7~Apocalypse, Nowish|0S7E8~Sleeper|0S7E9~Never Leave Me|0S7E10~Bring on the Night|0S7E11~Showtime|1S4E8~Habeas Corpses|0S7E12~Potential|1S4E9~Long Day's Journey|1S4E10~Awakening|0S7E13~The Killer in Me|1S4E11~Soulless|0S7E14~First Date|1S4E12~Calvary|0S7E15~Get It Done|0S7E16~Storyteller|1S4E13~Salvage|1S4E14~Release|1S4E15~Orpheus|0S7E17~Lies My Parents Told Me|1S4E16~Players|1S4E17~Inside Out|1S4E18~Shiny Happy People|0S7E18~Dirty Girls|1S4E19~The Magic Bullet|1S4E20~Sacrifice|0S7E19~Empty Places|1S4E21~Peace Out|0S7E20~Touched|1S4E22~Home|0S7E21~End of Days|0S7E22~Chosen|1S5E1~Conviction|1S5E2~Just Rewards|1S5E3~Unleashed|1S5E4~Hell Bound|1S5E5~Life of the Party|1S5E6~The Cautionary Tale of Numero Cinco|1S5E7~Lineage|1S5E8~Destiny|1S5E9~Harm's Way|1S5E10~Soul Purpose|1S5E11~Damage|1S5E12~You're Welcome|1S5E13~Why We Fight|1S5E14~Smile Time|1S5E15~A Hole in the World|1S5E16~Shells|1S5E17~Underneath|1S5E18~Origin|1S5E19~Time Bomb|1S5E20~The Girl in Question|1S5E21~Power Play|1S5E22~Not Fade Away";
+    let _buffy=null;
+    function buffyBuild(){ if(_buffy) return _buffy;
+      const steps={}, seq=[];
+      BUFFY_CHRONO.split("|").forEach(part=>{
+        const id=BUFFY_SHOWS[+part.charAt(0)]; const rest=part.slice(1); const i=rest.indexOf("~");
+        const ep = i<0 ? rest : rest.slice(0,i), label = i<0 ? "" : rest.slice(i+1);
+        const key="t"+id+"@"+ep; steps[key]={ t:"tv", id:id, ep:ep, label:label }; seq.push(key);
+      });
+      _buffy={steps, seq}; return _buffy; }
+    function buffySteps(){ return buffyBuild().steps; }
+    function buffySeq(){ return buffyBuild().seq; }
+
+    const MORE_UNIVERSES = [
+      {
+        id: "alien-predator",
+        name: "Alien & Predator",
+        tagline: "Two nightmares, one universe",
+        heroKey: "m348",
+        theme: { accent:"#6ee7a6", ink:"#04140c", bg:"#050b08", glow:"rgba(110,231,166,.14)", icon:"👽" },
+        titles: [
+          {t:"movie", id:348, label:"Alien"},
+          {t:"movie", id:679, label:"Aliens"},
+          {t:"movie", id:8077, label:"Alien³"},
+          {t:"movie", id:8078, label:"Alien Resurrection"},
+          {t:"movie", id:70981, label:"Prometheus"},
+          {t:"movie", id:126889, label:"Alien: Covenant"},
+          {t:"movie", id:945961, label:"Alien: Romulus"},
+          {t:"movie", id:106, label:"Predator"},
+          {t:"movie", id:169, label:"Predator 2"},
+          {t:"movie", id:34851, label:"Predators"},
+          {t:"movie", id:346910, label:"The Predator"},
+          {t:"movie", id:766507, label:"Prey"},
+          {t:"movie", id:1242898, label:"Predator: Badlands"},
+          {t:"movie", id:395, label:"AVP: Alien vs. Predator"},
+          {t:"movie", id:440, label:"Aliens vs Predator: Requiem"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"In-story order, from the 18th century plains of Prey to the far future of Alien Resurrection. The two AVP films sit in their own corner of the timeline.", seq:["m766507","m106","m169","m395","m440","m34851","m346910","m70981","m126889","m348","m945961","m679","m8077","m8078","m1242898"] },
+          { id:"xeno", name:"Xenomorph only", note:"The Alien films alone, Predator left out.", seq:["m70981","m126889","m348","m945961","m679","m8077","m8078"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "apes",
+        name: "Planet of the Apes",
+        tagline: "Six decades of the ape revolution",
+        heroKey: "m61791",
+        theme: { accent:"#c08a52", ink:"#14100a", bg:"#0a0806", glow:"rgba(192,138,82,.14)", icon:"🦍" },
+        titles: [
+          {t:"movie", id:871, label:"Planet of the Apes"},
+          {t:"movie", id:1685, label:"Beneath the Planet of the Apes"},
+          {t:"movie", id:1687, label:"Escape from the Planet of the Apes"},
+          {t:"movie", id:1688, label:"Conquest of the Planet of the Apes"},
+          {t:"movie", id:1705, label:"Battle for the Planet of the Apes"},
+          {t:"movie", id:869, label:"Planet of the Apes (2001)"},
+          {t:"movie", id:61791, label:"Rise of the Planet of the Apes"},
+          {t:"movie", id:119450, label:"Dawn of the Planet of the Apes"},
+          {t:"movie", id:281338, label:"War for the Planet of the Apes"},
+          {t:"movie", id:653346, label:"Kingdom of the Planet of the Apes"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"reboot", name:"Modern first", note:"The 2011 reboot is the best way in: four films that tell one story, then the 1968 classic and its sequels, and the Burton remake last as a curiosity.", seq:["m61791","m119450","m281338","m653346","m871","m1685","m1687","m1688","m1705","m869"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "xmen",
+        name: "X-Men",
+        tagline: "Fox's mutants, timeline included",
+        heroKey: "m127585",
+        theme: { accent:"#4f9dde", ink:"#050b14", bg:"#060a12", glow:"rgba(79,157,222,.14)", icon:"🧬" },
+        titles: [
+          {t:"movie", id:36657, label:"X-Men"},
+          {t:"movie", id:36658, label:"X2"},
+          {t:"movie", id:36668, label:"X-Men: The Last Stand"},
+          {t:"movie", id:2080, label:"X-Men Origins: Wolverine"},
+          {t:"movie", id:49538, label:"X-Men: First Class"},
+          {t:"movie", id:76170, label:"The Wolverine"},
+          {t:"movie", id:127585, label:"X-Men: Days of Future Past"},
+          {t:"movie", id:246655, label:"X-Men: Apocalypse"},
+          {t:"movie", id:263115, label:"Logan"},
+          {t:"movie", id:320288, label:"Dark Phoenix"},
+          {t:"movie", id:340102, label:"The New Mutants"},
+          {t:"movie", id:293660, label:"Deadpool"},
+          {t:"movie", id:383498, label:"Deadpool 2"},
+          {t:"movie", id:533535, label:"Deadpool & Wolverine"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"In-story order. Days of Future Past splits the saga in two, so the original trilogy sits in the timeline it erased.", seq:["m49538","m127585","m246655","m320288","m36657","m36658","m36668","m2080","m76170","m263115","m340102","m293660","m383498","m533535"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "spider-man",
+        name: "Spider-Man",
+        tagline: "Every web-slinger, every studio",
+        heroKey: "m634649",
+        theme: { accent:"#e04a3f", ink:"#150505", bg:"#0b0608", glow:"rgba(224,74,63,.15)", icon:"🕷️" },
+        titles: [
+          {t:"movie", id:557, label:"Spider-Man"},
+          {t:"movie", id:558, label:"Spider-Man 2"},
+          {t:"movie", id:559, label:"Spider-Man 3"},
+          {t:"movie", id:1930, label:"The Amazing Spider-Man"},
+          {t:"movie", id:102382, label:"The Amazing Spider-Man 2"},
+          {t:"movie", id:315635, label:"Spider-Man: Homecoming"},
+          {t:"movie", id:429617, label:"Spider-Man: Far From Home"},
+          {t:"movie", id:634649, label:"Spider-Man: No Way Home"},
+          {t:"movie", id:324857, label:"Into the Spider-Verse"},
+          {t:"movie", id:569094, label:"Across the Spider-Verse"},
+          {t:"movie", id:335983, label:"Venom"},
+          {t:"movie", id:580489, label:"Venom: Let There Be Carnage"},
+          {t:"movie", id:912649, label:"Venom: The Last Dance"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"byuniverse", name:"One at a time", note:"Each Spider-Man in his own run: Raimi, then Webb, then the MCU, then the Spider-Verse, then Venom.", seq:["m557","m558","m559","m1930","m102382","m315635","m429617","m634649","m324857","m569094","m335983","m580489","m912649"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "defenders",
+        name: "Marvel Netflix",
+        tagline: "Hell's Kitchen, one street at a time",
+        heroKey: "t61889",
+        theme: { accent:"#c0392b", ink:"#160505", bg:"#0a0607", glow:"rgba(192,57,43,.15)", icon:"🥋" },
+        titles: [
+          {t:"tv", id:61889, label:"Daredevil"},
+          {t:"tv", id:38472, label:"Jessica Jones"},
+          {t:"tv", id:62126, label:"Luke Cage"},
+          {t:"tv", id:62127, label:"Iron Fist"},
+          {t:"tv", id:62285, label:"The Defenders"},
+          {t:"tv", id:67178, label:"The Punisher"},
+          {t:"tv", id:202555, label:"Daredevil: Born Again"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"interleaved", name:"Season by season", note:"The order the seasons were meant to be seen: the four heroes alternate until The Defenders brings them together, and Born Again picks it up years later.", episodes:{ "t61889#s1":[["S1E1",""],["S1E2",""],["S1E3",""],["S1E4",""],["S1E5",""],["S1E6",""],["S1E7",""],["S1E8",""],["S1E9",""],["S1E10",""],["S1E11",""],["S1E12",""],["S1E13",""]], "t38472#s1":[["S1E1",""],["S1E2",""],["S1E3",""],["S1E4",""],["S1E5",""],["S1E6",""],["S1E7",""],["S1E8",""],["S1E9",""],["S1E10",""],["S1E11",""],["S1E12",""],["S1E13",""]], "t61889#s2":[["S2E1",""],["S2E2",""],["S2E3",""],["S2E4",""],["S2E5",""],["S2E6",""],["S2E7",""],["S2E8",""],["S2E9",""],["S2E10",""],["S2E11",""],["S2E12",""],["S2E13",""]], "t62126#s1":[["S1E1",""],["S1E2",""],["S1E3",""],["S1E4",""],["S1E5",""],["S1E6",""],["S1E7",""],["S1E8",""],["S1E9",""],["S1E10",""],["S1E11",""],["S1E12",""],["S1E13",""]], "t62127#s1":[["S1E1",""],["S1E2",""],["S1E3",""],["S1E4",""],["S1E5",""],["S1E6",""],["S1E7",""],["S1E8",""],["S1E9",""],["S1E10",""],["S1E11",""],["S1E12",""],["S1E13",""]], "t62285#s1":[["S1E1",""],["S1E2",""],["S1E3",""],["S1E4",""],["S1E5",""],["S1E6",""],["S1E7",""],["S1E8",""]], "t67178#s1":[["S1E1",""],["S1E2",""],["S1E3",""],["S1E4",""],["S1E5",""],["S1E6",""],["S1E7",""],["S1E8",""],["S1E9",""],["S1E10",""],["S1E11",""],["S1E12",""],["S1E13",""]], "t38472#s2":[["S2E1",""],["S2E2",""],["S2E3",""],["S2E4",""],["S2E5",""],["S2E6",""],["S2E7",""],["S2E8",""],["S2E9",""],["S2E10",""],["S2E11",""],["S2E12",""],["S2E13",""]], "t62126#s2":[["S2E1",""],["S2E2",""],["S2E3",""],["S2E4",""],["S2E5",""],["S2E6",""],["S2E7",""],["S2E8",""],["S2E9",""],["S2E10",""],["S2E11",""],["S2E12",""],["S2E13",""]], "t62127#s2":[["S2E1",""],["S2E2",""],["S2E3",""],["S2E4",""],["S2E5",""],["S2E6",""],["S2E7",""],["S2E8",""],["S2E9",""],["S2E10",""]], "t61889#s3":[["S3E1",""],["S3E2",""],["S3E3",""],["S3E4",""],["S3E5",""],["S3E6",""],["S3E7",""],["S3E8",""],["S3E9",""],["S3E10",""],["S3E11",""],["S3E12",""],["S3E13",""]], "t38472#s3":[["S3E1",""],["S3E2",""],["S3E3",""],["S3E4",""],["S3E5",""],["S3E6",""],["S3E7",""],["S3E8",""],["S3E9",""],["S3E10",""],["S3E11",""],["S3E12",""],["S3E13",""]], "t67178#s2":[["S2E1",""],["S2E2",""],["S2E3",""],["S2E4",""],["S2E5",""],["S2E6",""],["S2E7",""],["S2E8",""],["S2E9",""],["S2E10",""],["S2E11",""],["S2E12",""],["S2E13",""]], "t202555#s1":[["S1E1",""],["S1E2",""],["S1E3",""],["S1E4",""],["S1E5",""],["S1E6",""],["S1E7",""],["S1E8",""],["S1E9",""]], "t202555#s2":[["S2E1",""],["S2E2",""],["S2E3",""],["S2E4",""],["S2E5",""],["S2E6",""],["S2E7",""],["S2E8",""]] }, labels:{ "t61889#s1":"Daredevil · Season 1", "t38472#s1":"Jessica Jones · Season 1", "t61889#s2":"Daredevil · Season 2", "t62126#s1":"Luke Cage · Season 1", "t62127#s1":"Iron Fist · Season 1", "t62285#s1":"The Defenders · Season 1", "t67178#s1":"The Punisher · Season 1", "t38472#s2":"Jessica Jones · Season 2", "t62126#s2":"Luke Cage · Season 2", "t62127#s2":"Iron Fist · Season 2", "t61889#s3":"Daredevil · Season 3", "t38472#s3":"Jessica Jones · Season 3", "t67178#s2":"The Punisher · Season 2", "t202555#s1":"Daredevil: Born Again · Season 1", "t202555#s2":"Daredevil: Born Again · Season 2" }, seq:["t61889#s1","t38472#s1","t61889#s2","t62126#s1","t62127#s1","t62285#s1","t67178#s1","t38472#s2","t62126#s2","t62127#s2","t61889#s3","t38472#s3","t67178#s2","t202555#s1","t202555#s2"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "doctor-who",
+        name: "Doctor Who",
+        tagline: "All of time and space, and its spin-offs",
+        heroKey: "t57243",
+        theme: { accent:"#2a6fd6", ink:"#040a16", bg:"#050914", glow:"rgba(42,111,214,.15)", icon:"🌀" },
+        titles: [
+          {t:"tv", id:57243, label:"Doctor Who (2005)"},
+          {t:"tv", id:121, label:"Doctor Who (1963)"},
+          {t:"tv", id:424, label:"Torchwood"},
+          {t:"tv", id:203, label:"The Sarah Jane Adventures"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"modern", name:"Modern first", note:"Start in 2005, add Torchwood and The Sarah Jane Adventures as they come, and keep the 1963 run for when you are hooked.", seq:["t57243","t424","t203","t121"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "monsterverse",
+        name: "Monsterverse",
+        tagline: "Godzilla, Kong and the Titans",
+        heroKey: "m399566",
+        theme: { accent:"#f0a63c", ink:"#140d03", bg:"#0a0805", glow:"rgba(240,166,60,.15)", icon:"🦖" },
+        titles: [
+          {t:"movie", id:124905, label:"Godzilla"},
+          {t:"movie", id:293167, label:"Kong: Skull Island"},
+          {t:"movie", id:373571, label:"Godzilla: King of the Monsters"},
+          {t:"movie", id:399566, label:"Godzilla vs. Kong"},
+          {t:"movie", id:823464, label:"Godzilla x Kong: The New Empire"},
+          {t:"tv", id:202411, label:"Monarch: Legacy of Monsters"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"In-story order: Skull Island in 1973, Monarch across the decades, then the Titans from 2014 onward.", seq:["m293167","t202411","m124905","m373571","m399566","m823464"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "jurassic",
+        name: "Jurassic Park",
+        tagline: "Life, uh, finds a way",
+        heroKey: "m329",
+        theme: { accent:"#c0402f", ink:"#0f0705", bg:"#080907", glow:"rgba(192,64,47,.14)", icon:"🦕" },
+        titles: [
+          {t:"movie", id:329, label:"Jurassic Park"},
+          {t:"movie", id:330, label:"The Lost World: Jurassic Park"},
+          {t:"movie", id:331, label:"Jurassic Park III"},
+          {t:"movie", id:135397, label:"Jurassic World"},
+          {t:"movie", id:351286, label:"Jurassic World: Fallen Kingdom"},
+          {t:"movie", id:507086, label:"Jurassic World Dominion"},
+          {t:"movie", id:1234821, label:"Jurassic World Rebirth"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "fast",
+        name: "Fast & Furious",
+        tagline: "Cars, heists and family",
+        heroKey: "m168259",
+        theme: { accent:"#ff8a3d", ink:"#150a03", bg:"#0a0706", glow:"rgba(255,138,61,.15)", icon:"🏎️" },
+        titles: [
+          {t:"movie", id:9799, label:"The Fast and the Furious"},
+          {t:"movie", id:584, label:"2 Fast 2 Furious"},
+          {t:"movie", id:9615, label:"Tokyo Drift"},
+          {t:"movie", id:13804, label:"Fast & Furious"},
+          {t:"movie", id:51497, label:"Fast Five"},
+          {t:"movie", id:82992, label:"Fast & Furious 6"},
+          {t:"movie", id:168259, label:"Furious 7"},
+          {t:"movie", id:337339, label:"The Fate of the Furious"},
+          {t:"movie", id:384018, label:"Hobbs & Shaw"},
+          {t:"movie", id:385128, label:"F9"},
+          {t:"movie", id:385687, label:"Fast X"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"The famous fix: Tokyo Drift only makes sense after Fast & Furious 6, which is where its ending was retconned.", seq:["m9799","m584","m13804","m51497","m82992","m9615","m168259","m337339","m384018","m385128","m385687"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "bond",
+        name: "James Bond",
+        tagline: "007, from Connery to Craig",
+        heroKey: "m37724",
+        theme: { accent:"#d4af37", ink:"#14110a", bg:"#080807", glow:"rgba(212,175,55,.14)", icon:"🎯" },
+        titles: [
+          {t:"movie", id:646, label:"Dr. No"},
+          {t:"movie", id:657, label:"From Russia with Love"},
+          {t:"movie", id:658, label:"Goldfinger"},
+          {t:"movie", id:660, label:"Thunderball"},
+          {t:"movie", id:667, label:"You Only Live Twice"},
+          {t:"movie", id:668, label:"On Her Majesty's Secret Service"},
+          {t:"movie", id:681, label:"Diamonds Are Forever"},
+          {t:"movie", id:253, label:"Live and Let Die"},
+          {t:"movie", id:682, label:"The Man with the Golden Gun"},
+          {t:"movie", id:691, label:"The Spy Who Loved Me"},
+          {t:"movie", id:698, label:"Moonraker"},
+          {t:"movie", id:699, label:"For Your Eyes Only"},
+          {t:"movie", id:700, label:"Octopussy"},
+          {t:"movie", id:36670, label:"Never Say Never Again"},
+          {t:"movie", id:707, label:"A View to a Kill"},
+          {t:"movie", id:708, label:"The Living Daylights"},
+          {t:"movie", id:709, label:"Licence to Kill"},
+          {t:"movie", id:710, label:"GoldenEye"},
+          {t:"movie", id:714, label:"Tomorrow Never Dies"},
+          {t:"movie", id:36643, label:"The World Is Not Enough"},
+          {t:"movie", id:36669, label:"Die Another Day"},
+          {t:"movie", id:36557, label:"Casino Royale"},
+          {t:"movie", id:10764, label:"Quantum of Solace"},
+          {t:"movie", id:37724, label:"Skyfall"},
+          {t:"movie", id:206647, label:"Spectre"},
+          {t:"movie", id:370172, label:"No Time to Die"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"craig", name:"The Craig era", note:"The only Bond run with a continuous story, in order, from Casino Royale to No Time to Die.", seq:["m36557","m10764","m37724","m206647","m370172"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "mission-impossible",
+        name: "Mission: Impossible",
+        tagline: "Your mission, should you choose to accept it",
+        heroKey: "m353081",
+        theme: { accent:"#2f7fd6", ink:"#04101c", bg:"#05080f", glow:"rgba(47,127,214,.15)", icon:"🕶️" },
+        titles: [
+          {t:"movie", id:954, label:"Mission: Impossible"},
+          {t:"movie", id:955, label:"Mission: Impossible II"},
+          {t:"movie", id:956, label:"Mission: Impossible III"},
+          {t:"movie", id:56292, label:"Ghost Protocol"},
+          {t:"movie", id:177677, label:"Rogue Nation"},
+          {t:"movie", id:353081, label:"Fallout"},
+          {t:"movie", id:575264, label:"Dead Reckoning"},
+          {t:"movie", id:575265, label:"The Final Reckoning"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "john-wick",
+        name: "John Wick",
+        tagline: "The High Table and its rules",
+        heroKey: "m603692",
+        theme: { accent:"#8b5cf6", ink:"#0c0716", bg:"#07060c", glow:"rgba(139,92,246,.16)", icon:"🔫" },
+        titles: [
+          {t:"movie", id:245891, label:"John Wick"},
+          {t:"movie", id:324552, label:"John Wick: Chapter 2"},
+          {t:"movie", id:458156, label:"John Wick: Chapter 3 – Parabellum"},
+          {t:"movie", id:603692, label:"John Wick: Chapter 4"},
+          {t:"movie", id:541671, label:"Ballerina"},
+          {t:"tv", id:72710, label:"The Continental"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"The Continental takes place in the 1970s, and Ballerina runs during the events of Chapter 3.", seq:["t72710","m245891","m324552","m458156","m541671","m603692"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "terminator",
+        name: "Terminator",
+        tagline: "No fate but what we make",
+        heroKey: "m280",
+        theme: { accent:"#9aa4b2", ink:"#0b0d12", bg:"#070809", glow:"rgba(154,164,178,.14)", icon:"🤖" },
+        titles: [
+          {t:"movie", id:218, label:"The Terminator"},
+          {t:"movie", id:280, label:"Terminator 2: Judgment Day"},
+          {t:"movie", id:296, label:"Terminator 3: Rise of the Machines"},
+          {t:"movie", id:534, label:"Terminator Salvation"},
+          {t:"movie", id:87101, label:"Terminator Genisys"},
+          {t:"movie", id:290859, label:"Terminator: Dark Fate"},
+          {t:"tv", id:433, label:"The Sarah Connor Chronicles"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"core", name:"The two-film canon", note:"The branch most fans keep: the first two films, then Dark Fate, which ignores everything in between. The Sarah Connor Chronicles is its own branch after T2.", seq:["m218","m280","t433","m290859"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "matrix",
+        name: "The Matrix",
+        tagline: "Follow the white rabbit",
+        heroKey: "m603",
+        theme: { accent:"#22c55e", ink:"#04140a", bg:"#050a07", glow:"rgba(34,197,94,.15)", icon:"💊" },
+        titles: [
+          {t:"movie", id:603, label:"The Matrix"},
+          {t:"movie", id:55931, label:"The Animatrix"},
+          {t:"movie", id:604, label:"The Matrix Reloaded"},
+          {t:"movie", id:605, label:"The Matrix Revolutions"},
+          {t:"movie", id:624860, label:"The Matrix Resurrections"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"animatrix", name:"With the Animatrix", note:"The animated shorts land between the first and second film, and two of them set up characters you meet in Reloaded.", seq:["m603","m55931","m604","m605","m624860"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "mad-max",
+        name: "Mad Max",
+        tagline: "The wasteland, film by film",
+        heroKey: "m76341",
+        theme: { accent:"#e0762a", ink:"#140a04", bg:"#0a0706", glow:"rgba(224,118,42,.15)", icon:"🛞" },
+        titles: [
+          {t:"movie", id:9659, label:"Mad Max"},
+          {t:"movie", id:8810, label:"Mad Max 2"},
+          {t:"movie", id:9355, label:"Beyond Thunderdome"},
+          {t:"movie", id:76341, label:"Fury Road"},
+          {t:"movie", id:786892, label:"Furiosa"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"Furiosa comes before Fury Road, and tells you who she was.", seq:["m9659","m8810","m9355","m786892","m76341"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "rocky",
+        name: "Rocky & Creed",
+        tagline: "Nine fights, one bloodline",
+        heroKey: "m312221",
+        theme: { accent:"#cf3f3f", ink:"#150606", bg:"#0a0708", glow:"rgba(207,63,63,.14)", icon:"🥊" },
+        titles: [
+          {t:"movie", id:1366, label:"Rocky"},
+          {t:"movie", id:1367, label:"Rocky II"},
+          {t:"movie", id:1371, label:"Rocky III"},
+          {t:"movie", id:1374, label:"Rocky IV"},
+          {t:"movie", id:1375, label:"Rocky V"},
+          {t:"movie", id:1246, label:"Rocky Balboa"},
+          {t:"movie", id:312221, label:"Creed"},
+          {t:"movie", id:480530, label:"Creed II"},
+          {t:"movie", id:677179, label:"Creed III"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "indiana-jones",
+        name: "Indiana Jones",
+        tagline: "Fortune and glory",
+        heroKey: "m85",
+        theme: { accent:"#b4813a", ink:"#130d05", bg:"#0a0806", glow:"rgba(180,129,58,.14)", icon:"🎩" },
+        titles: [
+          {t:"movie", id:85, label:"Raiders of the Lost Ark"},
+          {t:"movie", id:87, label:"Temple of Doom"},
+          {t:"movie", id:89, label:"The Last Crusade"},
+          {t:"movie", id:217, label:"Kingdom of the Crystal Skull"},
+          {t:"movie", id:335977, label:"Dial of Destiny"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"Temple of Doom is a prequel: it takes place in 1935, a year before Raiders.", seq:["m87","m85","m89","m217","m335977"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "back-to-the-future",
+        name: "Back to the Future",
+        tagline: "Three films, one DeLorean",
+        heroKey: "m105",
+        theme: { accent:"#f59f0b", ink:"#150e02", bg:"#0a0806", glow:"rgba(245,159,11,.15)", icon:"⏱️" },
+        titles: [
+          {t:"movie", id:105, label:"Back to the Future"},
+          {t:"movie", id:165, label:"Back to the Future Part II"},
+          {t:"movie", id:196, label:"Back to the Future Part III"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date", note:"A trilogy, and the second and third films were shot back to back: release order is the only order." }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "ghibli",
+        name: "Studio Ghibli",
+        tagline: "The whole studio, film by film",
+        heroKey: "m129",
+        theme: { accent:"#5fb85f", ink:"#04120a", bg:"#060a07", glow:"rgba(95,184,95,.14)", icon:"🌿" },
+        titles: [
+          {t:"movie", id:10515, label:"Castle in the Sky"},
+          {t:"movie", id:12477, label:"Grave of the Fireflies"},
+          {t:"movie", id:8392, label:"My Neighbor Totoro"},
+          {t:"movie", id:16859, label:"Kiki's Delivery Service"},
+          {t:"movie", id:15080, label:"Only Yesterday"},
+          {t:"movie", id:11621, label:"Porco Rosso"},
+          {t:"movie", id:21057, label:"Ocean Waves"},
+          {t:"movie", id:15283, label:"Pom Poko"},
+          {t:"movie", id:37797, label:"Whisper of the Heart"},
+          {t:"movie", id:128, label:"Princess Mononoke"},
+          {t:"movie", id:16198, label:"My Neighbors the Yamadas"},
+          {t:"movie", id:129, label:"Spirited Away"},
+          {t:"movie", id:15370, label:"The Cat Returns"},
+          {t:"movie", id:4935, label:"Howl's Moving Castle"},
+          {t:"movie", id:37933, label:"Tales from Earthsea"},
+          {t:"movie", id:12429, label:"Ponyo"},
+          {t:"movie", id:51739, label:"Arrietty"},
+          {t:"movie", id:83389, label:"From Up on Poppy Hill"},
+          {t:"movie", id:149870, label:"The Wind Rises"},
+          {t:"movie", id:149871, label:"The Tale of the Princess Kaguya"},
+          {t:"movie", id:242828, label:"When Marnie Was There"},
+          {t:"movie", id:337703, label:"The Red Turtle"},
+          {t:"movie", id:683127, label:"Earwig and the Witch"},
+          {t:"movie", id:508883, label:"The Boy and the Heron"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"miyazaki", name:"Miyazaki first", note:"The films Hayao Miyazaki directed for the studio, in order. The rest of Ghibli comes after.", seq:["m10515","m8392","m16859","m11621","m128","m129","m4935","m12429","m149870","m508883"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "pixar",
+        name: "Pixar",
+        tagline: "Every feature from the lamp",
+        heroKey: "m14160",
+        theme: { accent:"#2f80d6", ink:"#04101c", bg:"#05080f", glow:"rgba(47,128,214,.15)", icon:"💡" },
+        titles: [
+          {t:"movie", id:862, label:"Toy Story"},
+          {t:"movie", id:9487, label:"A Bug's Life"},
+          {t:"movie", id:863, label:"Toy Story 2"},
+          {t:"movie", id:585, label:"Monsters, Inc."},
+          {t:"movie", id:12, label:"Finding Nemo"},
+          {t:"movie", id:9806, label:"The Incredibles"},
+          {t:"movie", id:920, label:"Cars"},
+          {t:"movie", id:2062, label:"Ratatouille"},
+          {t:"movie", id:10681, label:"WALL·E"},
+          {t:"movie", id:14160, label:"Up"},
+          {t:"movie", id:10193, label:"Toy Story 3"},
+          {t:"movie", id:49013, label:"Cars 2"},
+          {t:"movie", id:62177, label:"Brave"},
+          {t:"movie", id:62211, label:"Monsters University"},
+          {t:"movie", id:150540, label:"Inside Out"},
+          {t:"movie", id:105864, label:"The Good Dinosaur"},
+          {t:"movie", id:127380, label:"Finding Dory"},
+          {t:"movie", id:260514, label:"Cars 3"},
+          {t:"movie", id:354912, label:"Coco"},
+          {t:"movie", id:260513, label:"Incredibles 2"},
+          {t:"movie", id:301528, label:"Toy Story 4"},
+          {t:"movie", id:508439, label:"Onward"},
+          {t:"movie", id:508442, label:"Soul"},
+          {t:"movie", id:508943, label:"Luca"},
+          {t:"movie", id:508947, label:"Turning Red"},
+          {t:"movie", id:718789, label:"Lightyear"},
+          {t:"movie", id:976573, label:"Elemental"},
+          {t:"movie", id:1022789, label:"Inside Out 2"},
+          {t:"movie", id:1022787, label:"Elio"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "disney-animation",
+        name: "Disney Animation",
+        tagline: "The animated canon, from Snow White on",
+        heroKey: "m8587",
+        theme: { accent:"#7b5cd6", ink:"#0b0716", bg:"#07060c", glow:"rgba(123,92,214,.15)", icon:"🏰" },
+        titles: [
+          {t:"movie", id:408, label:"Snow White and the Seven Dwarfs"},
+          {t:"movie", id:10895, label:"Pinocchio"},
+          {t:"movie", id:756, label:"Fantasia"},
+          {t:"movie", id:11360, label:"Dumbo"},
+          {t:"movie", id:3170, label:"Bambi"},
+          {t:"movie", id:14906, label:"Saludos Amigos"},
+          {t:"movie", id:15947, label:"The Three Caballeros"},
+          {t:"movie", id:20343, label:"Make Mine Music"},
+          {t:"movie", id:46929, label:"Fun and Fancy Free"},
+          {t:"movie", id:13757, label:"Melody Time"},
+          {t:"movie", id:13465, label:"The Adventures of Ichabod and Mr. Toad"},
+          {t:"movie", id:11224, label:"Cinderella"},
+          {t:"movie", id:12092, label:"Alice in Wonderland"},
+          {t:"movie", id:10693, label:"Peter Pan"},
+          {t:"movie", id:10340, label:"Lady and the Tramp"},
+          {t:"movie", id:10882, label:"Sleeping Beauty"},
+          {t:"movie", id:12230, label:"One Hundred and One Dalmatians"},
+          {t:"movie", id:9078, label:"The Sword in the Stone"},
+          {t:"movie", id:9325, label:"The Jungle Book"},
+          {t:"movie", id:10112, label:"The Aristocats"},
+          {t:"movie", id:11886, label:"Robin Hood"},
+          {t:"movie", id:250480, label:"The Many Adventures of Winnie the Pooh"},
+          {t:"movie", id:11319, label:"The Rescuers"},
+          {t:"movie", id:10948, label:"The Fox and the Hound"},
+          {t:"movie", id:10957, label:"The Black Cauldron"},
+          {t:"movie", id:9994, label:"The Great Mouse Detective"},
+          {t:"movie", id:12233, label:"Oliver & Company"},
+          {t:"movie", id:10144, label:"The Little Mermaid"},
+          {t:"movie", id:11135, label:"The Rescuers Down Under"},
+          {t:"movie", id:10020, label:"Beauty and the Beast"},
+          {t:"movie", id:812, label:"Aladdin"},
+          {t:"movie", id:8587, label:"The Lion King"},
+          {t:"movie", id:10530, label:"Pocahontas"},
+          {t:"movie", id:10545, label:"The Hunchback of Notre Dame"},
+          {t:"movie", id:11970, label:"Hercules"},
+          {t:"movie", id:10674, label:"Mulan"},
+          {t:"movie", id:37135, label:"Tarzan"},
+          {t:"movie", id:49948, label:"Fantasia 2000"},
+          {t:"movie", id:10567, label:"Dinosaur"},
+          {t:"movie", id:11688, label:"The Emperor's New Groove"},
+          {t:"movie", id:10865, label:"Atlantis: The Lost Empire"},
+          {t:"movie", id:11544, label:"Lilo & Stitch"},
+          {t:"movie", id:9016, label:"Treasure Planet"},
+          {t:"movie", id:10009, label:"Brother Bear"},
+          {t:"movie", id:13700, label:"Home on the Range"},
+          {t:"movie", id:9982, label:"Chicken Little"},
+          {t:"movie", id:1267, label:"Meet the Robinsons"},
+          {t:"movie", id:13053, label:"Bolt"},
+          {t:"movie", id:10198, label:"The Princess and the Frog"},
+          {t:"movie", id:38757, label:"Tangled"},
+          {t:"movie", id:51162, label:"Winnie the Pooh"},
+          {t:"movie", id:82690, label:"Wreck-It Ralph"},
+          {t:"movie", id:109445, label:"Frozen"},
+          {t:"movie", id:177572, label:"Big Hero 6"},
+          {t:"movie", id:269149, label:"Zootopia"},
+          {t:"movie", id:277834, label:"Moana"},
+          {t:"movie", id:404368, label:"Ralph Breaks the Internet"},
+          {t:"movie", id:330457, label:"Frozen II"},
+          {t:"movie", id:527774, label:"Raya and the Last Dragon"},
+          {t:"movie", id:568124, label:"Encanto"},
+          {t:"movie", id:877269, label:"Strange World"},
+          {t:"movie", id:1022796, label:"Wish"},
+          {t:"movie", id:1241982, label:"Moana 2"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"renaissance", name:"Renaissance first", note:"The ten films of the 1989-1999 Renaissance first, from The Little Mermaid to Tarzan. Then the rest of the canon in order.", seq:["m10144","m11135","m10020","m812","m8587","m10530","m10545","m11970","m10674","m37135","m408","m10895","m756","m11360","m3170","m14906","m15947","m20343","m46929","m13757","m13465","m11224","m12092","m10693","m10340","m10882","m12230","m9078","m9325","m10112","m11886","m250480","m11319","m10948","m10957","m9994","m12233","m49948","m10567","m11688","m10865","m11544","m9016","m10009","m13700","m9982","m1267","m13053","m10198","m38757","m51162","m82690","m109445","m177572","m269149","m277834","m404368","m330457","m527774","m568124","m877269","m1022796","m1241982"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "breaking-bad",
+        name: "Breaking Bad",
+        tagline: "Better Call Saul, Heisenberg, El Camino",
+        heroKey: "t1396",
+        theme: { accent:"#4aa06a", ink:"#05130c", bg:"#060a08", glow:"rgba(74,160,106,.14)", icon:"⚗️" },
+        titles: [
+          {t:"tv", id:60059, label:"Better Call Saul"},
+          {t:"tv", id:1396, label:"Breaking Bad"},
+          {t:"movie", id:559969, label:"El Camino"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Timeline", note:"Better Call Saul's first five seasons come before Breaking Bad, El Camino picks up the finale, and Saul's sixth season closes everything.", episodes:{ "t60059#s15":[["S1E1",""],["S1E2",""],["S1E3",""],["S1E4",""],["S1E5",""],["S1E6",""],["S1E7",""],["S1E8",""],["S1E9",""],["S1E10",""],["S2E1",""],["S2E2",""],["S2E3",""],["S2E4",""],["S2E5",""],["S2E6",""],["S2E7",""],["S2E8",""],["S2E9",""],["S2E10",""],["S3E1",""],["S3E2",""],["S3E3",""],["S3E4",""],["S3E5",""],["S3E6",""],["S3E7",""],["S3E8",""],["S3E9",""],["S3E10",""],["S4E1",""],["S4E2",""],["S4E3",""],["S4E4",""],["S4E5",""],["S4E6",""],["S4E7",""],["S4E8",""],["S4E9",""],["S4E10",""],["S5E1",""],["S5E2",""],["S5E3",""],["S5E4",""],["S5E5",""],["S5E6",""],["S5E7",""],["S5E8",""],["S5E9",""],["S5E10",""]], "t60059#s6":[["S6E1",""],["S6E2",""],["S6E3",""],["S6E4",""],["S6E5",""],["S6E6",""],["S6E7",""],["S6E8",""],["S6E9",""],["S6E10",""],["S6E11",""],["S6E12",""],["S6E13",""]] }, labels:{ "t60059#s15":"Better Call Saul · Seasons 1 to 5", "t60059#s6":"Better Call Saul · Season 6" }, seq:["t60059#s15","t1396","m559969","t60059#s6"] }
+        ],
+        defaultOrder: "release"
+      },
+      {
+        id: "buffy",
+        name: "Buffyverse",
+        tagline: "Sunnydale and Los Angeles, side by side",
+        heroKey: "t95",
+        theme: { accent:"#9b59b6", ink:"#0c0714", bg:"#07060c", glow:"rgba(155,89,182,.16)", icon:"🧛" },
+        titles: [
+          {t:"tv", id:95, label:"Buffy the Vampire Slayer"},
+          {t:"tv", id:2426, label:"Angel"}
+        ],
+        orders: [
+          { id:"release", name:"Release", auto:"date" },
+          { id:"chrono", name:"Chronological", dense:true, note:"Every episode of both shows in the order they aired. Angel arrives with Buffy's fourth season, and from there the two shows answer each other week after week.", steps: buffySteps(), seq: buffySeq() }
+        ],
+        defaultOrder: "release"
       }
     ];
 
@@ -4376,6 +5101,8 @@
     // ---- user-created universes (stored in Supabase) ----
     let userUniverses = [];
     let subscribedIds = new Set();
+    UNIVERSES.push.apply(UNIVERSES, MORE_UNIVERSES);
+
     function allUniverses(){ return UNIVERSES.concat(userUniverses); }
     function accentInk(hex){ const m=/^#?([0-9a-f]{6})$/i.exec(hex||""); if(!m) return "#0d0f14";
       const n=parseInt(m[1],16), r=(n>>16)&255, g=(n>>8)&255, b=n&255; return (0.299*r+0.587*g+0.114*b)>150?"#0d0f14":"#ffffff"; }
@@ -4931,11 +5658,15 @@
     // Some timeline orders split one series into two nodes (key "t4194#siege").
     // Build a cache entry for each split node, aliased to the base title's data.
     const SPLIT_LABELS = { "t4194#siege": "The Clone Wars: Siege of Mandalore" };
+    function splitLabel(u, fk){
+      for(const o of (u.orders||[])){ if(o.labels && o.labels[fk]) return o.labels[fk]; }
+      return SPLIT_LABELS[fk] || null;
+    }
     function aliasSplitNodes(u){
       (u.orders||[]).forEach(o=>{ if(!o.episodes) return;
         Object.keys(o.episodes).forEach(fk=>{ if(fk.indexOf("#")<0) return;
           const base=fk.split("#")[0]; const src=uniCache[base]; if(!src) return;
-          uniCache[fk]=Object.assign({}, src, { title: SPLIT_LABELS[fk] || src.title });
+          uniCache[fk]=Object.assign({}, src, { title: splitLabel(u, fk) || src.title });
         });
       });
     }
@@ -4943,7 +5674,7 @@
     function buildStepNodes(u){
       (u.orders||[]).forEach(o=>{ if(!o.steps) return;
         Object.keys(o.steps).forEach(sk=>{ const st=o.steps[sk]; const base=uniCache[uniKey({t:st.t,id:st.id})]; if(!base) return;
-          uniCache[sk]=Object.assign({}, base, { _ep: st.ep, _stepKey: sk, title: (base.title||st.label||"")+" · "+st.ep });
+          uniCache[sk]=Object.assign({}, base, { _ep: st.ep, _stepKey: sk, _label: st.label||"", title: base.title||st.label||"" });
         });
       });
     }
@@ -4965,7 +5696,8 @@
           ? `<div class="uc-badge">Custom</div>`
           : `<div class="uc-badge shared">Shared by ${esc(u._ownerName||"a friend")}</div>`; }
         el.innerHTML=`<div class="uc-bg" id="ucbg-${u.id}"></div><div class="uc-shade"></div>${badge}
-          <div class="uc-body"><div class="uc-name">${esc(u.name)}</div><div class="uc-tag">${esc(u.tagline)}</div>
+          <div class="uc-ring" style="box-shadow:inset 0 0 0 1px ${u.theme.accent}77, 0 0 22px -12px ${u.theme.accent}"></div>
+          <div class="uc-body"><div class="uc-name">${u.theme.icon?`<span class="uc-icon">${u.theme.icon}</span>`:``}${esc(u.name)}</div><div class="uc-tag">${esc(u.tagline)}</div>
             <div class="uc-prog"><div class="uc-fill" style="width:${p.pct}%;background:${u.theme.accent}"></div></div>
             <div class="uc-pct">${p.done}/${p.total} watched · ${p.pct}%</div></div>`;
         el.onclick=()=>openUniverse(u.id);
@@ -5055,6 +5787,7 @@
 
       let html=`<div class="uni-hero"><div class="uh-bg"${heroBg?` style="background-image:url('${heroBg}')"`:``}></div>
         <div class="uh-shade"></div>
+        ${u.theme.icon?`<div class="uh-icon">${u.theme.icon}</div>`:``}<div class="uh-line"></div>
         <div class="uh-body"><div class="uh-name">${esc(u.name)}</div><div class="uh-tag">${esc(u.tagline)}</div></div></div>`;
 
       html+=`<div class="uni-orders">`+ u.orders.map(o=>
@@ -5070,15 +5803,16 @@
       if(nextRec){
         html+=`<div class="uni-next" data-nextkey="${uniKey({t:nextRec.type,id:nextRec.tmdbId})}">
             ${nextRec.poster_url?`<img src="${nextRec.poster_url}" alt=""/>`:`<img alt=""/>`}
-            <div><div class="un-lab">Up next (you are here)</div><div class="un-t">${esc(nextRec.title)}</div></div>
+            <div><div class="un-lab">Up next (you are here)</div><div class="un-t">${esc(nextRec.title)}${nextRec._ep?" · "+esc(nextRec._ep):""}</div></div>
           </div>`;
       } else {
         html+=`<div class="uni-next" style="cursor:default"><div><div class="un-lab">Complete</div><div class="un-t">You've seen everything released 🎉</div></div></div>`;
       }
       html+=`</div>`;
 
-      html+=`<div class="uni-frieze-scroll"><div class="uni-frieze"><div class="uni-baseline"></div>`;
-      pairs.forEach(({k,r},i)=>{
+      if(order.dense){ html+=`<div class="uni-frieze-scroll" hidden><div class="uni-frieze">`; }
+      else html+=`<div class="uni-frieze-scroll"><div class="uni-frieze"><div class="uni-baseline"></div>`;
+      if(!order.dense) pairs.forEach(({k,r},i)=>{
         const up=isUpcoming(r); const done=uniDone(r); const st=uniStatusOf(r);
         const cls= up?"upcoming":(done?"done":((!currentUniRun && st==="watching")?"watching todo":"todo"));
         const isNext= nextRec===r;
@@ -5099,7 +5833,7 @@
           html+=`<div class="uni-row" data-epstep="${k}" data-sk="${uniKey({t:r.type,id:r.tmdbId})}" data-ek="${esc(r._ep)}">
               <div class="ur-idx">${i+1}</div>
               ${r.poster_url?`<img class="ur-img" src="${r.poster_url}" alt=""/>`:`<div class="ur-img"></div>`}
-              <div class="ur-body"><div class="ur-t">${esc(r.title)}</div><div class="ur-m">Episode · ${esc(r._ep)}</div></div>
+              <div class="ur-body"><div class="ur-t">${esc(r.title)}</div><div class="ur-m">Episode · ${esc(r._ep)}${(r._label && showEpTitles())?" · "+esc(r._label):""}</div></div>
               <button class="ur-check${on?" on":""}" data-epstep="${k}" title="${currentUniRun?"Mark re-seen":"Mark watched"}">✓</button>
             </div>`;
           return;
