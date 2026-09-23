@@ -654,6 +654,9 @@
     .uni-card .uc-icon { margin-right: 6px; }
     .uni-card .uc-ring { position: absolute; inset: 0; border-radius: 16px; pointer-events: none; }
     /* watch orders: grid view, "watching" flag, and a close button that clears the status bar */
+    .ub-draft { font-size: 12.5px; color: var(--muted); background: var(--card); border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.45; }
+    .ub-draft-x { background: none; border: none; color: var(--accent); font-weight: 700; font-size: 12.5px; cursor: pointer; padding: 0; }
     .uni-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); gap: 10px; }
     .uni-grid .uni-card { width: auto; min-height: 112px; padding: 12px; }
     .uni-grid .uc-name { font-size: 16px; }
@@ -1395,7 +1398,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.6.2</div>
+    <div class="appfoot">Seen · v1.7</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1870,7 +1873,7 @@
         '<div class="sett-lab danger-lab">Danger zone</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
           '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
-        '<div class="sett-ver">Seen · v1.6.2</div></div>';
+        '<div class="sett-ver">Seen · v1.7</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       { const lb=$("set-lbx"); if(lb) lb.onclick=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); openLetterboxdImport(); }; }
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
@@ -5364,12 +5367,38 @@
 
     // ---- universe builder (create / edit) ----
     let builderState=null, ubSearchSeq=0, ubTimer=null;
+    // A custom watch order is saved as a draft while it is being built, so leaving the screen
+    // (back gesture, another tab, the app closing) never loses what was typed.
+    const UB_DRAFT_KEY="seen_uni_draft";
+    let ubDraftTimer=null;
+    function ubDraftRead(){ try{ const d=JSON.parse(localStorage.getItem(UB_DRAFT_KEY)||"null");
+      return (d && typeof d==="object" && Array.isArray(d.items)) ? d : null; }catch(_){ return null; } }
+    function ubDraftHas(){ const d=ubDraftRead(); return !!(d && !d.editing && (d.name || d.tagline || (d.items&&d.items.length))); }
+    function ubDraftSave(){
+      const s=builderState; if(!s) return;
+      const empty = !s.name && !s.tagline && !(s.items&&s.items.length);
+      try{
+        if(empty && !s.editing) localStorage.removeItem(UB_DRAFT_KEY);
+        else localStorage.setItem(UB_DRAFT_KEY, JSON.stringify({ editing:s.editing, name:s.name, tagline:s.tagline,
+          accent:s.accent, items:(s.items||[]).map(it=>({t:it.t,id:it.id,label:it.label||"",year:it.year||"",poster:it.poster||null,ep:it.ep||null})), at:Date.now() }));
+      }catch(_){}
+    }
+    function ubDraftSaveSoon(){ clearTimeout(ubDraftTimer); ubDraftTimer=setTimeout(ubDraftSave, 400); }
+    function ubDraftClear(){ try{ localStorage.removeItem(UB_DRAFT_KEY); }catch(_){} }
+    // flush whatever was typed if the app is backgrounded or closed mid-edit
+    document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden" && builderState && !$("section-uni-builder").hidden){ clearTimeout(ubDraftTimer); ubDraftSave(); } });
+    window.addEventListener("pagehide", ()=>{ if(builderState && !$("section-uni-builder").hidden){ clearTimeout(ubDraftTimer); ubDraftSave(); } });
+
     function openBuilder(universe){
       if(universe && universe._user){
         builderState={ editing:universe._uid, name:universe.name, tagline:universe.tagline, accent:universe.theme.accent,
           items:(universe._rawItems||[]).map(it=>({t:it.t,id:it.id,label:it.label||"",poster:null,year:"",ep:it.ep||null})) };
       } else {
-        builderState={ editing:null, name:"", tagline:"", accent:"#e0685f", items:[] };
+        const d=ubDraftRead();
+        builderState = (d && !d.editing)
+          ? { editing:null, name:d.name||"", tagline:d.tagline||"", accent:d.accent||"#e0685f",
+              items:(d.items||[]).map(it=>({t:it.t,id:it.id,label:it.label||"",poster:it.poster||null,year:it.year||"",ep:it.ep||null})), resumed:true }
+          : { editing:null, name:"", tagline:"", accent:"#e0685f", items:[] };
       }
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true;
@@ -5383,6 +5412,7 @@
     function renderBuilder(){
       const b=$("ub-body"); const s=builderState; if(!s) return;
       let h=`<h2 class="ub-h">${s.editing?"Edit universe":"Create a universe"}</h2>`;
+      if(!s.editing) h+=`<div class="ub-draft"><span>${s.resumed?"Draft picked up where you left it.":"Saved as you go."}</span> <span>Nothing is published until you tap Create.</span>${(s.name||s.tagline||s.items.length)?` <button class="ub-draft-x" id="ub-fresh">Start fresh</button>`:``}</div>`;
       h+=`<div class="ub-field"><label>Name</label><input id="ub-name" class="ub-inp" value="${esc(s.name)}" placeholder="e.g. James Bond"/></div>`;
       h+=`<div class="ub-field"><label>Tagline</label><input id="ub-tag" class="ub-inp" value="${esc(s.tagline)}" placeholder="A short subtitle"/></div>`;
       h+=`<div class="ub-field"><label>Accent colour</label><div class="ub-swatches">`;
@@ -5406,8 +5436,11 @@
       });
       h+=`</div><div class="ub-actions"><button class="ub-save" id="ub-save">${s.editing?"Save changes":"Create universe"}</button></div>`;
       b.innerHTML=h;
-      $("ub-name").oninput=e=>{ s.name=e.target.value; };
-      $("ub-tag").oninput=e=>{ s.tagline=e.target.value; };
+      $("ub-name").oninput=e=>{ s.name=e.target.value; ubDraftSaveSoon(); };
+      $("ub-tag").oninput=e=>{ s.tagline=e.target.value; ubDraftSaveSoon(); };
+      { const fr=$("ub-fresh"); if(fr) fr.onclick=()=>{ ubDraftClear();
+          builderState={ editing:null, name:"", tagline:"", accent:"#e0685f", items:[] }; renderBuilder(); showToast("Draft cleared"); }; }
+      ubDraftSave();
       b.querySelectorAll(".ub-sw").forEach(sw=>sw.onclick=()=>{ s.accent=sw.dataset.c; renderBuilder(); });
       const si=$("ub-search");
       si.oninput=()=>{ clearTimeout(ubTimer); const v=si.value.trim(); if(v.length<2){ $("ub-results").innerHTML=""; return; } ubTimer=setTimeout(()=>ubSearch(v),350); };
@@ -5482,6 +5515,7 @@
           const {data,error}=await client.from("user_universes").insert(payload).select("id").single(); if(error) throw error;
           s.editing=data.id; showToast("Universe created");
         }
+        ubDraftClear();
         await loadUserUniverses();
         const created=userUniverses.find(x=>x._uid===s.editing);
         if(created) openUniverse(created.id); else showSection("home");
@@ -5783,7 +5817,7 @@
       box.innerHTML="";
       list.forEach(u=>{ const el=uniCardEl(u, "ugbg-"); el.onclick=()=>openUniverse(u.id, "grid"); box.appendChild(el); });
       const create=document.createElement("div"); create.className="uni-card uni-card-create";
-      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">+</div><div class="ucc-t">Create your own</div><div class="ucc-s">Build a custom watch order</div></div>`;
+      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">${ubDraftHas()?"✎":"+"}</div><div class="ucc-t">${ubDraftHas()?"Finish your draft":"Create your own"}</div><div class="ucc-s">${ubDraftHas()?"Picks up where you left it":"Build a custom watch order"}</div></div>`;
       create.onclick=()=>openBuilder(null);
       box.appendChild(create);
     }
@@ -5794,7 +5828,7 @@
       wrap.hidden=false; lab.hidden=false; box.innerHTML="";
       uniSorted().forEach(u=>{ box.appendChild(uniCardEl(u, "ucbg-")); });
       const create=document.createElement("div"); create.className="uni-card uni-card-create";
-      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">+</div><div class="ucc-t">Create your own</div><div class="ucc-s">Build a custom watch order</div></div>`;
+      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">${ubDraftHas()?"✎":"+"}</div><div class="ucc-t">${ubDraftHas()?"Finish your draft":"Create your own"}</div><div class="ucc-s">${ubDraftHas()?"Picks up where you left it":"Build a custom watch order"}</div></div>`;
       create.onclick=()=>openBuilder(null);
       box.appendChild(create);
     }

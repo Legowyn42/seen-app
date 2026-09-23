@@ -59,6 +59,13 @@
     /* ---- accueil ---- */
     "Welcome back": "Content de te revoir",
     "Total watch time": "Temps de visionnage",
+    "Saved as you go.": "Enregistré au fur et à mesure.",
+    "Draft picked up where you left it.": "Brouillon repris là où tu l'avais laissé.",
+    "Nothing is published until you tap Create.": "Rien n'est publié tant que tu n'as pas touché Créer.",
+    "Start fresh": "Repartir de zéro",
+    "Draft cleared": "Brouillon effacé",
+    "Finish your draft": "Finir ton brouillon",
+    "Picks up where you left it": "Reprend là où tu t'es arrêté",
     "Watching": "En cours",
     "Watchlist": "À voir",
     "Pick for me!": "Choisis pour moi !",
