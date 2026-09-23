@@ -653,6 +653,20 @@
     .uni-hero .uh-line { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--uaccent); opacity: .9; }
     .uni-card .uc-icon { margin-right: 6px; }
     .uni-card .uc-ring { position: absolute; inset: 0; border-radius: 16px; pointer-events: none; }
+    /* watch orders: grid view, "watching" flag, and a close button that clears the status bar */
+    .uni-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); gap: 10px; }
+    .uni-grid .uni-card { width: auto; min-height: 112px; padding: 12px; }
+    .uni-grid .uc-name { font-size: 16px; }
+    .uni-grid .uc-tag { font-size: 11px; line-height: 1.25; max-height: 28px; overflow: hidden; }
+    .uni-grid .uc-pct { font-size: 10px; }
+    .uni-grid .uc-badge { font-size: 9px; padding: 2px 6px; top: 8px; right: 8px; }
+    .uc-badge.watching { background: var(--ok); color: #04140c; }
+    .uni-watch-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;
+      margin-bottom: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; font-weight: 700;
+      border: 1px solid var(--line); background: var(--card); color: var(--text); }
+    .uni-watch-btn.on { border-color: var(--uaccent); background: color-mix(in srgb, var(--uaccent) 18%, transparent); }
+    #badge-overlay { padding: calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px); align-items: flex-start; }
+    .badge-modal .close { position: sticky; top: 0; float: right; z-index: 6; background: var(--card); }
     .uni-orders { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
     .uni-order { padding: 8px 15px; border-radius: 999px; border: 1px solid var(--line); background: var(--card);
       color: var(--muted); font-size: 13px; cursor: pointer; font-weight: 600; }
@@ -1212,7 +1226,7 @@
         <span class="pick-die">🎬</span>
         <span class="pick-txt"><span class="pick-title">Ciné clubs</span><span class="pick-desc">Rejoins tes clubs, propose un film, note la manche</span></span>
       </button>
-      <div class="row-lab" id="home-universes-lab" hidden>Universe watch orders</div>
+      <div class="row-lab home-tap" id="home-universes-lab" hidden>Universe watch orders<span class="seeall" id="uni-seeall">See all ›</span></div>
       <div id="home-universes-wrap" hidden><div class="uni-shelf" id="home-universes"></div></div>
       <div class="row-lab home-tap" id="home-badges-lab" hidden>Achievements<span class="seeall">See all ›</span></div>
       <div class="home-badges home-tap" id="home-badges-row"></div>
@@ -1348,6 +1362,11 @@
       <div id="cmp-body"></div>
       <div class="hint" id="cmp-hint" hidden>Loading...</div>
     </div>
+    <div id="section-universes" hidden>
+      <button class="cmp-back" id="unis-back">‹ Home</button>
+      <div class="ach-head"><div class="ach-count"><span id="unis-count">0</span></div><div class="ach-lab">watch orders</div></div>
+      <div class="uni-grid" id="unis-grid"></div>
+    </div>
     <div id="section-achievements" hidden>
       <button class="cmp-back" id="ach-back">‹ Home</button>
       <div class="ach-head">
@@ -1376,7 +1395,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.5.1</div>
+    <div class="appfoot">Seen · v1.6</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1851,7 +1870,7 @@
         '<div class="sett-lab danger-lab">Danger zone</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
           '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
-        '<div class="sett-ver">Seen · v1.5.1</div></div>';
+        '<div class="sett-ver">Seen · v1.6</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       { const lb=$("set-lbx"); if(lb) lb.onclick=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); openLetterboxdImport(); }; }
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
@@ -1919,6 +1938,29 @@
            ["home","search","collection","upcoming","friends","stats"].indexOf(o.t)>=0) return o.t; }catch(_){}
       return landingTab();
     }
+    // ---- the phone's own back gesture / button ----
+    // One spare history entry is kept armed: a back press lands here, we close whatever is on top,
+    // and arm it again. When there is nothing left to close the app closes, as it should.
+    function backStep(){
+      const ovs=[...document.querySelectorAll("#detail-overlay, #badge-overlay, #person-overlay, .modal-ov")].filter(e=>e && !e.hidden);
+      if(ovs.length){
+        const el=ovs[ovs.length-1];
+        const btn=el.querySelector(".close, .modal-sheet .close, [id$='-close']");
+        if(btn) btn.click();
+        else { el.hidden=true; document.body.classList.remove("no-scroll"); }
+        return true;
+      }
+      if(typeof appView!=="undefined" && appView && appView.hidden) return false;   // sign-in screen
+      const subs=["section-universe","section-universes","section-uni-builder","section-achievements","section-club","section-rank","section-profile"];
+      for(const id of subs){ const el=$(id); if(el && !el.hidden){ showSection(landingTab()); return true; } }
+      if(sectionCompare && !sectionCompare.hidden){ showSection("friends"); return true; }
+      if(sectionHome && sectionHome.hidden){ showSection("home"); return true; }
+      return false;
+    }
+    function navArm(){ try{ history.pushState({seenBack:1}, ""); }catch(_){} }
+    window.addEventListener("popstate", ()=>{ if(backStep()) navArm(); });
+    try{ navArm(); }catch(_){}
+
     function showSection(name){
       rememberTab(name);
       navHome.classList.toggle("active", name==="home");
@@ -1940,6 +1982,7 @@
       $("section-club").hidden = true;
       $("section-rank").hidden = true;
       $("section-profile").hidden = true;
+      $("section-universes").hidden = true;
       if(name==="home") loadHome();
       if(name==="search") syncSearch();
       if(name==="collection") loadCollection();
@@ -4075,6 +4118,8 @@
     }
     $("rank-back").onclick=()=>showSection("home");
     $("ach-back").onclick=()=>showSection("home");
+    { const sa=$("uni-seeall"); if(sa) sa.onclick=(e)=>{ e.stopPropagation(); openAllUniverses(); }; }
+    { const ub=$("unis-back"); if(ub) ub.onclick=()=>showSection("home"); }
     $("home-badges-lab").onclick=openAchievements;
 
     function progLabel(e){
@@ -5685,28 +5730,67 @@
       return { done, total, pct: total ? Math.round(done/total*100) : 0 };
     }
 
+    // "I'm watching this one": pinned watch orders come first on Home and in the grid.
+    const UNI_PIN_KEY="seen_uni_watching";
+    function uniPinned(){ try{ const a=JSON.parse(localStorage.getItem(UNI_PIN_KEY)||"[]"); return Array.isArray(a)?a:[]; }catch(_){ return []; } }
+    function uniIsPinned(id){ return uniPinned().indexOf(id)>=0; }
+    function uniTogglePin(id){
+      let a=uniPinned().filter(x=>x!==id);
+      if(!uniIsPinned(id)) a.unshift(id);
+      try{ localStorage.setItem(UNI_PIN_KEY, JSON.stringify(a.slice(0,12))); }catch(_){}
+      return uniIsPinned(id);
+    }
+    function uniSorted(){
+      const pins=uniPinned(), all=allUniverses();
+      const rank=u=>{ const i=pins.indexOf(u.id); return i<0 ? 999 : i; };
+      return all.slice().sort((a,b)=>rank(a)-rank(b));
+    }
+    function uniCardEl(u, idPrefix){
+      const p=uniProgress(u);
+      const el=document.createElement("div"); el.className="uni-card"; el.style.background=u.theme.bg;
+      let badge="";
+      if(uniIsPinned(u.id)) badge = `<div class="uc-badge watching">Watching</div>`;
+      else if(u._user){ badge = (u._ownerId===currentUserId)
+        ? `<div class="uc-badge">Custom</div>`
+        : `<div class="uc-badge shared">Shared by ${esc(u._ownerName||"a friend")}</div>`; }
+      const bgId=(idPrefix||"ucbg-")+u.id;
+      el.innerHTML=`<div class="uc-bg" id="${bgId}"></div><div class="uc-shade"></div>${badge}
+        <div class="uc-ring" style="box-shadow:inset 0 0 0 1px ${u.theme.accent}77, 0 0 22px -12px ${u.theme.accent}"></div>
+        <div class="uc-body"><div class="uc-name">${u.theme.icon?`<span class="uc-icon">${u.theme.icon}</span>`:``}${esc(u.name)}</div><div class="uc-tag">${esc(u.tagline)}</div>
+          <div class="uc-prog"><div class="uc-fill" style="width:${p.pct}%;background:${u.theme.accent}"></div></div>
+          <div class="uc-pct">${p.done}/${p.total} watched · ${p.pct}%</div></div>`;
+      el.onclick=()=>openUniverse(u.id);
+      const heroT = u.titles.find(t=>uniKey(t)===u.heroKey) || u.titles[0];
+      if(heroT) fetchUniTitle(heroT).then(rec=>{ if(rec && rec.backdrop){ const bg=document.getElementById(bgId); if(bg) bg.style.backgroundImage="url('"+rec.backdrop+"')"; } });
+      return el;
+    }
+    // every watch order at once, in a grid
+    async function openAllUniverses(){
+      await loadUserUniverses();
+      sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
+      sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
+      $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-uni-builder").hidden=true;
+      $("section-club").hidden=true; $("section-rank").hidden=true; $("section-profile").hidden=true;
+      $("section-universes").hidden=false; window.scrollTo(0,0);
+      renderAllUniverses();
+    }
+    function renderAllUniverses(){
+      const box=$("unis-grid"); if(!box) return;
+      const list=uniSorted();
+      $("unis-count").textContent=list.length;
+      box.innerHTML="";
+      list.forEach(u=>box.appendChild(uniCardEl(u, "ugbg-")));
+      const create=document.createElement("div"); create.className="uni-card uni-card-create";
+      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">+</div><div class="ucc-t">Create your own</div><div class="ucc-s">Build a custom watch order</div></div>`;
+      create.onclick=()=>openBuilder(null);
+      box.appendChild(create);
+    }
+
     async function loadHomeUniverses(){
       const wrap=$("home-universes-wrap"), lab=$("home-universes-lab"), box=$("home-universes");
       await loadUserUniverses();
       wrap.hidden=false; lab.hidden=false; box.innerHTML="";
-      allUniverses().forEach(u=>{
-        const p=uniProgress(u);
-        const el=document.createElement("div"); el.className="uni-card"; el.style.background=u.theme.bg;
-        let badge="";
-        if(u._user){ badge = (u._ownerId===currentUserId)
-          ? `<div class="uc-badge">Custom</div>`
-          : `<div class="uc-badge shared">Shared by ${esc(u._ownerName||"a friend")}</div>`; }
-        el.innerHTML=`<div class="uc-bg" id="ucbg-${u.id}"></div><div class="uc-shade"></div>${badge}
-          <div class="uc-ring" style="box-shadow:inset 0 0 0 1px ${u.theme.accent}77, 0 0 22px -12px ${u.theme.accent}"></div>
-          <div class="uc-body"><div class="uc-name">${u.theme.icon?`<span class="uc-icon">${u.theme.icon}</span>`:``}${esc(u.name)}</div><div class="uc-tag">${esc(u.tagline)}</div>
-            <div class="uc-prog"><div class="uc-fill" style="width:${p.pct}%;background:${u.theme.accent}"></div></div>
-            <div class="uc-pct">${p.done}/${p.total} watched · ${p.pct}%</div></div>`;
-        el.onclick=()=>openUniverse(u.id);
-        box.appendChild(el);
-        // pull a backdrop for the card, without blocking
-        const heroT = u.titles.find(t=>uniKey(t)===u.heroKey) || u.titles[0];
-        if(heroT) fetchUniTitle(heroT).then(rec=>{ if(rec && rec.backdrop){ const bg=$("ucbg-"+u.id); if(bg) bg.style.backgroundImage="url('"+rec.backdrop+"')"; } });
-      });
+      uniSorted().forEach(u=>{ box.appendChild(uniCardEl(u, "ucbg-")); });
       const create=document.createElement("div"); create.className="uni-card uni-card-create";
       create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">+</div><div class="ucc-t">Create your own</div><div class="ucc-s">Build a custom watch order</div></div>`;
       create.onclick=()=>openBuilder(null);
@@ -5794,6 +5878,7 @@
       html+=`<div class="uni-orders">`+ u.orders.map(o=>
         `<button class="uni-order" data-o="${o.id}"${o.id===currentUniOrder?` style="background:var(--uaccent);color:var(--uink);border-color:transparent"`:``}>${esc(o.name)}</button>`
       ).join("") +`</div>`;
+      html+=`<button class="uni-watch-btn${uniIsPinned(u.id)?" on":""}" id="uni-watch">${uniIsPinned(u.id)?"▶ Watching this one":"Follow this watch order"}</button>`;
       if(u._subscribed) html+=`<div class="uni-note">Shared by ${esc(u._ownerName||"a friend")}</div>`;
       if(order.note) html+=`<div class="uni-note">${esc(order.note)}</div>`;
 
@@ -5938,6 +6023,8 @@
       const byKey={}; recs.forEach(r=>byKey[uniKey({t:r.type,id:r.tmdbId})]=displayFromUni(r));
       currentDisplays=recs.map(displayFromUni);
       const openFromKey=(k)=>{ const d=byKey[k]; if(d) openDetail(d, ()=>{ if(currentUniverse) renderUniverse(); }); };
+      { const wb=$("uni-watch"); if(wb) wb.onclick=()=>{ uniTogglePin(u.id); renderUniverse();
+          try{ showToast(uniIsPinned(u.id)?"Pinned to the top of your watch orders":"Removed from the ones you follow"); }catch(_){} }; }
       body.querySelectorAll(".uni-order").forEach(b=>b.onclick=()=>{ currentUniOrder=b.dataset.o; renderUniverse(); });
       body.querySelectorAll(".uni-node").forEach(n=>n.onclick=()=>openFromKey(n.dataset.key));
       body.querySelectorAll(".uni-row:not(.guided)").forEach(rw=>rw.onclick=()=>openFromKey(rw.dataset.key));
