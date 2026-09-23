@@ -1395,7 +1395,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.6</div>
+    <div class="appfoot">Seen · v1.6.1</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1703,7 +1703,7 @@
     function openMyProfile(){
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
-      $("section-achievements").hidden=true; $("section-universe").hidden=true;
+      $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-universes").hidden=true;
       $("section-profile").hidden=false; window.scrollTo(0,0);
       renderMyProfile();
     }
@@ -1870,7 +1870,7 @@
         '<div class="sett-lab danger-lab">Danger zone</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
           '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
-        '<div class="sett-ver">Seen · v1.6</div></div>';
+        '<div class="sett-ver">Seen · v1.6.1</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       { const lb=$("set-lbx"); if(lb) lb.onclick=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); openLetterboxdImport(); }; }
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
@@ -1951,14 +1951,16 @@
         return true;
       }
       if(typeof appView!=="undefined" && appView && appView.hidden) return false;   // sign-in screen
-      const subs=["section-universe","section-universes","section-uni-builder","section-achievements","section-club","section-rank","section-profile"];
+      if(!$("section-universe").hidden){ if(uniCameFrom==="grid") openAllUniverses(); else showSection(landingTab()); return true; }
+      const subs=["section-universes","section-uni-builder","section-achievements","section-club","section-rank","section-profile"];
       for(const id of subs){ const el=$(id); if(el && !el.hidden){ showSection(landingTab()); return true; } }
       if(sectionCompare && !sectionCompare.hidden){ showSection("friends"); return true; }
       if(sectionHome && sectionHome.hidden){ showSection("home"); return true; }
       return false;
     }
     function navArm(){ try{ history.pushState({seenBack:1}, ""); }catch(_){} }
-    window.addEventListener("popstate", ()=>{ if(backStep()) navArm(); });
+    // Always re-arm: letting the last entry pop reloads the app (and drops you on the sign-in screen).
+    window.addEventListener("popstate", ()=>{ backStep(); navArm(); });
     try{ navArm(); }catch(_){}
 
     function showSection(name){
@@ -3329,7 +3331,7 @@
     function openRank(){
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
-      $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-uni-builder").hidden=true; $("section-club").hidden=true; $("section-profile").hidden=true;
+      $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-universes").hidden=true; $("section-uni-builder").hidden=true; $("section-club").hidden=true; $("section-profile").hidden=true;
       $("section-rank").hidden=false; window.scrollTo(0,0);
       const {xp,bd}=computeMyXP(); const r=rankFor(xp);
       let h=rankCardXP(xp);
@@ -3969,7 +3971,7 @@
       achCmp=null;
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
-      $("section-universe").hidden=true; $("section-uni-builder").hidden=true; $("section-club").hidden=true;
+      $("section-universe").hidden=true; $("section-universes").hidden=true; $("section-uni-builder").hidden=true; $("section-club").hidden=true;
       $("section-rank").hidden=true; $("section-profile").hidden=true;
       $("section-achievements").hidden=false; window.scrollTo(0,0);
       if(!achResults){
@@ -5371,7 +5373,7 @@
       }
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true;
-      sectionCompare.hidden=true; $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-profile").hidden=true;
+      sectionCompare.hidden=true; $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-universes").hidden=true; $("section-profile").hidden=true;
       $("section-uni-builder").hidden=false; window.scrollTo(0,0);
       $("ub-back").onclick=()=>showSection("home");
       renderBuilder();
@@ -5769,7 +5771,7 @@
       await loadUserUniverses();
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true; sectionCompare.hidden=true;
-      $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-uni-builder").hidden=true;
+      $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-universes").hidden=true; $("section-uni-builder").hidden=true;
       $("section-club").hidden=true; $("section-rank").hidden=true; $("section-profile").hidden=true;
       $("section-universes").hidden=false; window.scrollTo(0,0);
       renderAllUniverses();
@@ -5779,7 +5781,7 @@
       const list=uniSorted();
       $("unis-count").textContent=list.length;
       box.innerHTML="";
-      list.forEach(u=>box.appendChild(uniCardEl(u, "ugbg-")));
+      list.forEach(u=>{ const el=uniCardEl(u, "ugbg-"); el.onclick=()=>openUniverse(u.id, "grid"); box.appendChild(el); });
       const create=document.createElement("div"); create.className="uni-card uni-card-create";
       create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">+</div><div class="ucc-t">Create your own</div><div class="ucc-s">Build a custom watch order</div></div>`;
       create.onclick=()=>openBuilder(null);
@@ -5810,12 +5812,15 @@
       return { order, keys };
     }
 
-    async function openUniverse(id){
+    let uniCameFrom="home";
+    async function openUniverse(id, from){
       const u=allUniverses().find(x=>x.id===id); if(!u) return;
+      uniCameFrom = from || "home";
       currentUniverse=u; currentUniOrder=u.defaultOrder; uniExpandedGuides.clear();
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true;
       sectionCompare.hidden=true; $("section-achievements").hidden=true; $("section-uni-builder").hidden=true;
+      $("section-universes").hidden=true; $("section-club").hidden=true; $("section-rank").hidden=true; $("section-profile").hidden=true;
       const sec=$("section-universe"); sec.hidden=false;
       sec.style.setProperty("--uaccent", u.theme.accent);
       sec.style.setProperty("--uink", u.theme.ink || "#0d0f14");
@@ -5851,7 +5856,7 @@
         close();
       };
     }
-    $("uni-back").onclick=()=>showSection("home");
+    $("uni-back").onclick=()=>{ if(uniCameFrom==="grid") openAllUniverses(); else showSection("home"); };
 
     function renderUniverse(){
       const u=currentUniverse; if(!u) return;
@@ -6123,7 +6128,7 @@
     async function openClub(clubId){
       sectionHome.hidden=true; sectionSearch.hidden=true; sectionCollection.hidden=true;
       sectionUpcoming.hidden=true; sectionFriends.hidden=true; sectionStats.hidden=true;
-      sectionCompare.hidden=true; $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-uni-builder").hidden=true; $("section-profile").hidden=true;
+      sectionCompare.hidden=true; $("section-achievements").hidden=true; $("section-universe").hidden=true; $("section-universes").hidden=true; $("section-uni-builder").hidden=true; $("section-profile").hidden=true;
       $("section-club").hidden=false; window.scrollTo(0,0);
       $("club-body").innerHTML=`<div class="skel skel-line" style="width:55%;height:24px"></div><div class="skel" style="height:130px;border-radius:14px;margin-top:16px"></div><div class="skel-row" style="margin-top:16px">${Array.from({length:4}).map(()=>'<div class="skel skel-poster" style="width:64px"></div>').join("")}</div>`;
       try{
