@@ -21,6 +21,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Seen" />
   <title>Seen</title>
+  <script>
+    try{ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i)||"";
+      if(/^sb-.*-auth-token$/.test(k) && (localStorage.getItem(k)||"").length>20){ document.documentElement.classList.add("booting"); break; } }
+    }catch(_){}
+  </script>
   <style>
     :root {
       --bg: #0d0f14; --card: #151a23; --card-2: #1b2230; --field: #0c0e12; --line: #28303f;
@@ -55,6 +60,17 @@
       transition-duration: .001ms !important; }
     .logo, .topbar .brand, .stat-hero-num, .sheet-title, .ch-name, .greet, .home-big { font-family: var(--disp); letter-spacing: -.01em; }
 
+    html.booting #auth-view { display: none !important; }
+    html.booting #boot-view { display: flex !important; }
+    #boot-view { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); z-index: 90; }
+    #boot-view[hidden] { display: none; }
+    .boot-inner { text-align: center; }
+    .boot-logo { width: 78px; height: auto; opacity: .95; }
+    .boot-t { margin-top: 14px; color: var(--muted); font-size: 13.5px; }
+    .boot-dots { display: flex; gap: 6px; justify-content: center; margin-top: 16px; }
+    .boot-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); opacity: .3; animation: bootdot 1.1s ease-in-out infinite; }
+    .boot-dots i:nth-child(2) { animation-delay: .15s; } .boot-dots i:nth-child(3) { animation-delay: .3s; }
+    @keyframes bootdot { 0%,100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
     #auth-view { max-width: 380px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 40px) 20px 40px; }
     .brandmark { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 8px 0 24px; }
     .brand-eye { display: block; width: auto; }
@@ -654,8 +670,16 @@
     .uni-card .uc-icon { margin-right: 6px; }
     .uni-card .uc-ring { position: absolute; inset: 0; border-radius: 16px; pointer-events: none; }
     /* watch orders: grid view, "watching" flag, and a close button that clears the status bar */
+    .club-danger { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .club-danger .hint { margin-top: 8px; text-align: center; }
+    .uni-exit.danger { color: #ff6b6b; border-color: #ff6b6b44; }
     .ub-draft { font-size: 12.5px; color: var(--muted); background: var(--card); border: 1px solid var(--line);
       border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.45; }
+    .uni-card-create { position: relative; }
+    .ucc-del { position: absolute; left: 50%; transform: translateX(-50%); bottom: 10px; z-index: 3;
+      background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 999px;
+      padding: 5px 11px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
+    .ucc-del.armed { color: #ff6b6b; border-color: #ff6b6b55; }
     .ub-draft-x { background: none; border: none; color: var(--accent); font-weight: 700; font-size: 12.5px; cursor: pointer; padding: 0; }
     .uni-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); gap: 10px; }
     .uni-grid .uni-card { width: auto; min-height: 112px; padding: 12px; }
@@ -1158,6 +1182,10 @@
   </script>
 </head>
 <body>
+  <div id="boot-view" hidden>
+    <div class="boot-inner"><img class="boot-logo" src="logo.png" alt="" /><div class="boot-dots"><i></i><i></i><i></i></div><div class="boot-t" id="boot-t">Signing you back in…</div></div>
+  </div>
+  <script>try{ if((localStorage.getItem("seen_lang")||"")==="fr") document.getElementById("boot-t").textContent="Reconnexion…"; }catch(_){}</script>
   <div id="auth-view">
     <div class="brandmark">
       <img class="brand-eye" src="logo.png" alt="Seen" />
@@ -1398,7 +1426,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.7</div>
+    <div class="appfoot">Seen · v1.8</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1627,7 +1655,16 @@
       // Les succes se recalculent en tache de fond a chaque ouverture. Les fiches
       // TMDB deja en base ne sont pas redemandees, donc c'est gratuit ensuite.
       refreshAchievements({}).catch(()=>{}); }
+    // A stored session means the app will log itself back in: show the logo, never the sign-in form.
+    const bootView=$("boot-view");
+    const hasStoredSession=document.documentElement.classList.contains("booting");
+    let bootDone=false;
+    function bootHide(){ bootDone=true; document.documentElement.classList.remove("booting"); if(bootView) bootView.hidden=true; }
+    if(hasStoredSession && bootView){ bootView.hidden=false; authView.hidden=true; appView.hidden=true;
+      setTimeout(()=>{ if(!bootDone){ bootHide(); if(appView.hidden) authView.hidden=false; } }, 12000); }
+
     function render(session){
+      bootHide();
       if(session&&session.user){
         // meme utilisateur, app deja affichee : simple rafraichissement de jeton, on ne touche a rien
         if(currentUserId===session.user.id && !appView.hidden) return;
@@ -1873,7 +1910,7 @@
         '<div class="sett-lab danger-lab">Danger zone</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
           '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
-        '<div class="sett-ver">Seen · v1.7</div></div>';
+        '<div class="sett-ver">Seen · v1.8</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       { const lb=$("set-lbx"); if(lb) lb.onclick=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); openLetterboxdImport(); }; }
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
@@ -1958,15 +1995,26 @@
       const subs=["section-universes","section-uni-builder","section-achievements","section-club","section-rank","section-profile"];
       for(const id of subs){ const el=$(id); if(el && !el.hidden){ showSection(landingTab()); return true; } }
       if(sectionCompare && !sectionCompare.hidden){ showSection("friends"); return true; }
-      if(sectionHome && sectionHome.hidden){ showSection("home"); return true; }
+      if(sectionHome && sectionHome.hidden){
+        // back to the menu you were on before this one, home if there is none
+        let prev="home";
+        if(tabHist.length>1){ tabHist.pop(); prev=tabHist[tabHist.length-1]||"home"; }
+        navGoingBack=true; try{ showSection(prev); } finally { navGoingBack=false; }
+        return true;
+      }
       return false;
     }
     function navArm(){ try{ history.pushState({seenBack:1}, ""); }catch(_){} }
-    // Always re-arm: letting the last entry pop reloads the app (and drops you on the sign-in screen).
-    window.addEventListener("popstate", ()=>{ backStep(); navArm(); });
-    try{ navArm(); }catch(_){}
+    // Always re-arm, whatever happens in backStep: letting the last entry pop reloads the app,
+    // which lands on the sign-in screen for a few seconds. Two spare entries, to be safe.
+    window.addEventListener("popstate", ()=>{ try{ backStep(); }catch(_){} finally{ navArm(); } });
+    window.addEventListener("pageshow", ()=>{ try{ if(!(history.state && history.state.seenBack)) navArm(); }catch(_){} });
+    try{ navArm(); navArm(); }catch(_){}
 
+    const tabHist=[]; let navGoingBack=false;
     function showSection(name){
+      if(!navGoingBack){ const cur=tabHist[tabHist.length-1];
+        if(cur!==name){ tabHist.push(name); if(tabHist.length>8) tabHist.shift(); } }
       rememberTab(name);
       navHome.classList.toggle("active", name==="home");
       navSearch.classList.toggle("active", name==="search");
@@ -5385,6 +5433,16 @@
     }
     function ubDraftSaveSoon(){ clearTimeout(ubDraftTimer); ubDraftTimer=setTimeout(ubDraftSave, 400); }
     function ubDraftClear(){ try{ localStorage.removeItem(UB_DRAFT_KEY); }catch(_){} }
+    // Delete draft, from the card itself. Two taps, so a stray touch never wipes someone's work.
+    function ubBindDraftDelete(card, refresh){
+      const del=card.querySelector(".ucc-del"); if(!del) return;
+      let armed=false;
+      del.onclick=(ev)=>{ ev.stopPropagation();
+        if(!armed){ armed=true; del.textContent="Tap again to delete"; del.classList.add("armed");
+          setTimeout(()=>{ if(!armed) return; armed=false; del.textContent="Delete draft"; del.classList.remove("armed"); }, 2600); return; }
+        armed=false; ubDraftClear(); showToast("Draft deleted"); try{ refresh(); }catch(_){}
+      };
+    }
     // flush whatever was typed if the app is backgrounded or closed mid-edit
     document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden" && builderState && !$("section-uni-builder").hidden){ clearTimeout(ubDraftTimer); ubDraftSave(); } });
     window.addEventListener("pagehide", ()=>{ if(builderState && !$("section-uni-builder").hidden){ clearTimeout(ubDraftTimer); ubDraftSave(); } });
@@ -5817,8 +5875,9 @@
       box.innerHTML="";
       list.forEach(u=>{ const el=uniCardEl(u, "ugbg-"); el.onclick=()=>openUniverse(u.id, "grid"); box.appendChild(el); });
       const create=document.createElement("div"); create.className="uni-card uni-card-create";
-      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">${ubDraftHas()?"✎":"+"}</div><div class="ucc-t">${ubDraftHas()?"Finish your draft":"Create your own"}</div><div class="ucc-s">${ubDraftHas()?"Picks up where you left it":"Build a custom watch order"}</div></div>`;
+      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">${ubDraftHas()?"✎":"+"}</div><div class="ucc-t">${ubDraftHas()?"Finish your draft":"Create your own"}</div><div class="ucc-s">${ubDraftHas()?"Picks up where you left it":"Build a custom watch order"}</div></div>${ubDraftHas()?`<button class="ucc-del" title="Delete this draft">Delete draft</button>`:``}`;
       create.onclick=()=>openBuilder(null);
+      ubBindDraftDelete(create, renderAllUniverses);
       box.appendChild(create);
     }
 
@@ -5828,8 +5887,9 @@
       wrap.hidden=false; lab.hidden=false; box.innerHTML="";
       uniSorted().forEach(u=>{ box.appendChild(uniCardEl(u, "ucbg-")); });
       const create=document.createElement("div"); create.className="uni-card uni-card-create";
-      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">${ubDraftHas()?"✎":"+"}</div><div class="ucc-t">${ubDraftHas()?"Finish your draft":"Create your own"}</div><div class="ucc-s">${ubDraftHas()?"Picks up where you left it":"Build a custom watch order"}</div></div>`;
+      create.innerHTML=`<div class="ucc-inner"><div class="ucc-plus">${ubDraftHas()?"✎":"+"}</div><div class="ucc-t">${ubDraftHas()?"Finish your draft":"Create your own"}</div><div class="ucc-s">${ubDraftHas()?"Picks up where you left it":"Build a custom watch order"}</div></div>${ubDraftHas()?`<button class="ucc-del" title="Delete this draft">Delete draft</button>`:``}`;
       create.onclick=()=>openBuilder(null);
+      ubBindDraftDelete(create, loadHomeUniverses);
       box.appendChild(create);
     }
 
@@ -6227,7 +6287,27 @@
           </div>`; });
         h+=`</div>`;
       }
+      h+=`<div class="club-danger">${ me===c.club.owner_id
+            ? `<button class="uni-exit danger" id="club-delete">Delete this club</button><div class="hint">Deletes the club, its rounds and the discussion for everyone. Your own film logs stay.</div>`
+            : `<button class="uni-exit danger" id="club-leave">Leave this club</button><div class="hint">You can come back later with the invite code.</div>` }</div>`;
       body.innerHTML=h;
+      { const db=$("club-delete");
+        if(db){ let armed=false; db.onclick=async()=>{
+          if(!armed){ armed=true; db.textContent="Tap again to delete the club"; setTimeout(()=>{ armed=false; db.textContent="Delete this club"; },3000); return; }
+          armed=false; db.disabled=true;
+          try{ const {error}=await client.rpc("delete_club",{p_club:c.club.id}); if(error) throw error;
+            currentClub=null; showToast("Club deleted");
+            showSection("friends"); if(typeof setSocialTab==="function") setSocialTab("clubs");
+          }catch(e){ db.disabled=false; showToast("Error: "+(e.message||e)); } }; }
+        const lb=$("club-leave");
+        if(lb){ let armed=false; lb.onclick=async()=>{
+          if(!armed){ armed=true; lb.textContent="Tap again to leave"; setTimeout(()=>{ armed=false; lb.textContent="Leave this club"; },3000); return; }
+          armed=false; lb.disabled=true;
+          try{ const {error}=await client.rpc("leave_club",{p_club:c.club.id}); if(error) throw error;
+            currentClub=null; showToast("You left the club");
+            showSection("friends"); if(typeof setSocialTab==="function") setSocialTab("clubs");
+          }catch(e){ lb.disabled=false; showToast("Error: "+(e.message||e)); } }; }
+      }
       const cp=$("club-copy"); if(cp) cp.onclick=()=>{ try{ navigator.clipboard.writeText(c.club.invite_code); showToast("Code copied"); }catch(_){ showToast(c.club.invite_code); } };
       const prop=$("club-propose"); if(prop) prop.onclick=()=>openProposeFilm();
       const pass=$("club-pass"); if(pass) pass.onclick=async()=>{ await advanceTurn(); showToast("Turn passed"); openClub(c.club.id); };
