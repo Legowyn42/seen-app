@@ -416,6 +416,8 @@
     "The animated canon, from Snow White on": "Le canon animé, à partir de Blanche-Neige",
     "Better Call Saul, Heisenberg, El Camino": "Better Call Saul, Heisenberg, El Camino",
     "Sunnydale and Los Angeles, side by side": "Sunnydale et Los Angeles, côte à côte",
+    "The true order": "Le vrai ordre",
+    "Raiders, Temple of Doom, The Last Crusade. Nothing after 1989. No fridge, no aliens, no goddaughter. Indy rides off into the sunset and that is the end of it.": "Les Aventuriers de l'arche perdue, Le Temple maudit, La Dernière Croisade. Rien après 1989. Pas de frigo, pas d'extraterrestres, pas de filleule. Indy part vers le soleil couchant et on s'arrête là.",
     "Xenomorph only": "Xénomorphes seulement",
     "Modern first": "La série moderne d'abord",
     "One at a time": "Un Spider-Man à la fois",

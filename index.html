@@ -1376,7 +1376,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.5</div>
+    <div class="appfoot">Seen · v1.5.1</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1851,7 +1851,7 @@
         '<div class="sett-lab danger-lab">Danger zone</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
           '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
-        '<div class="sett-ver">Seen · v1.5</div></div>';
+        '<div class="sett-ver">Seen · v1.5.1</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       { const lb=$("set-lbx"); if(lb) lb.onclick=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); openLetterboxdImport(); }; }
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
@@ -4882,7 +4882,8 @@
         ],
         orders: [
           { id:"release", name:"Release", auto:"date" },
-          { id:"chrono", name:"Timeline", note:"Temple of Doom is a prequel: it takes place in 1935, a year before Raiders.", seq:["m87","m85","m89","m217","m335977"] }
+          { id:"chrono", name:"Timeline", note:"Temple of Doom is a prequel: it takes place in 1935, a year before Raiders.", seq:["m87","m85","m89","m217","m335977"] },
+          { id:"true", name:"The true order", note:"Raiders, Temple of Doom, The Last Crusade. Nothing after 1989. No fridge, no aliens, no goddaughter. Indy rides off into the sunset and that is the end of it.", seq:["m85","m87","m89"] }
         ],
         defaultOrder: "release"
       },
