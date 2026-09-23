@@ -666,7 +666,7 @@
       border: 1px solid var(--line); background: var(--card); color: var(--text); }
     .uni-watch-btn.on { border-color: var(--uaccent); background: color-mix(in srgb, var(--uaccent) 18%, transparent); }
     #badge-overlay { padding: calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px); align-items: flex-start; }
-    .badge-modal .close { position: sticky; top: 0; float: right; z-index: 6; background: var(--card); }
+    .badge-modal .close { position: sticky; top: 0; float: none; display: block; margin: 0 0 -10px auto; z-index: 6; background: var(--card); }
     .uni-orders { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
     .uni-order { padding: 8px 15px; border-radius: 999px; border: 1px solid var(--line); background: var(--card);
       color: var(--muted); font-size: 13px; cursor: pointer; font-weight: 600; }
@@ -1395,7 +1395,7 @@
       <button class="cmp-back" id="pf-back">‹ Home</button>
       <div id="pf-body"></div>
     </div>
-    <div class="appfoot">Seen · v1.6.1</div>
+    <div class="appfoot">Seen · v1.6.2</div>
   </div>
 
   <!-- Edit profile + Settings (filled in by JS) -->
@@ -1870,7 +1870,7 @@
         '<div class="sett-lab danger-lab">Danger zone</div>'+
         '<div class="danger-box"><div class="danger-txt"><div class="dgl">Reset my collection</div><div class="dgs">Erases all your films and series, ratings, episode progress, gems, rewatches and achievements. Cannot be undone.</div></div>'+
           '<button class="danger-btn" id="set-reset">Reset…</button></div>'+
-        '<div class="sett-ver">Seen · v1.6.1</div></div>';
+        '<div class="sett-ver">Seen · v1.6.2</div></div>';
       ov.hidden=false; document.body.classList.add("no-scroll");
       { const lb=$("set-lbx"); if(lb) lb.onclick=()=>{ ov.hidden=true; document.body.classList.remove("no-scroll"); openLetterboxdImport(); }; }
       const paintSeg=(el,v)=>[...el.children].forEach(b=>b.classList.toggle("sel", b.dataset.v===v));
